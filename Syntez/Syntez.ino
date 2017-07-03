@@ -287,7 +287,7 @@ void loop()
   bool tune = inTune.Read();
   trx.TX = tune || inTX.Read();
   uint8_t cmd;
-  if ((cmd=keypad.Read()) != cmdNone) {
+  if ((cmd = keypad.Read()) != cmdNone) {
     if (cmd == cmdMenu) {
       // call to menu
       ShowMenu();
@@ -302,7 +302,14 @@ void loop()
   }
   if (trx.RIT)
     trx.RIT_Value = (long)inRIT.ReadRaw()*2*RIT_MAX_VALUE/1024-RIT_MAX_VALUE;
-  trx.ChangeFreq(encoder.GetDelta());
+  long delta = encoder.GetDelta();
+  if (delta) {
+    if (keypad.IsFnPressed()) {
+      delta*=10;
+      keypad.SetKeyPressed();
+    }
+    trx.ChangeFreq(delta);
+  }
   UpdateFreq();
   outQRP.Write(trx.QRP || tune);
   outTone.Write(tune);

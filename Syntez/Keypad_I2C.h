@@ -34,6 +34,7 @@ class KeypadI2C {
     uint8_t GetLastCode() { return last_code; }
     // нажата ли Fn
     uint8_t IsFnPressed() { return FnPressed; }
+    void SetKeyPressed() { KeyPressed = true; }
 };
 
 #endif
