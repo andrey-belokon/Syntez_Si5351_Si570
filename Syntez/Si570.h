@@ -11,8 +11,10 @@ public:
   // in Hz
   bool set_freq(uint32_t newfreq);
 
+  void out_calibrate_freq();
+
 private:
-  uint8_t dco_reg[13];
+  uint8_t dco_reg[6];
   uint32_t f_center;
   uint32_t frequency;
   uint16_t hs, n1;

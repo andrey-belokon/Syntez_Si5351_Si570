@@ -27,30 +27,41 @@ void Si570::setup(uint32_t calibration_frequency)
   read_si570();
   // Successfully initialized Si570
   freq_xtal = (unsigned long) ((uint64_t) calibration_frequency * getHSDIV() * getN1() * (1L << 28) / getRFREQ());
+/*
+  Serial.println(getHSDIV(),HEX);
+  Serial.println(getN1(),HEX);
+  Serial.println((uint16_t)(getRFREQ() >> 16),HEX);
+  Serial.println((uint16_t)(getRFREQ() & 0xFFFF),HEX);
+*/  
+}
+
+void Si570::out_calibrate_freq()
+{
+  
 }
 
 // Return the 8 bit HSDIV value from register 7
 uint8_t Si570::getHSDIV()
 {
-  uint8_t hs_reg_value = dco_reg[7] >> 5;
+  uint8_t hs_reg_value = dco_reg[0] >> 5;
   return 4 + hs_reg_value;
 }
 
 // Compute and return the 8 bit N1 value from registers 7 and 8
 uint8_t Si570::getN1()
 {
-  uint8_t n_reg_value = ((dco_reg[7] & 0x1F) << 2) + (dco_reg[8] >> 6);
+  uint8_t n_reg_value = ((dco_reg[0] & 0x1F) << 2) + (dco_reg[1] >> 6);
   return n_reg_value + 1;
 }
 
 // Return 38 bit RFREQ value in a 64 bit integer
 uint64_t Si570::getRFREQ()
 {
-  fdco  = (uint64_t)(dco_reg[8] & 0x3F) << 32;
-  fdco |= (uint64_t) dco_reg[9] << 24;
-  fdco |= (uint64_t) dco_reg[10] << 16;
-  fdco |= (uint64_t) dco_reg[11] << 8;
-  fdco |= (uint64_t) dco_reg[12];
+  fdco  = (uint64_t)(dco_reg[1] & 0x3F) << 32;
+  fdco |= (uint64_t) dco_reg[2] << 24;
+  fdco |= (uint64_t) dco_reg[3] << 16;
+  fdco |= (uint64_t) dco_reg[4] << 8;
+  fdco |= (uint64_t) dco_reg[5];
 
   return fdco;
 }
@@ -100,7 +111,7 @@ int Si570::i2c_read_reg(uint8_t reg_address, uint8_t *output, uint8_t length)
 // Read the Si570 chip and populate dco_reg values
 bool Si570::read_si570()
 {
-  i2c_read_reg(7, &(dco_reg[7]), 6);
+  i2c_read_reg(7, &(dco_reg[0]), 6);
   return true;
 }
 
@@ -113,7 +124,7 @@ void Si570::write_si570()
   idco = i2c_read_reg(137);
   i2c_write_reg(137, idco | 0x10 );
 
-  i2c_write_reg(7, &dco_reg[7], 6);
+  i2c_write_reg(7, &dco_reg[0], 6);
 
   // Unfreeze DCO
   i2c_write_reg(137, idco & 0xEF);
@@ -132,7 +143,7 @@ void Si570::qwrite_si570()
   i2c_write_reg(135, idco | 0x20);
 
   // Write RFREQ registers
-  i2c_write_reg(7, &dco_reg[7], 6);
+  i2c_write_reg(7, &dco_reg[0], 6);
 
   // Unfreeze the M Control Word
   i2c_write_reg(135, idco &  0xdf);
@@ -185,21 +196,17 @@ void Si570::setRFREQ(uint32_t fnew)
   // Round the result
   rfreq = rfreq + ((rfreq & 1<<(28-1))<<1);
 
-  // Reset all Si570 registers
-  for (int i = 7; i <= 12; i++)
-    dco_reg[i] = 0;
-  
   // Set up the RFREQ register values
-  dco_reg[12] = rfreq & 0xff;
-  dco_reg[11] = rfreq >> 8 & 0xff;
-  dco_reg[10] = rfreq >> 16 & 0xff;
-  dco_reg[9]  = rfreq >> 24 & 0xff;
-  dco_reg[8]  = rfreq >> 32 & 0x3f;
+  dco_reg[5] = rfreq & 0xff;
+  dco_reg[4] = rfreq >> 8 & 0xff;
+  dco_reg[3] = rfreq >> 16 & 0xff;
+  dco_reg[2]  = rfreq >> 24 & 0xff;
+  dco_reg[1]  = rfreq >> 32 & 0x3f;
 
   // set up HS and N1 in registers 7 and 8
-  dco_reg[7]  = (hs - 4) << 5;
-  dco_reg[7]  = dco_reg[7] | ((n1 - 1) >> 2);
-  dco_reg[8] |= ((n1-1) & 0x3) << 6;
+  dco_reg[0]  = (hs - 4) << 5;
+  dco_reg[0]  = dco_reg[0] | ((n1 - 1) >> 2);
+  dco_reg[1] |= ((n1-1) & 0x3) << 6;
 }
 
 // Set the Si570 frequency
