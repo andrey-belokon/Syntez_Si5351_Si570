@@ -31,6 +31,9 @@ void RTC_Read(void *data, uint8_t start, uint8_t count)
 
 bool RTC_found()
 {
-  return i2c_device_found(DS1307_I2C_ADDRESS);
+  static uint8_t rtc_pooled = false;
+  static uint8_t rtc_found = false;
+  if (!rtc_pooled) rtc_found = i2c_device_found(DS1307_I2C_ADDRESS);
+  return rtc_found;
 }
 

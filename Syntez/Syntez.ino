@@ -78,8 +78,10 @@ void setup()
   outQRP.setup();
   outTone.setup();
   disp.setup();
-  ee24c32.setup();
-  trx.StateLoad(ee24c32);
+  if (RTC_found()) {
+    ee24c32.setup();
+    trx.StateLoad(ee24c32);
+  }
 }
 
 void UpdateFreq() 
@@ -341,20 +343,22 @@ void loop()
   // CAT
   if (Serial.available() > 0)
     ExecCAT();
-#endif    
-  // save current state to 24C04
-  static uint16_t state_hash = 0;
-  static uint8_t state_changed = false;
-  static long state_changed_tm = 0;
-  uint16_t new_state_hash = trx.StateHash();
-  if (new_state_hash != state_hash) {
-    //Serial.println(new_state_hash);
-    state_hash = new_state_hash;
-    state_changed = true;
-    state_changed_tm = millis();
-  } else if (state_changed && (millis()-state_changed_tm > 5000)) {
-    // save state
-    trx.StateSave(ee24c32);
-    state_changed = false;
+#endif
+  if (RTC_found()) {
+    // save current state to 24C32
+    static uint16_t state_hash = 0;
+    static uint8_t state_changed = false;
+    static long state_changed_tm = 0;
+    uint16_t new_state_hash = trx.StateHash();
+    if (new_state_hash != state_hash) {
+      //Serial.println(new_state_hash);
+      state_hash = new_state_hash;
+      state_changed = true;
+      state_changed_tm = millis();
+    } else if (state_changed && (millis()-state_changed_tm > 5000)) {
+      // save state
+      trx.StateSave(ee24c32);
+      state_changed = false;
+    }
   }
 }

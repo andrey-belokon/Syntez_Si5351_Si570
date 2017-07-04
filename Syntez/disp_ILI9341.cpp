@@ -47,14 +47,11 @@ int cur_ritval=0xffff;
 byte cur_cw=0xff;
 long last_tmtm=0;
 
-bool is_rtc_found;
-
 void Display_ILI9341_SPI::setup() 
 {
   tft.begin();
   tft.setRotation(3);
   tft.fillScreen(ILI9341_BLACK);
-  is_rtc_found=RTC_found();
 }
 
 void Display_ILI9341_SPI::reset()
@@ -350,7 +347,7 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
       drawBtn(90,0,50,36,"",ILI9341_BLACK,ILI9341_DARKYELLOW);
   }
 
-  if (is_rtc_found && millis()-last_tmtm > 200) {
+  if (RTC_found() && millis()-last_tmtm > 200) {
     RTCData d;
     char buf[12],*pb;
     last_tmtm=millis();

@@ -17,6 +17,8 @@ TRX::TRX() {
   }
   Lock = RIT = TX = QRP = false;
   RIT_Value = 0;
+  if (BAND_COUNT == 1) SwitchToBand(0);
+  else SwitchToBand(1);
 }
 
 uint16_t hash_data(uint16_t hval, uint8_t* data, int sz) {
@@ -45,9 +47,6 @@ void TRX::StateLoad(Eeprom24C32 &eep) {
     eep.readBytes(addr,sizeof(BandIndex),(byte*)&BandIndex);
     addr += sizeof(BandIndex);
     eep.readBytes(addr,sizeof(state),(byte*)&state);
-  } else {
-    if (BAND_COUNT == 1) SwitchToBand(0);
-    else SwitchToBand(1);
   }
 }
 
