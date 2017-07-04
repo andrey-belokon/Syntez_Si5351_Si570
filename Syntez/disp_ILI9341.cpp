@@ -129,7 +129,12 @@ void drawBtn(int x, int y, uint8_t w, uint8_t h, const char *title, color_t cfra
   {
     tft.fillRect(x,y,w,h,ILI9341_BLACK);
   } else {
-    tft.fillRoundRect(x,y,w,h,5,cframe); // +400 byte of code
+    //tft.fillRoundRect(x,y,w,h,5,cframe); // +400 byte of code
+    tft.fillRect(x,y+5,w,h-2*5,cframe);
+    for (uint8_t yy=5; yy >= 1; yy--) {
+      tft.drawFastHLine(x+yy, y+5-yy, w-2*yy, cframe);
+      tft.drawFastHLine(x+yy, y+h-5+yy-1, w-2*yy, cframe);
+    }
     //tft.fillRect(x,y,w,h,cframe);
   }
   if (*title) {
