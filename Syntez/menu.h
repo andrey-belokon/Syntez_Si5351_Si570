@@ -43,7 +43,7 @@ void ShowClockMenu()
   char title[12];
   strcpy_P(title,PSTR("Clock setup"));
   char help[69];
-  strcpy_P(help,PSTR("Lock - exit no save\nAttPre - save & exit\nrotate encoder for change"));
+  strcpy_P(help,PSTR("Up/Down - move\nA/B - save\nLock - exit\nuse encoder for change"));
   char buf[64];
   char *items[7];
   RTCData dt;
@@ -70,7 +70,7 @@ void ShowClockMenu()
           disp.DrawMenu(title,(const char**)items,selected,help,2);
           encval=0;
           break;
-        case cmdAttPre:
+        case cmdVFOSel:
           RTC_Write(&dt);
           return;
         case cmdLock:
@@ -132,7 +132,7 @@ void PrintSMeterData(int *dt, char *buf, char **items)
 void ShowSMeterMenu()
 {
   char help[70];
-  strcpy_P(help,PSTR("BandUp,BandDown - navigation\nAttPre - set value\nLock - exit no save"));
+  strcpy_P(help,PSTR("Up/Down - move\nLock - exit\nA/B - set value"));
   int smeter[15];
   char buf[145];
   char title[16];
@@ -158,7 +158,7 @@ void ShowSMeterMenu()
           else selected=0;
           disp.DrawMenu(title,(const char**)items,selected,help,1);
           break;
-        case cmdAttPre:
+        case cmdVFOSel:
           if (selected < 15) {
             smeter[selected]=inSMeter.Read();
             PrintSMeterData(smeter,buf,items);
@@ -180,7 +180,7 @@ void ShowSi5351CalibrationMenu()
   char calibrate_title[17];
   char help[115];
   strcpy_P(calibrate_title,PSTR("CALIBRATE SI5351"));
-  strcpy_P(help,PSTR("BandUp - change step\nBandDown - set to zero\nLock - exit no save\nAttPre - save & exit\nrotate encoder for change"));
+  strcpy_P(help,PSTR("RIT - change step\nAttPre - reset\nA/B - save & exit\nLock - exit\nuse encoder for change"));
   // крутим энкодер пока на выходе VFO1 не будет частота "по нулям"
   // потом нажимаем btBandDown
   // выход с отменой - btBandUp
@@ -203,16 +203,16 @@ void ShowSi5351CalibrationMenu()
     int keycode = keypad.Read();
     if (keycode >= 0) {
       switch (keycode) {
-        case cmdBandUp:
+        case cmdRIT:
           freq_step = (freq_step == 1 ? 32 : 1);
           break;
-        case cmdBandDown:
+        case cmdAttPre:
           curr_correction = 0;
           break;
         case cmdLock:
           vfo.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
           return;
-        case cmdAttPre:
+        case cmdVFOSel:
           disp.DrawCalibration("SAVE CALIBRATION",curr_correction,false,help);
           Si5351_correction = curr_correction;
           vfo.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
@@ -230,7 +230,7 @@ void ShowMenu()
   char title[10];
   char help[54];
   strcpy_P(title,PSTR("Main menu"));
-  strcpy_P(help,PSTR("BandUp/BandDown - move\nAttPre - select\nLock - exit"));
+  strcpy_P(help,PSTR("Up/Down - move\nA/B - select\nLock - exit"));
   byte selected=0;
   disp.clear();
   disp.DrawMenu(title,MenuItems,selected,help,2);
@@ -248,7 +248,7 @@ void ShowMenu()
           else selected=0;
           disp.DrawMenu(title,MenuItems,selected,help,2);
           break;
-        case cmdAttPre:
+        case cmdVFOSel:
           switch (selected) {
             case 0:
               if (RTC_found()) ShowClockMenu();

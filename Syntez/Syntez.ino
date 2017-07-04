@@ -1,16 +1,9 @@
 //
 // UR5FFR Si570/Si5351 VFO
-// Copyright (c) Andrey Belokon, 2016 Odessa 
+// Copyright (c) Andrey Belokon, 2016-2017 Odessa 
 // https://github.com/andrey-belokon/
+// GNU GPL license
 //
-
-/*
-  I2C device found at address 0x3B  ! PCF8574
-  I2C device found at address 0x3E  ! PCF8574
-  I2C device found at address 0x50  ! 24C04
-  I2C device found at address 0x60  ! Si5351
-  I2C device found at address 0x68  ! TinyRTC
- */
 
 // all setting changed in config.h file !
 #include "config.h"
@@ -26,6 +19,16 @@
 #include "si5351a.h"
 #include "i2c.h"
 #include "Eeprom24C32.h"
+
+/*
+  I2C address mapping
+  I2C device found at address 0x3B  ! PCF8574
+  I2C device found at address 0x3E  ! PCF8574
+  I2C device found at address 0x50  ! 24C04 at TinyRTC board [optional]
+  I2C device found at address 0x55  ! Si570 [optional]
+  I2C device found at address 0x60  ! Si5351 [optional]
+  I2C device found at address 0x68  ! DS1307 at TinyRTC board [optional]
+*/
 
 KeypadI2C keypad(0x3E);
 Encoder encoder(360);
