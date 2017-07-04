@@ -88,7 +88,7 @@ void setup()
   vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
 #endif  
 #ifdef VFO_SI570  
-  vfo570.setup(56319800);
+  vfo570.setup(SI570_CALIBRATION);
 #endif  
   encoder.setup();
   keypad.setup();

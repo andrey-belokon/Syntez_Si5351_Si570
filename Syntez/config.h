@@ -13,6 +13,8 @@
 #define SI5351_XTAL_FREQ         250000000  // 0.1Hz resolution (10x mutiplier)
 #define SI5351_CALIBRATION_FREQ  30000000   // частота на которой проводится калибровка Si5351
 
+#define SI570_CALIBRATION        56319780   // частота на которой проводится калибровка Si570
+
 #define LSB 0
 #define USB 1
 
