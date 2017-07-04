@@ -5,6 +5,12 @@
 // GNU GPL license
 //
 
+/*
+ * 2do
+ * формирование гетеродинов на разных выходах
+ * формирование квадратуры если нет Si5351 и тп
+ */
+
 // all setting changed in config.h file !
 #include "config.h"
 
