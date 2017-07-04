@@ -5,7 +5,6 @@
 #define COM_BAUND_RATE  9600      // скорость обмена COM-порта
 
 #define RIT_MAX_VALUE   1200      // максимальная расстройка
-#define MENU_DELAY      1000      // задержка вызова меню в сек
 
 #define SI5351_XTAL_FREQ         250000000  // 0.1Hz resolution (10x mutiplier)
 #define SI5351_CALIBRATION_FREQ  30000000   // частота на которой проводится калибровка
@@ -32,7 +31,6 @@ extern const struct _Bands {
   {15,  21000000L, 21150000L, 21450000L, USB}, \
   {12,  24890000L, 24930000L, 25140000L, USB}, \
   {10,  28000000L, 28200000L, 29700000L, USB}
-
 
 // для режима general coverage
 #define FREQ_MIN  1000000L

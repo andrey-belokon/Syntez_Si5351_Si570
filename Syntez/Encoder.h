@@ -1,11 +1,7 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
 
 /*
 1. работает по прерываниям

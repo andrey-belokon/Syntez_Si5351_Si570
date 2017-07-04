@@ -1,11 +1,7 @@
 #ifndef TINYRTC_H
 #define TINYRTC_H
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
 
 // all data in BCD format (hex as decimal)
 typedef struct {

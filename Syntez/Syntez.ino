@@ -4,6 +4,14 @@
 // https://github.com/andrey-belokon/
 //
 
+/*
+  I2C device found at address 0x3B  ! PCF8574
+  I2C device found at address 0x3E  ! PCF8574
+  I2C device found at address 0x50  ! 24C04
+  I2C device found at address 0x60  ! Si5351
+  I2C device found at address 0x68  ! TinyRTC
+ */
+
 // all setting changed in config.h file !
 #include "config.h"
 
@@ -17,11 +25,13 @@
 #include "disp_ILI9341.h"
 #include "si5351a.h"
 #include "i2c.h"
+#include "Eeprom24C32.h"
 
 KeypadI2C keypad(0x3E);
 Encoder encoder(360);
 Display_ILI9341_SPI disp;
 TRX trx;
+Eeprom24C32 ee24c32(0x50);
 
 long EEMEM Si5351_correction_EEMEM = 0;
 long Si5351_correction;
@@ -68,7 +78,8 @@ void setup()
   outQRP.setup();
   outTone.setup();
   disp.setup();
-  trx.SwitchToBand(1);
+  ee24c32.setup();
+  trx.StateLoad(ee24c32);
 }
 
 void UpdateFreq() 
@@ -331,4 +342,19 @@ void loop()
   if (Serial.available() > 0)
     ExecCAT();
 #endif    
+  // save current state to 24C04
+  static uint16_t state_hash = 0;
+  static uint8_t state_changed = false;
+  static long state_changed_tm = 0;
+  uint16_t new_state_hash = trx.StateHash();
+  if (new_state_hash != state_hash) {
+    //Serial.println(new_state_hash);
+    state_hash = new_state_hash;
+    state_changed = true;
+    state_changed_tm = millis();
+  } else if (state_changed && (millis()-state_changed_tm > 5000)) {
+    // save state
+    trx.StateSave(ee24c32);
+    state_changed = false;
+  }
 }

@@ -1,12 +1,7 @@
 #ifndef DISP_ILI9341_H
 #define DISP_ILI9341_H
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
-
 #include "TRX.h"
 
 class Display_ILI9341_SPI: public TRXDisplay {

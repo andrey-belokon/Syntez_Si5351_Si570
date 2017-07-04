@@ -1,11 +1,7 @@
 #ifndef PINS_H
 #define PINS_H
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
 
 #define PIN_NC  0xFF
 

@@ -6,17 +6,60 @@ const struct _Bands Bands[BAND_COUNT] = {
 
 TRX::TRX() {
   for (int i=0; i < BAND_COUNT; i++) {
-	BandData[i].VFO_Index = 0;
-	if (Bands[i].startSSB != 0)
-	  BandData[i].VFO[0] = BandData[i].VFO[1] = Bands[i].startSSB;
-	else
-	  BandData[i].VFO[0] = BandData[i].VFO[1] = Bands[i].start;
-	BandData[i].sideband = Bands[i].sideband;
-	BandData[i].AttPre = 0;
-	BandData[i].Split = false;
+	  BandData[i].VFO_Index = 0;
+	  if (Bands[i].startSSB != 0)
+	    BandData[i].VFO[0] = BandData[i].VFO[1] = Bands[i].startSSB;
+	  else
+	    BandData[i].VFO[0] = BandData[i].VFO[1] = Bands[i].start;
+	  BandData[i].sideband = Bands[i].sideband;
+	  BandData[i].AttPre = 0;
+	  BandData[i].Split = false;
   }
   Lock = RIT = TX = QRP = false;
   RIT_Value = 0;
+}
+
+uint16_t hash_data(uint16_t hval, uint8_t* data, int sz) {
+  while (sz--)
+    hval += (hval << 5) + *data++;
+  return hval;
+}  
+
+uint16_t TRX::StateHash() {
+  uint16_t hval = 5381;
+  hval = hash_data(hval, (uint8_t*)BandData, sizeof(BandData));
+  hval = hash_data(hval, (uint8_t*)&BandIndex, sizeof(BandIndex));
+  hval = hash_data(hval, (uint8_t*)&state, sizeof(state));
+  return hval;
+}
+
+#define STATE_SIGN  0x56CA
+
+void TRX::StateLoad(Eeprom24C32 &eep) {
+  uint16_t sign=0,addr=0;
+  eep.readBytes(addr,sizeof(sign),(byte*)&sign);
+  if (sign == STATE_SIGN) {
+    addr += sizeof(sign);
+    eep.readBytes(addr,sizeof(BandData),(byte*)BandData);
+    addr += sizeof(BandData);
+    eep.readBytes(addr,sizeof(BandIndex),(byte*)&BandIndex);
+    addr += sizeof(BandIndex);
+    eep.readBytes(addr,sizeof(state),(byte*)&state);
+  } else {
+    if (BAND_COUNT == 1) SwitchToBand(0);
+    else SwitchToBand(1);
+  }
+}
+
+void TRX::StateSave(Eeprom24C32 &eep) {
+  uint16_t sign=STATE_SIGN,addr=0;
+  eep.writeBytes(addr,sizeof(sign),(byte*)&sign);
+  addr += sizeof(sign);
+  eep.writeBytes(addr,sizeof(BandData),(byte*)BandData);
+  addr += sizeof(BandData);
+  eep.writeBytes(addr,sizeof(BandIndex),(byte*)&BandIndex);
+  addr += sizeof(BandIndex);
+  eep.writeBytes(addr,sizeof(state),(byte*)&state);
 }
 
 void TRX::SwitchToBand(int band) {

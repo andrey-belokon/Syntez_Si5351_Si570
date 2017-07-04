@@ -23,18 +23,18 @@ uint8_t KeypadI2C::Read()
   else if (scan & 0x04) code = 3;
   else if (scan & 0x08) code = 4;
   else if (scan & 0x10) code = 5;
-  else if (scan & 0x40) code = 6;
+  else if (scan & 0x20) code = 6;
 
   if (code) {
     if (last_code) return cmdNone;
     else {
-      if (scan & 0x20) code+=6;
+      if (scan & 0x40) code+=6;
       last_code = code;
       last_code_tm = millis();
       KeyPressed = true;
       return code;
     }
-  } else if (scan & 0x20) {
+  } else if (scan & 0x40) {
     last_code = 0;
     FnPressed = true;
     fn_press_tm = millis();

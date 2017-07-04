@@ -1,13 +1,9 @@
 #ifndef TRX_H
 #define TRX_H
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
-
 #include "config.h"
+#include "Eeprom24C32.h"
 
 // состояние VFO для диапазона
 typedef struct {
@@ -37,6 +33,10 @@ class TRX {
       return (state.Split && TX ? state.VFO_Index ^ 1 : state.VFO_Index);
     }
     void ChangeFreq(long freq_delta);
+    
+    uint16_t StateHash();
+    void StateLoad(Eeprom24C32 &eep);
+    void StateSave(Eeprom24C32 &eep);
 };
 
 class TRXDisplay {

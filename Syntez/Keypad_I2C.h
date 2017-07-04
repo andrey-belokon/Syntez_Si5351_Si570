@@ -1,11 +1,7 @@
 #ifndef KEYPADI2C_H
 #define KEYPADI2C_H
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
 
 /*
  * 7-buttons keypad on PCF8574

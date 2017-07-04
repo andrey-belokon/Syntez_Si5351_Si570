@@ -1,9 +1,4 @@
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
-
 #include "utils.h"
 
 char *cwr_str(char *p, char *v)
