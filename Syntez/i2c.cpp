@@ -49,6 +49,16 @@ void i2c_read(uint8_t* data, uint8_t count)
   }
 }
 
+void i2c_read_long(uint8_t* data, uint16_t count)
+{
+  while (count--) {
+    if (count) TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+    else       TWCR = (1<<TWINT) | (1<<TWEN);
+    while (!(TWCR & (1<<TWINT))) ;
+    *data++ = TWDR;
+  }
+}
+
 bool i2c_begin_write(uint8_t addr)
 {
   if (i2cStart()) {
