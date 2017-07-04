@@ -10,15 +10,20 @@
 
 #include <avr/eeprom.h> 
 #include "utils.h"
+#include "i2c.h"
+#include "pins.h"
 #include "Encoder.h"
 #include "Keypad_I2C.h"
 #include "TinyRTC.h"
-#include "pins.h"
+#include "Eeprom24C32.h"
 #include "TRX.h"
 #include "disp_ILI9341.h"
-#include "si5351a.h"
-#include "i2c.h"
-#include "Eeprom24C32.h"
+#ifdef VFO_SI5351
+  #include "si5351a.h"
+#endif
+#ifdef VFO_SI570  
+  #include "Si570.h"
+#endif
 
 /*
   I2C address mapping
@@ -36,9 +41,15 @@ Display_ILI9341_SPI disp;
 TRX trx;
 Eeprom24C32 ee24c32(0x50);
 
-long EEMEM Si5351_correction_EEMEM = 0;
-long Si5351_correction;
-Si5351 vfo;
+#ifdef VFO_SI5351
+  long EEMEM Si5351_correction_EEMEM = 0;
+  long Si5351_correction;
+  Si5351 vfo5351;
+#endif
+
+#ifdef VFO_SI570  
+  Si570 vfo570;
+#endif
 
 int EEMEM SMeterMap_EEMEM[15] = {70,140,210,280,350,420,490,560,630,700,770,840,910,940,980};
 int SMeterMap[15];
@@ -65,15 +76,22 @@ const int pnPre = 6;
 void setup()
 {
   i2c_init();
+#ifdef VFO_SI5351
   eeprom_read_block(&Si5351_correction, &Si5351_correction_EEMEM, sizeof(Si5351_correction));
+#endif  
   eeprom_read_block(SMeterMap, SMeterMap_EEMEM, sizeof(SMeterMap));
 #ifdef CAT_ENABLE
   Serial.begin(COM_BAUND_RATE);
 #endif    
-  vfo.setup(1,0,0);
-  vfo.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
+#ifdef VFO_SI5351
+  vfo5351.setup(1,0,0);
+  vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
+#endif  
+#ifdef VFO_SI570  
+  vfo570.setup(56319800);
+#endif  
   encoder.setup();
-  //keypad.setup();
+  keypad.setup();
   inTX.setup();
   inTune.setup();
   inRIT.setup();
@@ -87,11 +105,25 @@ void setup()
   }
 }
 
+void vfo_set_freq(long f1, long f2, long f3)
+{
+#ifdef VFO_SI570  
+  vfo570.set_freq(f1);
+  #ifdef VFO_SI5351
+    vfo5351.set_freq(f2,f3,0);
+  #endif
+#else
+  #ifdef VFO_SI5351
+    vfo5351.set_freq(f1,f2,f3);
+  #endif
+#endif
+}
+
 void UpdateFreq() 
 {
 
 #ifdef MODE_DC
-  vfo.set_freq(
+  vfo_set_freq(
     CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
     0,
     0
@@ -99,7 +131,7 @@ void UpdateFreq()
 #endif
 
 #ifdef MODE_DC_QUADRATURE
-  vfo.set_freq_quadrature(
+  vfo_set_freq_quadrature(
     trx.state.VFO[trx.GetVFOIndex()] + (trx.RIT && !trx.TX ? trx.RIT_Value : 0),
     0
   );
@@ -107,7 +139,7 @@ void UpdateFreq()
 
 #ifdef MODE_SINGLE_IF
   #if defined(IFreq_USB) && defined(IFreq_LSB)
-    vfo.set_freq( // инверсия боковой - гетеродин сверху
+    vfo_set_freq( // инверсия боковой - гетеродин сверху
       CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + (trx.state.sideband == LSB ? IFreq_USB : IFreq_LSB) + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
       CLK1_MULT*(trx.state.sideband == LSB ? IFreq_USB : IFreq_LSB),
       0
@@ -119,7 +151,7 @@ void UpdateFreq()
     } else {
       f = abs(IFreq_USB-f);
     }
-    vfo.set_freq(CLK0_MULT*f,CLK1_MULT*IFreq_USB,0);
+    vfo_set_freq(CLK0_MULT*f,CLK1_MULT*IFreq_USB,0);
   #elif defined(IFreq_LSB)
     long f = trx.state.VFO[trx.GetVFOIndex()] + (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
     if (trx.state.sideband == USB) {
@@ -127,7 +159,7 @@ void UpdateFreq()
     } else {
       f = abs(IFreq_LSB-f);
     }
-    vfo.set_freq(CLK0_MULT*f,CLK1_MULT*IFreq_LSB,0);
+    vfo_set_freq(CLK0_MULT*f,CLK1_MULT*IFreq_LSB,0);
   #else
     #error You must define IFreq_LSB/IFreq_USB
   #endif 
@@ -136,7 +168,7 @@ void UpdateFreq()
 #ifdef MODE_SINGLE_IF_RXTX
   #if defined(IFreq_USB) && defined(IFreq_LSB)
     long f = CLK1_MULT*(trx.state.sideband == LSB ? IFreq_USB : IFreq_LSB);
-    vfo.set_freq( // инверсия боковой - гетеродин сверху
+    vfo_set_freq( // инверсия боковой - гетеродин сверху
       CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + (trx.state.sideband == LSB ? IFreq_USB : IFreq_LSB) + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
       trx.TX ? 0 : f,
       trx.TX ? f : 0
@@ -148,7 +180,7 @@ void UpdateFreq()
     } else {
       f = abs(IFreq_USB-f);
     }
-    vfo.set_freq(
+    vfo_set_freq(
       CLK0_MULT*f,
       trx.TX ? 0 : CLK1_MULT*IFreq_USB,
       trx.TX ? CLK1_MULT*IFreq_USB : 0
@@ -160,7 +192,7 @@ void UpdateFreq()
     } else {
       f = abs(IFreq_LSB-f);
     }
-    vfo.set_freq(
+    vfo_set_freq(
       CLK0_MULT*f,
       trx.TX ? 0 : CLK1_MULT*IFreq_LSB,
       trx.TX ? CLK1_MULT*IFreq_LSB : 0
@@ -174,7 +206,7 @@ void UpdateFreq()
   #if defined(IFreq_USB) && defined(IFreq_LSB)
     long vfo = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + (trx.state.sideband == LSB ? IFreq_USB : IFreq_LSB) + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
     long f = CLK1_MULT*(trx.state.sideband == LSB ? IFreq_USB : IFreq_LSB);
-    vfo.set_freq( // инверсия боковой - гетеродин сверху
+    vfo_set_freq( // инверсия боковой - гетеродин сверху
       trx.TX ? f : vfo,
       trx.TX ? vfo : f,
       0
@@ -186,7 +218,7 @@ void UpdateFreq()
     } else {
       f = abs(IFreq_USB-f);
     }
-    vfo.set_freq(
+    vfo_set_freq(
       trx.TX ? CLK1_MULT*IFreq_USB : CLK0_MULT*f,
       trx.TX ? CLK0_MULT*f : CLK1_MULT*IFreq_USB,
       0
@@ -198,7 +230,7 @@ void UpdateFreq()
     } else {
       f = abs(IFreq_LSB-f);
     }
-    vfo.set_freq(
+    vfo_set_freq(
       trx.TX ? CLK1_MULT*IFreq_LSB : CLK0_MULT*f,
       trx.TX ? CLK0_MULT*f : CLK1_MULT*IFreq_LSB,
       0
@@ -210,7 +242,7 @@ void UpdateFreq()
 
 #ifdef MODE_DOUBLE_IF
   long IFreq = (trx.state.sideband == USB ? IFreq_USB : IFreq_LSB);
-  vfo.set_freq(
+  vfo_set_freq(
     CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
     CLK1_MULT*(IFreqEx + IFreq),
     CLK2_MULT*(IFreq)
@@ -218,7 +250,7 @@ void UpdateFreq()
 #endif
 
 #ifdef MODE_DOUBLE_IF_LSB
-  vfo.set_freq(
+  vfo_set_freq(
     CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
     CLK1_MULT*(IFreqEx + (trx.state.sideband == LSB ? IFreq_LSB : -IFreq_LSB)),
     CLK2_MULT*(IFreq_LSB)
@@ -226,7 +258,7 @@ void UpdateFreq()
 #endif
 
 #ifdef MODE_DOUBLE_IF_USB
-  vfo.set_freq(
+  vfo_set_freq(
     CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
     CLK1_MULT*(IFreqEx + (trx.state.sideband == USB ? IFreq_USB : -IFreq_USB)),
     CLK2_MULT*(IFreq_USB)
@@ -238,7 +270,7 @@ void UpdateFreq()
   long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
   long f2 = CLK1_MULT*(IFreqEx + IFreq);
   long f3 = CLK2_MULT*(IFreq);
-  vfo.set_freq(
+  vfo_set_freq(
     f1,
     trx.TX ? f3 : f2,
     trx.TX ? f2 : f3
@@ -249,7 +281,7 @@ void UpdateFreq()
   long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
   long f2 = CLK1_MULT*(IFreq + (trx.state.sideband == LSB ? IFreq_LSB : -IFreq_LSB));
   long f3 = CLK2_MULT*(IFreq_LSB);
-  vfo.set_freq(
+  vfo_set_freq(
     f1,
     trx.TX ? f3 : f2,
     trx.TX ? f2 : f3
@@ -260,7 +292,7 @@ void UpdateFreq()
   long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
   long f2 = CLK1_MULT*(IFreq + (trx.state.sideband == USB ? IFreq_USB : -IFreq_USB));
   long f3 = CLK2_MULT*(IFreq_USB);
-  vfo.set_freq(
+  vfo_set_freq(
     f1,
     trx.TX ? f3 : f2,
     trx.TX ? f2 : f3

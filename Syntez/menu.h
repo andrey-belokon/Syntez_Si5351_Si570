@@ -175,6 +175,7 @@ void ShowSMeterMenu()
   }
 }
 
+#ifdef VFO_SI5351
 void ShowSi5351CalibrationMenu()
 {
   char calibrate_title[17];
@@ -191,13 +192,13 @@ void ShowSi5351CalibrationMenu()
   int freq_step = 32;
   disp.clear();
   disp.DrawCalibration(calibrate_title,curr_correction,false,help);
-  vfo.set_freq(SI5351_CALIBRATION_FREQ,0,0);
-  vfo.set_xtal_freq(SI5351_XTAL_FREQ+curr_correction);
+  vfo5351.set_freq(SI5351_CALIBRATION_FREQ,0,0);
+  vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+curr_correction);
   while (true) {
     curr_correction -= encoder.GetDelta()*freq_step/32;
     disp.DrawCalibration(calibrate_title,curr_correction,freq_step == 1,help);
     if (curr_correction != last_correction) {
-      vfo.set_xtal_freq(SI5351_XTAL_FREQ+curr_correction,0);
+      vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+curr_correction,0);
       last_correction = curr_correction;
     }
     int keycode = keypad.Read();
@@ -210,12 +211,12 @@ void ShowSi5351CalibrationMenu()
           curr_correction = 0;
           break;
         case cmdLock:
-          vfo.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
+          vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
           return;
         case cmdVFOSel:
           disp.DrawCalibration("SAVE CALIBRATION",curr_correction,false,help);
           Si5351_correction = curr_correction;
-          vfo.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
+          vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
           eeprom_write_block(&Si5351_correction, &Si5351_correction_EEMEM, sizeof(Si5351_correction));
           delay(2000);
           return;
@@ -223,10 +224,15 @@ void ShowSi5351CalibrationMenu()
     }
   }
 }
+#endif
 
 void ShowMenu()
 {
-  char* MenuItems[] = {"Clock","Si5351","S-Meter","Exit",NULL};
+  #ifdef VFO_SI5351
+    char* MenuItems[] = {"Clock","S-Meter","Si5351",NULL};
+  #else
+    char* MenuItems[] = {"Clock","S-Meter",NULL};
+  #endif
   char title[10];
   char help[54];
   strcpy_P(title,PSTR("Main menu"));
@@ -254,13 +260,13 @@ void ShowMenu()
               if (RTC_found()) ShowClockMenu();
               break;
             case 1:
-              ShowSi5351CalibrationMenu();
-              break;
-            case 2:
               ShowSMeterMenu();
               break;
-            case 3:
-              return;
+          #ifdef VFO_SI5351
+            case 2:
+              ShowSi5351CalibrationMenu();
+              break;
+          #endif
           }
           // redraw
           disp.clear();
