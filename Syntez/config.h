@@ -7,13 +7,16 @@
 #define RIT_MAX_VALUE   1200      // максимальная расстройка
 
 // раскоментировать установленные чипы
-//#define VFO_SI5351
+#define VFO_SI5351
 #define VFO_SI570
 
-#define SI5351_XTAL_FREQ         250000000  // 0.1Hz resolution (10x mutiplier)
-#define SI5351_CALIBRATION_FREQ  30000000   // частота на которой проводится калибровка Si5351
+#define SI5351_CALIBRATION       25003181
+#define SI570_CALIBRATION        56319775
 
-#define SI570_CALIBRATION        56319780   // частота на которой проводится калибровка Si570
+// уровень сигнала на выходе Si5351. 0=2mA, 1=4mA, 2=6mA, 3=8mA
+#define SI5351_CLK0_DRIVE   3
+#define SI5351_CLK1_DRIVE   0
+#define SI5351_CLK2_DRIVE   0
 
 #define LSB 0
 #define USB 1

@@ -42,11 +42,8 @@ TRX trx;
 Eeprom24C32 ee24c32(0x50);
 
 #ifdef VFO_SI5351
-  long EEMEM Si5351_correction_EEMEM = 0;
-  long Si5351_correction;
   Si5351 vfo5351;
 #endif
-
 #ifdef VFO_SI570  
   Si570 vfo570;
 #endif
@@ -76,16 +73,18 @@ const int pnPre = 6;
 void setup()
 {
   i2c_init();
-#ifdef VFO_SI5351
-  eeprom_read_block(&Si5351_correction, &Si5351_correction_EEMEM, sizeof(Si5351_correction));
-#endif  
   eeprom_read_block(SMeterMap, SMeterMap_EEMEM, sizeof(SMeterMap));
 #ifdef CAT_ENABLE
   Serial.begin(COM_BAUND_RATE);
 #endif    
 #ifdef VFO_SI5351
-  vfo5351.setup(1,0,0);
-  vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
+  // change for required output level
+  vfo5351.setup(
+    SI5351_CLK0_DRIVE,
+    SI5351_CLK1_DRIVE,
+    SI5351_CLK2_DRIVE
+  );
+  vfo5351.set_xtal_freq(SI5351_CALIBRATION);
 #endif  
 #ifdef VFO_SI570  
   vfo570.setup(SI570_CALIBRATION);

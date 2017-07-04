@@ -175,64 +175,28 @@ void ShowSMeterMenu()
   }
 }
 
-#ifdef VFO_SI5351
-void ShowSi5351CalibrationMenu()
+void ShowSiCalibrationMenu()
 {
-  char calibrate_title[17];
-  char help[115];
-  strcpy_P(calibrate_title,PSTR("CALIBRATE SI5351"));
-  strcpy_P(help,PSTR("RIT - change step\nAttPre - reset\nA/B - save & exit\nLock - exit\nuse encoder for change"));
-  // крутим энкодер пока на выходе VFO1 не будет частота "по нулям"
-  // потом нажимаем btBandDown
-  // выход с отменой - btBandUp
-  // brAttPre - смена шага на мелкий/крупный (по дефолту крупный)
-  // btVFOSel - сброс в ноль
-  long curr_correction = Si5351_correction;
-  long last_correction = 0;
-  int freq_step = 32;
+  char* MenuItems[] = {NULL};
+  char title[15];
+  char help[22];
+  strcpy_P(title,PSTR("Si Calibration"));
+  strcpy_P(help,PSTR("press any key to exit"));
   disp.clear();
-  disp.DrawCalibration(calibrate_title,curr_correction,false,help);
-  vfo5351.set_freq(SI5351_CALIBRATION_FREQ,0,0);
-  vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+curr_correction);
-  while (true) {
-    curr_correction -= encoder.GetDelta()*freq_step/32;
-    disp.DrawCalibration(calibrate_title,curr_correction,freq_step == 1,help);
-    if (curr_correction != last_correction) {
-      vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+curr_correction,0);
-      last_correction = curr_correction;
-    }
-    int keycode = keypad.Read();
-    if (keycode >= 0) {
-      switch (keycode) {
-        case cmdRIT:
-          freq_step = (freq_step == 1 ? 32 : 1);
-          break;
-        case cmdAttPre:
-          curr_correction = 0;
-          break;
-        case cmdLock:
-          vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
-          return;
-        case cmdVFOSel:
-          disp.DrawCalibration("SAVE CALIBRATION",curr_correction,false,help);
-          Si5351_correction = curr_correction;
-          vfo5351.set_xtal_freq(SI5351_XTAL_FREQ+Si5351_correction);
-          eeprom_write_block(&Si5351_correction, &Si5351_correction_EEMEM, sizeof(Si5351_correction));
-          delay(2000);
-          return;
-      }
-    }
-  }
-}
+  byte selected;
+  disp.DrawMenu(title,MenuItems,selected,help,2);
+#ifdef VFO_SI5351
+  vfo5351.out_calibrate_freq();
 #endif
+#ifdef VFO_SI570
+  vfo570.out_calibrate_freq();
+#endif
+  while (keypad.Read() == cmdNone) ;
+}
 
 void ShowMenu()
 {
-  #ifdef VFO_SI5351
-    char* MenuItems[] = {"Clock","S-Meter","Si5351",NULL};
-  #else
-    char* MenuItems[] = {"Clock","S-Meter",NULL};
-  #endif
+  char* MenuItems[] = {"Clock","S-Meter","Si calibration",NULL};
   char title[10];
   char help[54];
   strcpy_P(title,PSTR("Main menu"));
@@ -262,11 +226,9 @@ void ShowMenu()
             case 1:
               ShowSMeterMenu();
               break;
-          #ifdef VFO_SI5351
             case 2:
-              ShowSi5351CalibrationMenu();
+              ShowSiCalibrationMenu();
               break;
-          #endif
           }
           // redraw
           disp.clear();

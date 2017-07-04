@@ -104,7 +104,7 @@ void Si5351::setup(uint8_t _power0, uint8_t _power1, uint8_t _power2)
 void Si5351::set_xtal_freq(uint32_t freq, uint8_t reset_pll)
 {
   uint8_t need_reset_pll;
-  xtal_freq = freq;
+  xtal_freq = freq*10;
   update_freq0(&need_reset_pll);
   update_freq12(1,&need_reset_pll);
   if (reset_pll) si5351_write_reg(SI_PLL_RESET, 0xA0);
@@ -149,6 +149,12 @@ void Si5351::disable_out(uint8_t clk_num)
       }
     break;
   }
+}
+
+void Si5351::out_calibrate_freq()
+{
+  si5351_write_reg(SI_CLK0_CONTROL, power0);
+  si5351_write_reg(187, 0xD6);
 }
 
 void Si5351::update_freq0(uint8_t* need_reset_pll)

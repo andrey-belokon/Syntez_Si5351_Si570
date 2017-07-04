@@ -3,6 +3,11 @@
 
 #include <inttypes.h>
 
+#define SI5351_CLK_DRIVE_2MA  0
+#define SI5351_CLK_DRIVE_4MA  1
+#define SI5351_CLK_DRIVE_6MA  2
+#define SI5351_CLK_DRIVE_8MA  3
+
 /*
  * Feequency plan:
  * CLK0 - PLL_A, multisynth integer
@@ -27,7 +32,9 @@ class Si5351 {
     Si5351 ():xtal_freq(270000000) {}
     // power 0=2mA, 1=4mA, 2=6mA, 3=8mA
     void setup(uint8_t _power1 = 3, uint8_t _power2 = 3, uint8_t _power3 = 3);
-    // set xtal freq with 0.1Hz resolution (x10 multiplier)
+    // out xtal freq to CLK0
+    void out_calibrate_freq();
+    // set xtal freq 
     void set_xtal_freq(uint32_t freq, uint8_t reset_pll = 1);
     // pass zero frequency for disable out
     void set_freq(uint32_t f0, uint32_t f1, uint32_t f2);
