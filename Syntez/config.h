@@ -22,7 +22,7 @@
 #define USB 1
 
 // число диапазонов
-#define BAND_COUNT 9
+#define BAND_COUNT  9
 
 extern const struct _Bands {
   uint8_t   mc;
@@ -52,15 +52,16 @@ enum {
   cmdBandDown,
   cmdLock,     // Lock freq
   cmdVFOSel,   // VFO A/B
+  cmdVFOEQ,    // VFO A=B
+  
   cmdAttPre,   // переключает по кругу аттенюатор/увч
-  cmdRIT,      // RIT
   cmdQRP,     // режим уменьшенной выходной мощности
   cmdHam,      // режим Ham band/General coverage. в режиме Ham кнопки cmdBandUp/Down переключают диапазоны
                // в режиме General coverage - изменяют частоту на +/-1MHz
   cmdZero,     // устанавливает частоту точно по еденицам кГц. 3623145->3623000
-  cmdVFOEQ,    // VFO A=B
-  cmdUSBLSB,   // выбор боковой USB/LSB
   cmdSplit,    // Split on/off
+  cmdRIT,      // RIT
+  cmdUSBLSB,   // выбор боковой USB/LSB
   cmdMenu
 };
 
@@ -124,6 +125,7 @@ const long CLK2_MULT = 1;
 // если фильтр имеет симметричные скаты (например мостовой) либо высокое подавление 
 // по обеим скатам то раскоментарить и определить оба дефайна
 #define IFreq_LSB   500000L
+//#define IFreq_USB
 
 // первая промежуточная частота для трактов с двойным преобразованием частоты
 const long IFreqEx = 45000000;

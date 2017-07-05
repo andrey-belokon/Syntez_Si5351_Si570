@@ -9,6 +9,8 @@
  * 2do
  * формирование гетеродинов на разных выходах
  * формирование квадратуры если нет Si5351 и тп
+ * Fn - везде выход из меню
+ * в меню проверить длины буферов для текстов
  */
 
 // all setting changed in config.h file !
@@ -342,13 +344,19 @@ void loop()
   uint8_t cmd;
   if ((cmd = keypad.Read()) != cmdNone) {
     if (cmd == cmdMenu) {
-      // call to menu
-      ShowMenu();
-      // перерисовываем дисплей
-      disp.clear();
-      disp.reset();
-      disp.Draw(trx);
-      return;
+      static long last_menu_tm = 0;
+      // double press at 1sec
+      if (millis()-last_menu_tm <= 1000) {
+        // call to menu
+        ShowMenu();
+        // перерисовываем дисплей
+        disp.clear();
+        disp.reset();
+        disp.Draw(trx);
+        return;
+      } else {
+        last_menu_tm = millis();
+      }
     } else {
       trx.ExecCommand(cmd);
     }

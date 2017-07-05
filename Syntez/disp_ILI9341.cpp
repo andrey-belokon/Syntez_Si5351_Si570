@@ -411,30 +411,3 @@ void Display_ILI9341_SPI::DrawMenu(const char* title, const char** items, uint8_
   }
 }
 
-void Display_ILI9341_SPI::DrawCalibration(const char* title, long value, uint8_t hi_res, const char* help) {
-  char buf[16];
-  tft.setFont(NULL);
-  tft.setTextSize(2);
-  tft.setTextColor(ILI9341_YELLOW,ILI9341_BLACK);
-  tft.setCursor(0,0);
-  tft.println(title);
-  if (hi_res) tft.println("HI RES MODE");
-  else tft.println("           ");
-  //sprintf(buf,"CORR: %ld  ",value);
-  char *pb = cwr_str(buf,"CORR: ");
-  if (value < 0) {
-    *pb++ = '-';
-    value = -value;
-  }
-  pb = cwr_long(pb,value);
-  *pb++ = ' ';
-  *pb++ = ' ';
-  *pb++ = 0;
-  tft.println(buf);
-  if (help) {
-    //tft.setTextSize(1);
-    tft.println("");
-    tft.println(help);
-  }
-}
-

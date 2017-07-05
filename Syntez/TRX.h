@@ -46,7 +46,6 @@ class TRXDisplay {
 	  virtual void Draw(TRX& trx) {}
     virtual void clear() {}
     virtual void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize);
-	  virtual void DrawCalibration(const char* title, long value, uint8_t hi_res, const char* help);
 };
 
 #endif
