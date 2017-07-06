@@ -5,13 +5,7 @@
 // GNU GPL license
 //
 
-/*
- * 2do
- * формирование гетеродинов на разных выходах
- * формирование квадратуры если нет Si5351 и тп
- */
-
-// all setting changed in config.h file !
+// !!! all user setting defined in config.h file !!!
 #include "config.h"
 
 #include <avr/eeprom.h> 
@@ -54,7 +48,7 @@ Eeprom24C32 ee24c32(0x50);
   Si570 vfo570;
 #endif
 
-int EEMEM SMeterMap_EEMEM[15] = {70,140,210,280,350,420,490,560,630,700,770,840,910,940,980};
+int EEMEM SMeterMap_EEMEM[15] = {0};
 int SMeterMap[15];
 
 InputPullUpPin inTX(4);
@@ -136,10 +130,14 @@ void UpdateFreq()
 #endif
 
 #ifdef MODE_DC_QUADRATURE
-  vfo_set_freq_quadrature(
-    trx.state.VFO[trx.GetVFOIndex()] + (trx.RIT && !trx.TX ? trx.RIT_Value : 0),
-    0
-  );
+  #ifdef VFO_SI5351
+    vfo5351.set_freq_quadrature(
+      trx.state.VFO[trx.GetVFOIndex()] + (trx.RIT && !trx.TX ? trx.RIT_Value : 0),
+      0
+    );
+  #else
+    #error MODE_DC_QUADRATURE allow only with installed Si5351
+  #endif
 #endif
 
 #ifdef MODE_SINGLE_IF
@@ -397,7 +395,6 @@ void loop()
     static long state_changed_tm = 0;
     uint16_t new_state_hash = trx.StateHash();
     if (new_state_hash != state_hash) {
-      //Serial.println(new_state_hash);
       state_hash = new_state_hash;
       state_changed = true;
       state_changed_tm = millis();
