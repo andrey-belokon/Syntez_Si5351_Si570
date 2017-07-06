@@ -42,8 +42,8 @@ void ShowClockMenu()
 {
   char title[12];
   strcpy_P(title,PSTR("Clock setup"));
-  char help[69];
-  strcpy_P(help,PSTR("Up/Down - move\nA/B - save\nLock - exit\nuse encoder for change"));
+  char help[67];
+  strcpy_P(help,PSTR("Up/Down - move\nA/B - save\nFn/Lock - exit\nuse encoder for change"));
   char buf[64];
   char *items[7];
   RTCData dt;
@@ -73,6 +73,7 @@ void ShowClockMenu()
         case cmdVFOSel:
           RTC_Write(&dt);
           return;
+        case cmdMenu:
         case cmdLock:
           return;
       }
@@ -131,8 +132,8 @@ void PrintSMeterData(int *dt, char *buf, char **items)
 
 void ShowSMeterMenu()
 {
-  char help[70];
-  strcpy_P(help,PSTR("Up/Down - move\nLock - exit\nA/B - set value"));
+  char help[48];
+  strcpy_P(help,PSTR("Up/Down - move\nFn/Lock - exit\nA/B - set value"));
   int smeter[15];
   char buf[145];
   char title[16];
@@ -168,6 +169,7 @@ void ShowSMeterMenu()
             return;
           }
           break;
+        case cmdMenu:
         case cmdLock:
           return;
       }
@@ -198,9 +200,9 @@ void ShowMenu()
 {
   char* MenuItems[] = {"Clock","S-Meter","Si calibration",NULL};
   char title[10];
-  char help[54];
+  char help[45];
   strcpy_P(title,PSTR("Main menu"));
-  strcpy_P(help,PSTR("Up/Down - move\nA/B - select\nLock - exit"));
+  strcpy_P(help,PSTR("Up/Down - move\nA/B - select\nFn/Lock - exit"));
   byte selected=0;
   disp.clear();
   disp.DrawMenu(title,MenuItems,selected,help,2);
@@ -234,6 +236,7 @@ void ShowMenu()
           disp.clear();
           disp.DrawMenu(title,MenuItems,selected,help,2);
           break;
+        case cmdMenu:
         case cmdLock:
           disp.clear();
           return;
