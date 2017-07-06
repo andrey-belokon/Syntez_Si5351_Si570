@@ -22,8 +22,8 @@ uint8_t KeypadI2C::Read()
   else if (scan & 0x02) code = 2;
   else if (scan & 0x04) code = 3;
   else if (scan & 0x08) code = 4;
-  else if (scan & 0x10) code = 5;
-  else if (scan & 0x20) code = 6;
+  else if (scan & 0x20) code = 5;
+  else if (scan & 0x10) code = 6;
 
   if (code) {
     if (last_code) return cmdNone;

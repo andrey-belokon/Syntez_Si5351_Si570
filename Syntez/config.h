@@ -45,23 +45,27 @@ extern const struct _Bands {
 #define FREQ_MIN  1000000L
 #define FREQ_MAX 30000000L
 
-// список комманд трансивера. порядок важен!!!
+// список комманд трансивера. порядок соответствует обходу физического расположения клавиш слева направо, снизу вверх
 enum {
   cmdNone = 0,
+  
+  // без нажатия Fn  
   cmdBandUp,   // переключение диапазонов или частоты
   cmdBandDown,
   cmdLock,     // Lock freq
   cmdVFOSel,   // VFO A/B
-  cmdVFOEQ,    // VFO A=B
-  
   cmdAttPre,   // переключает по кругу аттенюатор/увч
+  cmdVFOEQ,    // VFO A=B
+
+  // с нажатой Fn  
+  cmdRIT,      // RIT
+  cmdZero,     // устанавливает частоту точно по еденицам кГц. 3623145->3623000
+  cmdUSBLSB,   // выбор боковой USB/LSB
+  cmdSplit,    // Split on/off
   cmdQRP,     // режим уменьшенной выходной мощности
   cmdHam,      // режим Ham band/General coverage. в режиме Ham кнопки cmdBandUp/Down переключают диапазоны
                // в режиме General coverage - изменяют частоту на +/-1MHz
-  cmdZero,     // устанавливает частоту точно по еденицам кГц. 3623145->3623000
-  cmdSplit,    // Split on/off
-  cmdRIT,      // RIT
-  cmdUSBLSB,   // выбор боковой USB/LSB
+  
   cmdMenu
 };
 
