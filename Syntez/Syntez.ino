@@ -375,8 +375,9 @@ void loop()
   // read and convert smeter
   int val = inSMeter.Read();
   trx.SMeter =  0;
-  for (byte i=14; i >= 0; i--) {
-    if (val > SMeterMap[i]) {
+  bool rev_order = SMeterMap[0] > SMeterMap[14];
+  for (uint8_t i=14; i >= 0; i--) {
+    if (!rev_order && val > SMeterMap[i] || rev_order && val < SMeterMap[i]) {
       trx.SMeter =  i+1;
       break;
     }
