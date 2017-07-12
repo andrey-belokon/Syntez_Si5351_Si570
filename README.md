@@ -1,8 +1,9 @@
-Si570/Si5351 VFO
+Universal Si570/Si5351 VFO
 
-Circuit and detail description http://dspview.com/viewtopic.php?f=22&t=162
+Project homepage http://dspview.com/viewtopic.php?t=174
 
-<img src="http://dspview.com/download/file.php?id=483"></img>
+<img src="doc\Si5351-Syntez-CPU.png"></img>
+<img src="doc\Si5351-Syntez-Interface.png"></img>
 
 Required libraries:
 

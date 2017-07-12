@@ -36,7 +36,7 @@
 */
 
 KeypadI2C keypad(0x3E);
-Encoder encoder(360);
+Encoder encoder(ENCODER_PULSE_PER_TURN);
 Display_ILI9341_SPI disp;
 TRX trx;
 Eeprom24C32 ee24c32(0x50);
@@ -390,7 +390,7 @@ void loop()
     ExecCAT();
 #endif
   if (RTC_found()) {
-    // save current state to 24C32
+    // save current state to 24C32 (if changed)
     static uint16_t state_hash = 0;
     static uint8_t state_changed = false;
     static long state_changed_tm = 0;

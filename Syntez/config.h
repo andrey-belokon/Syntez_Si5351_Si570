@@ -6,6 +6,8 @@
 
 #define RIT_MAX_VALUE   1200      // максимальная расстройка
 
+#define ENCODER_PULSE_PER_TURN    360
+
 // раскоментировать установленные чипы
 #define VFO_SI5351
 #define VFO_SI570
