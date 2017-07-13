@@ -1,19 +1,29 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define CAT_ENABLE
-#define COM_BAUND_RATE  9600      // скорость обмена COM-порта
-
-#define RIT_MAX_VALUE   1200      // максимальная расстройка
-
-#define ENCODER_PULSE_PER_TURN    360
-
 // раскоментировать установленные чипы
 #define VFO_SI5351
 #define VFO_SI570
 
 #define SI5351_CALIBRATION       25003181
 #define SI570_CALIBRATION        56319775
+
+// количество импульсов на оборот примененного энкодера
+#define ENCODER_PULSE_PER_TURN    360
+// изменение частоты в Гц на один оборот в обычном режиме
+#define ENCODER_FREQ_LO_STEP      3000
+// изменение частоты в Гц на один оборот в ускоренном режиме
+#define ENCODER_FREQ_HI_STEP      12000
+// порог переключения в ускоренный режим. если частота изменится более
+// чем на ENCODER_FREQ_HI_LO_TRASH Гц за секунду то переходим в ускоренный режим
+#define ENCODER_FREQ_HI_LO_TRASH  8000                   
+// кратность перестройки частоты при нажатой кнопке Fn
+#define ENCODER_FN_MULT           10
+
+#define CAT_ENABLE
+#define COM_BAUND_RATE  9600      // скорость обмена COM-порта
+
+#define RIT_MAX_VALUE   1200      // максимальная расстройка
 
 // уровень сигнала на выходе Si5351. 0=2mA, 1=4mA, 2=6mA, 3=8mA
 #define SI5351_CLK0_DRIVE   0

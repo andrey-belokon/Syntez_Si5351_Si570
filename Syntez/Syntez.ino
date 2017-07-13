@@ -36,7 +36,7 @@
 */
 
 KeypadI2C keypad(0x3E);
-Encoder encoder(ENCODER_PULSE_PER_TURN);
+Encoder encoder(ENCODER_PULSE_PER_TURN,ENCODER_FREQ_LO_STEP,ENCODER_FREQ_HI_STEP,ENCODER_FREQ_HI_LO_TRASH);
 Display_ILI9341_SPI disp;
 TRX trx;
 Eeprom24C32 ee24c32(0x50);
@@ -362,7 +362,7 @@ void loop()
   long delta = encoder.GetDelta();
   if (delta) {
     if (keypad.IsFnPressed()) {
-      delta*=10;
+      delta*=ENCODER_FN_MULT;
       keypad.SetKeyPressed();
     }
     trx.ChangeFreq(delta);
