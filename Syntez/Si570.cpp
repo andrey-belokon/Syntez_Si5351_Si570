@@ -18,33 +18,19 @@
 void Si570::setup(uint32_t calibration_frequency)
 {
   i2c_init();
-  // We are about the reset the Si570, so set the current and center frequency to the calibration frequency.
-  f_center = frequency = calibration_frequency;
-  max_delta = ((uint64_t) f_center * 10035LL / 10000LL) - f_center;
-  // Force Si570 to reset to initial freq
-  // i2c_write_reg(135,0x01);
-  // delay(20);
-  // read_si570();
-  // instead reset Si570 use predefined register values
-  fillCalibrateReg();
+  out_calibrate_freq();
+  delay(20);
+  read_si570();
   freq_xtal = (unsigned long) ((uint64_t) calibration_frequency * getHSDIV() * getN1() * (1L << 28) / getRFREQ());
-}
-
-void Si570::fillCalibrateReg()
-{
-  // default values for 56MHz freq
-  dco_reg[0] = 0xE1;
-  dco_reg[1] = 0xC2;
-  dco_reg[2] = 0xB6;
-  dco_reg[3] = 0x4F;
-  dco_reg[4] = 0x18;
-  dco_reg[5] = 0xA9;
 }
 
 void Si570::out_calibrate_freq()
 {
-  fillCalibrateReg();
-  write_si570();
+  // Force Si570 to reset to initial freq
+  i2c_write_reg(135,0x01);
+  // We are about the reset the Si570, so set the current and center frequency to the calibration frequency.
+  f_center = frequency = 0;
+  max_delta = 0;
 }
 
 // Return the 8 bit HSDIV value from register 7

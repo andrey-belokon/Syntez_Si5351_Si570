@@ -155,6 +155,7 @@ void Si5351::out_calibrate_freq()
 {
   si5351_write_reg(SI_CLK0_CONTROL, power0);
   si5351_write_reg(187, 0xD6);
+  freq0=freq1=freq2=0;
 }
 
 void Si5351::update_freq0(uint8_t* need_reset_pll)

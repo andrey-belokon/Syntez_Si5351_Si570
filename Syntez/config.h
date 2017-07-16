@@ -6,7 +6,7 @@
 #define VFO_SI570
 
 #define SI5351_CALIBRATION       25003181
-#define SI570_CALIBRATION        56319775
+#define SI570_CALIBRATION        56319832
 
 // количество импульсов на оборот примененного энкодера
 #define ENCODER_PULSE_PER_TURN    360

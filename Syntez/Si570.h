@@ -39,8 +39,6 @@ private:
 
   void setRFREQ(uint32_t fnew);
   bool findDivisors(uint32_t f);
-
-  void fillCalibrateReg();
 };
 
 #endif
