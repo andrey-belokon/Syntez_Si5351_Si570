@@ -16,8 +16,9 @@ typedef struct {
 
 class TRX {
   public:
-	   TVFOState BandData[BAND_COUNT];
-	  int BandIndex;  // -1 в режиме General coverage
+	   TVFOState BandData[BAND_COUNT+1]; // last - General coverage
+    int SaveBandIndex;  // для правильного выхода из General coverage
+    int BandIndex;  // -1 в режиме General coverage
     TVFOState state;
     uint8_t TX;
     uint8_t Lock;

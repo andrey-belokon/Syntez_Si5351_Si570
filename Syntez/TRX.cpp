@@ -5,7 +5,7 @@ const struct _Bands Bands[BAND_COUNT] = {
 };
 
 TRX::TRX() {
-  for (int i=0; i < BAND_COUNT; i++) {
+  for (byte i=0; i < BAND_COUNT; i++) {
 	  BandData[i].VFO_Index = 0;
 	  if (Bands[i].startSSB != 0)
 	    BandData[i].VFO[0] = BandData[i].VFO[1] = Bands[i].startSSB;
@@ -17,8 +17,8 @@ TRX::TRX() {
   }
   Lock = RIT = TX = QRP = false;
   RIT_Value = 0;
-  if (BAND_COUNT == 1) SwitchToBand(0);
-  else SwitchToBand(1);
+  BandData[BAND_COUNT].VFO[0] = 0;
+  SwitchToBand(BAND_COUNT == 1 ? 0 : 1);
 }
 
 uint16_t hash_data(uint16_t hval, uint8_t* data, int sz) {
@@ -35,7 +35,7 @@ uint16_t TRX::StateHash() {
   return hval;
 }
 
-#define STATE_SIGN  0x56CA
+#define STATE_SIGN  0x59CE
 
 void TRX::StateLoad(Eeprom24C32 &eep) {
   uint16_t sign=0,addr=0;
@@ -43,7 +43,9 @@ void TRX::StateLoad(Eeprom24C32 &eep) {
   if (sign == STATE_SIGN) {
     addr += sizeof(sign);
     eep.readBytes(addr,sizeof(BandData),(byte*)BandData);
-    addr += sizeof(BandData);
+    addr += sizeof(BandData);   
+    eep.readBytes(addr,sizeof(SaveBandIndex),(byte*)&SaveBandIndex);
+    addr += sizeof(SaveBandIndex);
     eep.readBytes(addr,sizeof(BandIndex),(byte*)&BandIndex);
     addr += sizeof(BandIndex);
     eep.readBytes(addr,sizeof(state),(byte*)&state);
@@ -56,13 +58,15 @@ void TRX::StateSave(Eeprom24C32 &eep) {
   addr += sizeof(sign);
   eep.writeBytes(addr,sizeof(BandData),(byte*)BandData);
   addr += sizeof(BandData);
+  eep.writeBytes(addr,sizeof(SaveBandIndex),(byte*)&SaveBandIndex);
+  addr += sizeof(SaveBandIndex);
   eep.writeBytes(addr,sizeof(BandIndex),(byte*)&BandIndex);
   addr += sizeof(BandIndex);
   eep.writeBytes(addr,sizeof(state),(byte*)&state);
 }
 
 void TRX::SwitchToBand(int band) {
-  BandIndex = band;
+  SaveBandIndex = BandIndex = band;
   memcpy(&state,&BandData[BandIndex],sizeof(TVFOState));
   Lock = RIT = false;
   RIT_Value = 0;
@@ -141,20 +145,18 @@ void TRX::ExecCommand(uint8_t cmd) {
       }
       break;
     case cmdHam:
-      if (BandIndex >= 0)
+      if (BandIndex >= 0) {
+        memcpy(&BandData[BandIndex],&state,sizeof(TVFOState));
+        SaveBandIndex = BandIndex;
         BandIndex = -1;
-      else {
-        long min_delta = FREQ_MAX;
-        int min_delta_idx = -1;
-        for (int i=0; i < BAND_COUNT; i++) {
-          long delta = abs(state.VFO[state.VFO_Index]-Bands[i].start);
-          if (delta < min_delta) {
-            min_delta = delta;
-            min_delta_idx = i;
-          }
-        }
-        BandIndex = min_delta_idx;
+        if (BandData[BAND_COUNT].VFO[0] != 0)
+          memcpy(&state,&BandData[BAND_COUNT],sizeof(TVFOState));
+      } else {
+        memcpy(&BandData[BAND_COUNT],&state,sizeof(TVFOState));
+        BandIndex = SaveBandIndex;
+        memcpy(&state,&BandData[BandIndex],sizeof(TVFOState));
       }
+      Lock = RIT = false;
       break;
   }
 }
