@@ -154,7 +154,7 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
   const int BTN_Y = 204;
   const int SMetr_Y = 42;
   const int SMetr_H = 12;
-  int vfo_idx = trx.GetVFOIndex();
+  uint8_t vfo_idx = trx.GetVFOIndex();
   long f = (trx.state.VFO[vfo_idx]+50) / 100;
   long f2 = (trx.state.VFO[vfo_idx^1]+50) / 100;
 
@@ -342,9 +342,7 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
       drawBtn(40,0,56,36,"",ILI9341_BLACK,ILI9341_BLUE);
   }
 
-  byte cw=trx.BandIndex >= 0 && Bands[trx.BandIndex].startSSB > 0 &&
-          trx.state.VFO[vfo_idx] < Bands[trx.BandIndex].startSSB &&
-          trx.state.VFO[vfo_idx] >= Bands[trx.BandIndex].start;
+  uint8_t cw=trx.inCW();
   if (cw != cur_cw) {
     if (cur_cw=cw)
       drawBtn(90,0,50,36,"CW",ILI9341_BLACK,ILI9341_DARKYELLOW);

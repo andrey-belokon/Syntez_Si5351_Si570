@@ -30,10 +30,12 @@ class TRX {
 	  TRX();
     void SwitchToBand(int band);
     void ExecCommand(uint8_t cmd);
-    inline int GetVFOIndex() {
+    inline uint8_t GetVFOIndex() {
       return (state.Split && TX ? state.VFO_Index ^ 1 : state.VFO_Index);
     }
     void ChangeFreq(long freq_delta);
+
+    uint8_t inCW();
     
     uint16_t StateHash();
     void StateLoad(Eeprom24C32 &eep);

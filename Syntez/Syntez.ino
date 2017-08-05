@@ -1,5 +1,6 @@
 //
 // UR5FFR Si570/Si5351 VFO
+// v1.1 from 6.08.2017
 // Copyright (c) Andrey Belokon, 2016-2017 Odessa 
 // https://github.com/andrey-belokon/
 // GNU GPL license
@@ -62,13 +63,14 @@ OutputTonePin outTone(8,1000);
 OutputPCF8574 outBandCtrl(0x3B,0);
 // распиновка I2C расширителя:
 // двоичный дешифратор диапазона - пины 0-3
-const int pnBand0 = 0;
-const int pnBand1 = 1;
-const int pnBand2 = 2;
-const int pnBand3 = 3;
-// 5й пин - ATT, 6й пин - Preamp
-const int pnAtt = 5;
-const int pnPre = 6;
+const uint8_t pnBand0 = 0;
+const uint8_t pnBand1 = 1;
+const uint8_t pnBand2 = 2;
+const uint8_t pnBand3 = 3;
+// 4й пин - ATT, 5й пин - Preamp
+const uint8_t pnAtt = 4;
+const uint8_t pnPre = 5;
+const uint8_t pnCW = 6;
 
 void setup()
 {
@@ -305,6 +307,10 @@ void UpdateFreq()
 
 void UpdateBandCtrl() 
 {
+  outBandCtrl.Set(pnBand0, trx.BandIndex & 0x1);
+  outBandCtrl.Set(pnBand1, trx.BandIndex & 0x2);
+  outBandCtrl.Set(pnBand2, trx.BandIndex & 0x4);
+  outBandCtrl.Set(pnBand3, trx.BandIndex & 0x8);
   // 0-nothing; 1-ATT; 2-Preamp
   switch (trx.state.AttPre) {
     case 0:
@@ -320,10 +326,7 @@ void UpdateBandCtrl()
       outBandCtrl.Set(pnPre,true);
       break;
   }
-  outBandCtrl.Set(pnBand0, trx.BandIndex & 0x1);
-  outBandCtrl.Set(pnBand1, trx.BandIndex & 0x2);
-  outBandCtrl.Set(pnBand2, trx.BandIndex & 0x4);
-  outBandCtrl.Set(pnBand3, trx.BandIndex & 0x8);
+  outBandCtrl.Set(pnCW, trx.inCW());
   outBandCtrl.Write();
 }
 

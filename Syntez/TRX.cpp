@@ -161,3 +161,11 @@ void TRX::ExecCommand(uint8_t cmd) {
   }
 }
 
+uint8_t TRX::inCW() {
+  uint8_t vfo_idx = GetVFOIndex();
+  return 
+    BandIndex >= 0 && Bands[BandIndex].startSSB > 0 &&
+    state.VFO[vfo_idx] < Bands[BandIndex].startSSB &&
+    state.VFO[vfo_idx] >= Bands[BandIndex].start;
+}
+
