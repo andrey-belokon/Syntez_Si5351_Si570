@@ -154,7 +154,12 @@ void Si5351::disable_out(uint8_t clk_num)
 void Si5351::out_calibrate_freq()
 {
   si5351_write_reg(SI_CLK0_CONTROL, power0);
-  si5351_write_reg(187, 0xD6);
+  si5351_write_reg(SI_CLK1_CONTROL, power1);
+  si5351_write_reg(SI_CLK2_CONTROL, power2);
+  si5351_write_reg(SI_SYNTH_MS_0+2,0);
+  si5351_write_reg(SI_SYNTH_MS_1+2,0);
+  si5351_write_reg(SI_SYNTH_MS_2+2,0);
+  si5351_write_reg(187, 0xD0);
   freq0=freq1=freq2=0;
 }
 
