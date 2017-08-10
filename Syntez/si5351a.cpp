@@ -12,6 +12,9 @@
 #define SI_SYNTH_MS_2   58
 #define SI_PLL_RESET    177
 
+#define SI_PLL_RESET_A   0x20
+#define SI_PLL_RESET_B   0x80
+
 #define SI_CLK0_PHASE  165
 #define SI_CLK1_PHASE  166
 #define SI_CLK2_PHASE  167
@@ -124,7 +127,7 @@ void Si5351::set_freq(uint32_t f0, uint32_t f1, uint32_t f2)
     update_freq12(freq1_changed,&need_reset_pll);
   }
   if (need_reset_pll) 
-    si5351_write_reg(SI_PLL_RESET, 0xA0);
+    si5351_write_reg(SI_PLL_RESET, need_reset_pll);
 }
 
 void Si5351::disable_out(uint8_t clk_num)
@@ -199,7 +202,7 @@ void Si5351::update_freq0(uint8_t* need_reset_pll)
     si5351_write_reg(SI_CLK0_CONTROL, 0x4C | power0 | SI_CLK_SRC_PLL_A);
     freq0_div = divider;
     freq0_rdiv = rdiv;
-    *need_reset_pll = 1;
+    *need_reset_pll |= SI_PLL_RESET_A;
   }
 }
 
@@ -247,7 +250,7 @@ void Si5351::update_freq12(uint8_t freq1_changed, uint8_t* need_reset_pll)
         }
         freq1_div = divider;
         freq1_rdiv = rdiv;
-        *need_reset_pll = 1;
+        *need_reset_pll |= SI_PLL_RESET_B;
       }
       freq_pll_b = pll_freq;
     }
@@ -296,7 +299,7 @@ void Si5351::update_freq12(uint8_t freq1_changed, uint8_t* need_reset_pll)
       si5351_write_reg(SI_CLK2_CONTROL, 0x4C | power2 | SI_CLK_SRC_PLL_B);
       freq2_div = divider;
       freq2_rdiv = rdiv;
-      *need_reset_pll = 1;
+      *need_reset_pll |= SI_PLL_RESET_B;
     }
   }
 }
@@ -346,7 +349,7 @@ void Si5351::update_freq01_quad(uint8_t* need_reset_pll)
     si5351_write_reg(SI_CLK1_CONTROL, 0x4C | power0 | SI_CLK_SRC_PLL_A);
     si5351_write_reg(SI_CLK1_PHASE, divider & 0x7F);
     freq0_div = freq1_div = divider;
-    *need_reset_pll = 1;
+    *need_reset_pll |= SI_PLL_RESET_A;
   }
 }
 
@@ -388,7 +391,7 @@ void Si5351::update_freq2(uint8_t* need_reset_pll)
     si5351_write_reg(SI_CLK2_CONTROL, 0x4C | power2 | SI_CLK_SRC_PLL_B);
     freq2_div = divider;
     freq2_rdiv = rdiv;
-    *need_reset_pll = 1;
+    *need_reset_pll |= SI_PLL_RESET_B;
   }
 }
 
@@ -404,6 +407,6 @@ void Si5351::set_freq_quadrature(uint32_t f01, uint32_t f2)
     update_freq2(&need_reset_pll);
   }
   if (need_reset_pll) 
-    si5351_write_reg(SI_PLL_RESET, 0xA0);
+    si5351_write_reg(SI_PLL_RESET, need_reset_pll);
 }
 
