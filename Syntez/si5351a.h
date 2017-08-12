@@ -37,9 +37,11 @@ class Si5351 {
     // set xtal freq 
     void set_xtal_freq(uint32_t freq, uint8_t reset_pll = 1);
     // pass zero frequency for disable out
-    void set_freq(uint32_t f0, uint32_t f1, uint32_t f2);
+    // return true if PLL was reset
+    uint8_t set_freq(uint32_t f0, uint32_t f1, uint32_t f2);
     // CLK0,CLK1 in qudrature, CLK2 = f2
-    void set_freq_quadrature(uint32_t f01, uint32_t f2);
+    // return true if PLL was reset
+    uint8_t set_freq_quadrature(uint32_t f01, uint32_t f2);
 };
 
 #endif

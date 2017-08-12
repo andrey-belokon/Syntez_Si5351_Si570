@@ -113,7 +113,7 @@ void Si5351::set_xtal_freq(uint32_t freq, uint8_t reset_pll)
   if (reset_pll) si5351_write_reg(SI_PLL_RESET, 0xA0);
 }
 
-void Si5351::set_freq(uint32_t f0, uint32_t f1, uint32_t f2)
+uint8_t Si5351::set_freq(uint32_t f0, uint32_t f1, uint32_t f2)
 {
   uint8_t need_reset_pll = 0;
   uint8_t freq1_changed = f1 != freq1;
@@ -128,6 +128,7 @@ void Si5351::set_freq(uint32_t f0, uint32_t f1, uint32_t f2)
   }
   if (need_reset_pll) 
     si5351_write_reg(SI_PLL_RESET, need_reset_pll);
+  return need_reset_pll;
 }
 
 void Si5351::disable_out(uint8_t clk_num)
@@ -395,7 +396,7 @@ void Si5351::update_freq2(uint8_t* need_reset_pll)
   }
 }
 
-void Si5351::set_freq_quadrature(uint32_t f01, uint32_t f2)
+uint8_t Si5351::set_freq_quadrature(uint32_t f01, uint32_t f2)
 {
   uint8_t need_reset_pll = 0;
   if (f01 != freq0) {
@@ -408,5 +409,6 @@ void Si5351::set_freq_quadrature(uint32_t f01, uint32_t f2)
   }
   if (need_reset_pll) 
     si5351_write_reg(SI_PLL_RESET, need_reset_pll);
+  return need_reset_pll;
 }
 
