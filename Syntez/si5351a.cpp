@@ -135,23 +135,32 @@ void Si5351::disable_out(uint8_t clk_num)
 {
   switch (clk_num) {
     case 0: 
-      if (freq0_div) {
-        si5351_write_reg(SI_CLK0_CONTROL, 0x80);
-        freq0_div = 0;
-      }
+      si5351_write_reg(SI_CLK0_CONTROL, 0x80);
+      freq0_div = 0;
       break;
     case 1: 
-      if (freq1_div) {
-        si5351_write_reg(SI_CLK1_CONTROL, 0x80);
-        freq1_div = 0;
-      }
+      si5351_write_reg(SI_CLK1_CONTROL, 0x80);
+      freq1_div = 0;
       break;
     case 2: 
-      if (freq2_div) {
-        si5351_write_reg(SI_CLK2_CONTROL, 0x80);
-        freq2_div = 0;
-      }
-    break;
+      si5351_write_reg(SI_CLK2_CONTROL, 0x80);
+      freq2_div = 0;
+      break;
+  }
+}
+
+uint8_t Si5351::is_freq_ok(uint8_t clk_num)
+{
+  switch (clk_num) {
+    case 0: 
+      return freq0_div != 0;
+      break;
+    case 1: 
+      return freq1_div != 0;
+      break;
+    case 2: 
+      return freq2_div != 0;
+      break;
   }
 }
 
@@ -164,7 +173,7 @@ void Si5351::out_calibrate_freq()
   si5351_write_reg(SI_SYNTH_MS_1+2,0);
   si5351_write_reg(SI_SYNTH_MS_2+2,0);
   si5351_write_reg(187, 0xD0);
-  freq0=freq1=freq2=0;
+  freq0=freq1=freq2=xtal_freq;
 }
 
 void Si5351::update_freq0(uint8_t* need_reset_pll)

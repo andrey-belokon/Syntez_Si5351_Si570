@@ -19,7 +19,7 @@
 class Si5351 {
   private:
     uint32_t xtal_freq, freq0, freq1, freq2, freq_pll_b;
-    uint8_t freq0_div, freq1_div, freq2_div;
+    uint16_t freq0_div, freq1_div, freq2_div;
     uint8_t freq0_rdiv, freq1_rdiv, freq2_rdiv;
     uint8_t power0, power1, power2;
     void update_freq0(uint8_t* need_reset_pll);
@@ -42,6 +42,8 @@ class Si5351 {
     // CLK0,CLK1 in qudrature, CLK2 = f2
     // return true if PLL was reset
     uint8_t set_freq_quadrature(uint32_t f01, uint32_t f2);
+    // check that freq set corrected
+    uint8_t is_freq_ok(uint8_t clk_num);
 };
 
 #endif
