@@ -8,13 +8,7 @@ void RTC_Write(RTCData* data)
   byte *p=(byte *)data;
   if (i2c_begin_write(DS1307_I2C_ADDRESS)) {
     i2c_write(0);
-    i2c_write(*p++);
-    i2c_write(*p++);
-    i2c_write(*p++);     
-    i2c_write(*p++);
-    i2c_write(*p++);
-    i2c_write(*p++);
-    i2c_write(*p++);
+    for (byte i=7; i > 0; i--) i2c_write(*p++);
     i2c_end();
   }
 }
