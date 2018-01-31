@@ -4,6 +4,10 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+// раскоментировать используемый дисплей (только один!)
+//#define DISPLAY_1602
+#define DISPLAY_ILI9341
+
 // раскоментировать установленные чипы
 #define VFO_SI5351
 #define VFO_SI570

@@ -18,7 +18,12 @@
 #include "TinyRTC.h"
 #include "Eeprom24C32.h"
 #include "TRX.h"
-#include "disp_ILI9341.h"
+#ifdef DISPLAY_1602
+  #include "disp_1602.h"
+#endif
+#ifdef DISPLAY_ILI9341
+  #include "disp_ILI9341.h"
+#endif
 #ifdef VFO_SI5351
   #include "si5351a.h"
 #endif
@@ -28,17 +33,23 @@
 
 /*
   I2C address mapping
-  I2C device found at address 0x3B  ! PCF8574
-  I2C device found at address 0x3E  ! PCF8574
-  I2C device found at address 0x50  ! 24C04 at TinyRTC board [optional]
-  I2C device found at address 0x55  ! Si570 [optional]
-  I2C device found at address 0x60  ! Si5351 [optional]
-  I2C device found at address 0x68  ! DS1307 at TinyRTC board [optional]
+  0x27  ! LCD 1602 [optional]
+  0x3B  ! PCF8574 (band control)
+  0x3E  ! PCF8574 (keypad)
+  0x50  ! 24C04 at TinyRTC board [optional]
+  0x55  ! Si570 [optional]
+  0x60  ! Si5351 [optional]
+  0x68  ! DS1307 at TinyRTC board [optional]
 */
 
 KeypadI2C keypad(0x3E);
 Encoder encoder(ENCODER_PULSE_PER_TURN,ENCODER_FREQ_LO_STEP,ENCODER_FREQ_HI_STEP,ENCODER_FREQ_HI_LO_TRASH);
-Display_ILI9341_SPI disp;
+#ifdef DISPLAY_1602
+  Display_1602_I2C disp(0x27);
+#endif
+#ifdef DISPLAY_ILI9341
+  Display_ILI9341_SPI disp;
+#endif
 TRX trx;
 Eeprom24C32 ee24c32(0x50);
 
