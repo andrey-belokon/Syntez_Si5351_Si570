@@ -36,29 +36,17 @@
   #include "Si570.h"
 #endif
 
-/*
-  I2C address mapping
-  0x26  ! PCF8574 (3x4 keypad)
-  0x27  ! LCD 1602 [optional]
-  0x3B  ! PCF8574 (band control)
-  0x3E  ! PCF8574 (7 btn keypad)
-  0x50  ! 24C04 at TinyRTC board [optional]
-  0x55  ! Si570 [optional]
-  0x60  ! Si5351 [optional]
-  0x68  ! DS1307 at TinyRTC board [optional]
-*/
-
 #ifdef KEYPAD_7
-  Keypad_7_I2C keypad(0x3E);
+  Keypad_7_I2C keypad(I2C_ADR_KEYPAD_7);
 #endif
 #ifdef KEYPAD_12
-  Keypad_12_I2C keypad(0x26);
+  Keypad_12_I2C keypad(I2C_ADR_KEYPAD_12);
 #endif
 
 Encoder encoder(ENCODER_PULSE_PER_TURN,ENCODER_FREQ_LO_STEP,ENCODER_FREQ_HI_STEP,ENCODER_FREQ_HI_LO_TRASH);
 
 #ifdef DISPLAY_1602
-  Display_1602_I2C disp(0x27);
+  Display_1602_I2C disp(I2C_ADR_DISPLAY_1602);
 #endif
 #ifdef DISPLAY_ILI9341
   Display_ILI9341_SPI disp;
@@ -66,7 +54,7 @@ Encoder encoder(ENCODER_PULSE_PER_TURN,ENCODER_FREQ_LO_STEP,ENCODER_FREQ_HI_STEP
 
 TRX trx;
 
-Eeprom24C32 ee24c32(0x50);
+Eeprom24C32 ee24c32(I2C_ADR_EE24C32);
 
 #ifdef VFO_SI5351
   Si5351 vfo5351;
@@ -78,25 +66,15 @@ Eeprom24C32 ee24c32(0x50);
 int EEMEM SMeterMap_EEMEM[15] = {0};
 int SMeterMap[15];
 
-InputPullUpPin inTX(4);
-InputPullUpPin inTune(5);
-OutputBinPin outTX(6,false,HIGH);
-OutputBinPin outQRP(7,false,HIGH);
-InputAnalogPin inRIT(A7,5);
-InputAnalogPin inSMeter(A6);
-OutputTonePin outTone(8,1000);
+InputPullUpPin inTX(PIN_IN_TX);
+InputPullUpPin inTune(PIN_IN_TUNE);
+OutputBinPin outTX(PIN_OUT_TX,false,HIGH);
+OutputBinPin outQRP(PIN_OUT_QRP,false,HIGH);
+InputAnalogPin inRIT(PIN_IN_RIT,5);
+InputAnalogPin inSMeter(PIN_IN_SMETER);
+OutputTonePin outTone(PIN_OUT_TONE,1000);
 
-OutputPCF8574 outBandCtrl(0x3B,0);
-// распиновка I2C расширителя:
-// двоичный дешифратор диапазона - пины 0-3
-const uint8_t pnBand0 = 0;
-const uint8_t pnBand1 = 1;
-const uint8_t pnBand2 = 2;
-const uint8_t pnBand3 = 3;
-// 4й пин - ATT, 5й пин - Preamp
-const uint8_t pnAtt = 4;
-const uint8_t pnPre = 5;
-const uint8_t pnCW = 6;
+OutputPCF8574 outBandCtrl(I2C_ADR_BAND_CTRL,0);
 
 void setup()
 {
@@ -333,26 +311,26 @@ void UpdateFreq()
 
 void UpdateBandCtrl() 
 {
-  outBandCtrl.Set(pnBand0, trx.BandIndex & 0x1);
-  outBandCtrl.Set(pnBand1, trx.BandIndex & 0x2);
-  outBandCtrl.Set(pnBand2, trx.BandIndex & 0x4);
-  outBandCtrl.Set(pnBand3, trx.BandIndex & 0x8);
+  outBandCtrl.Set(BCPN_BAND_0, trx.BandIndex & 0x1);
+  outBandCtrl.Set(BCPN_BAND_1, trx.BandIndex & 0x2);
+  outBandCtrl.Set(BCPN_BAND_2, trx.BandIndex & 0x4);
+  outBandCtrl.Set(BCPN_BAND_3, trx.BandIndex & 0x8);
   // 0-nothing; 1-ATT; 2-Preamp
   switch (trx.state.AttPre) {
     case 0:
-      outBandCtrl.Set(pnAtt,false);
-      outBandCtrl.Set(pnPre,false);
+      outBandCtrl.Set(BCPN_ATT,false);
+      outBandCtrl.Set(BCPN_PRE,false);
       break;
     case 1:
-      outBandCtrl.Set(pnAtt,true);
-      outBandCtrl.Set(pnPre,false);
+      outBandCtrl.Set(BCPN_ATT,true);
+      outBandCtrl.Set(BCPN_PRE,false);
       break;
     case 2:
-      outBandCtrl.Set(pnAtt,false);
-      outBandCtrl.Set(pnPre,true);
+      outBandCtrl.Set(BCPN_ATT,false);
+      outBandCtrl.Set(BCPN_PRE,true);
       break;
   }
-  outBandCtrl.Set(pnCW, trx.inCW());
+  outBandCtrl.Set(BCPN_CW, trx.inCW());
   outBandCtrl.Write();
 }
 

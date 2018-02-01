@@ -16,8 +16,54 @@
 #define VFO_SI5351
 #define VFO_SI570
 
+// выбрать в меню калибровку и прописать измеренные частоты на выходах синтезаторов
 #define SI5351_CALIBRATION       25003181
 #define SI570_CALIBRATION        56319832
+
+// уровень сигнала на выходе Si5351. 0=2mA, 1=4mA, 2=6mA, 3=8mA
+#define SI5351_CLK0_DRIVE   0
+#define SI5351_CLK1_DRIVE   0
+#define SI5351_CLK2_DRIVE   0
+
+/*
+  I2C address mapping
+  0x25  ! PCF8574/LCD board (alt band control)
+  0x26  ! PCF8574/LCD board (3x4 keypad)
+  0x27  ! LCD 1602 [optional]
+  0x3B  ! PCF8574 (band control)
+  0x3E  ! PCF8574 (7 btn keypad)
+  0x50  ! 24C04 at TinyRTC board [optional]
+  0x55  ! Si570 [optional]
+  0x60  ! Si5351 [optional]
+  0x68  ! DS1307 at TinyRTC board [optional]
+*/
+
+// I2C адреса устройств
+#define I2C_ADR_KEYPAD_7      0x3E
+#define I2C_ADR_KEYPAD_12     0x26
+#define I2C_ADR_DISPLAY_1602  0x27
+#define I2C_ADR_EE24C32       0x50
+#define I2C_ADR_BAND_CTRL     0x3B
+
+// Pin mapping
+#define PIN_IN_TX       4
+#define PIN_IN_TUNE     5
+#define PIN_OUT_TX      6
+#define PIN_OUT_QRP     7
+#define PIN_OUT_TONE    8
+#define PIN_IN_SMETER   A6
+#define PIN_IN_RIT      A7
+
+// распиновка I2C расширителя band control
+// двоичный дешифратор диапазона - пины 0-3
+#define BCPN_BAND_0     0
+#define BCPN_BAND_1     1
+#define BCPN_BAND_2     2
+#define BCPN_BAND_3     3
+// 4й пин - ATT, 5й пин - Preamp, 6й - SSB/CW (можно использовать для переключения фильтров/режимов)
+#define BCPN_ATT        4
+#define BCPN_PRE        5
+#define BCPN_CW         6
 
 // количество импульсов на оборот примененного энкодера
 #define ENCODER_PULSE_PER_TURN    360
@@ -35,11 +81,6 @@
 #define COM_BAUND_RATE  9600      // скорость обмена COM-порта
 
 #define RIT_MAX_VALUE   1200      // максимальная расстройка
-
-// уровень сигнала на выходе Si5351. 0=2mA, 1=4mA, 2=6mA, 3=8mA
-#define SI5351_CLK0_DRIVE   0
-#define SI5351_CLK1_DRIVE   0
-#define SI5351_CLK2_DRIVE   0
 
 #define LSB 0
 #define USB 1
@@ -68,7 +109,7 @@ extern const struct _Bands {
 #define FREQ_MIN  1000000L
 #define FREQ_MAX 30000000L
 
-// список комманд трансивера. порядок соответствует обходу физического расположения клавиш слева направо, снизу вверх
+// список комманд трансивера. порядок соответствует обходу физического расположения клавиш слева направо, снизу вверх (7-btn keypad)
 enum {
   cmdNone = 0,
   
@@ -85,7 +126,7 @@ enum {
   cmdZero,     // устанавливает частоту точно по еденицам кГц. 3623145->3623000
   cmdUSBLSB,   // выбор боковой USB/LSB
   cmdSplit,    // Split on/off
-  cmdQRP,     // режим уменьшенной выходной мощности
+  cmdQRP,      // режим уменьшенной выходной мощности
   cmdHam,      // режим Ham band/General coverage. в режиме Ham кнопки cmdBandUp/Down переключают диапазоны
                // в режиме General coverage - изменяют частоту на +/-1MHz
   
