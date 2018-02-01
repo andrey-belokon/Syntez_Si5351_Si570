@@ -1,5 +1,5 @@
-#ifndef KEYPADI2C_H
-#define KEYPADI2C_H
+#ifndef KEYPAD7I2C_H
+#define KEYPAD7I2C_H
 
 #include <Arduino.h>
 
@@ -8,7 +8,7 @@
  * button connected to P0..P6
  */
 
-class KeypadI2C {
+class Keypad_7_I2C {
   private:
     uint8_t i2c_addr;
     uint8_t last_code;
@@ -19,7 +19,7 @@ class KeypadI2C {
     void pcf8574_write(uint8_t data);
     uint8_t pcf8574_byte_read();
   public:
-	  KeypadI2C(uint8_t _i2c_addr): i2c_addr(_i2c_addr), last_code(-1), last_code_tm(0), FnPressed(0), KeyPressed(0), fn_press_tm(0) {}
+	  Keypad_7_I2C(uint8_t _i2c_addr): i2c_addr(_i2c_addr), last_code(-1), last_code_tm(0), FnPressed(0), KeyPressed(0), fn_press_tm(0) {}
     
     void setup();
     

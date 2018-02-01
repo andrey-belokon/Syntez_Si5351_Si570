@@ -14,7 +14,12 @@
 #include "i2c.h"
 #include "pins.h"
 #include "Encoder.h"
-#include "Keypad_I2C.h"
+#ifdef KEYPAD_7
+  #include "Keypad_7_I2C.h"
+#endif
+#ifdef KEYPAD_12
+  #include "Keypad_12_I2C.h"
+#endif
 #include "TinyRTC.h"
 #include "Eeprom24C32.h"
 #include "TRX.h"
@@ -33,24 +38,34 @@
 
 /*
   I2C address mapping
+  0x26  ! PCF8574 (3x4 keypad)
   0x27  ! LCD 1602 [optional]
   0x3B  ! PCF8574 (band control)
-  0x3E  ! PCF8574 (keypad)
+  0x3E  ! PCF8574 (7 btn keypad)
   0x50  ! 24C04 at TinyRTC board [optional]
   0x55  ! Si570 [optional]
   0x60  ! Si5351 [optional]
   0x68  ! DS1307 at TinyRTC board [optional]
 */
 
-KeypadI2C keypad(0x3E);
+#ifdef KEYPAD_7
+  Keypad_7_I2C keypad(0x3E);
+#endif
+#ifdef KEYPAD_12
+  Keypad_12_I2C keypad(0x26);
+#endif
+
 Encoder encoder(ENCODER_PULSE_PER_TURN,ENCODER_FREQ_LO_STEP,ENCODER_FREQ_HI_STEP,ENCODER_FREQ_HI_LO_TRASH);
+
 #ifdef DISPLAY_1602
   Display_1602_I2C disp(0x27);
 #endif
 #ifdef DISPLAY_ILI9341
   Display_ILI9341_SPI disp;
 #endif
+
 TRX trx;
+
 Eeprom24C32 ee24c32(0x50);
 
 #ifdef VFO_SI5351
@@ -352,9 +367,9 @@ void loop()
   bool tune = inTune.Read();
   trx.TX = tune || inTX.Read();
   uint8_t cmd;
+  static long last_menu_tm = 0;
   if ((cmd = keypad.Read()) != cmdNone) {
     if (cmd == cmdMenu) {
-      static long last_menu_tm = 0;
       // double press at 1sec
       if (millis()-last_menu_tm <= 1000) {
         // call to menu
@@ -363,6 +378,7 @@ void loop()
         disp.clear();
         disp.reset();
         disp.Draw(trx);
+        last_menu_tm = 0;
         return;
       } else {
         last_menu_tm = millis();
@@ -370,6 +386,14 @@ void loop()
     } else {
       trx.ExecCommand(cmd);
     }
+#ifdef KEYPAD_12
+  } else {
+    // при однократном нажатии Menu включаем Lock через 1 сек
+    if (last_menu_tm > 0 && millis()-last_menu_tm >= 1000) {
+      trx.ExecCommand(cmdLock);
+      last_menu_tm = 0;
+    }
+#endif    
   }
   if (trx.RIT)
     trx.RIT_Value = (long)inRIT.ReadRaw()*2*RIT_MAX_VALUE/1024-RIT_MAX_VALUE;
@@ -400,8 +424,9 @@ void loop()
   disp.Draw(trx);
 #ifdef CAT_ENABLE
   // CAT
-  if (Serial.available() > 0)
+  if (Serial.available() > 0) {
     ExecCAT();
+  }
 #endif
   if (RTC_found()) {
     // save current state to 24C32 (if changed)

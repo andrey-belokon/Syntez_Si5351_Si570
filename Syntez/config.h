@@ -8,6 +8,10 @@
 //#define DISPLAY_1602
 #define DISPLAY_ILI9341
 
+// раскоментировать используемую клавиатуру (только одну!)
+//#define KEYPAD_7
+#define KEYPAD_12
+
 // раскоментировать установленные чипы
 #define VFO_SI5351
 #define VFO_SI570

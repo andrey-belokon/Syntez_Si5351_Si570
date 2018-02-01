@@ -1,8 +1,8 @@
-#include "Keypad_I2C.h"
+#include "Keypad_7_I2C.h"
 #include "i2c.h"
 #include "config.h"
 
-void KeypadI2C::setup() {
+void Keypad_7_I2C::setup() {
   i2c_init();
   if (i2c_device_found(i2c_addr))
     pcf8574_write(0xFF);
@@ -10,7 +10,7 @@ void KeypadI2C::setup() {
     i2c_addr=0;
 }
 
-uint8_t KeypadI2C::Read() 
+uint8_t Keypad_7_I2C::Read() 
 {
   if (i2c_addr == 0) return cmdNone;
   if (millis()-last_code_tm < 50) return cmdNone;
@@ -54,14 +54,14 @@ uint8_t KeypadI2C::Read()
   }
 }
 
-void KeypadI2C::pcf8574_write(uint8_t data) 
+void Keypad_7_I2C::pcf8574_write(uint8_t data) 
 {
   i2c_begin_write(i2c_addr);
   i2c_write(data);
   i2c_end();
 }
 
-uint8_t KeypadI2C::pcf8574_byte_read() 
+uint8_t Keypad_7_I2C::pcf8574_byte_read() 
 {
   i2c_begin_read(i2c_addr);
   uint8_t data = i2c_read();
