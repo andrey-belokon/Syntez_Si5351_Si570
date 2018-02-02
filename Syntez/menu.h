@@ -78,7 +78,9 @@ void ShowClockMenu()
           return;
       }
     }
+#ifdef ENCODER_ENABLE
     encval += encoder.GetDelta();
+#endif    
     int delta = encval / 500;
     if (delta != 0) {
       switch (selected) {

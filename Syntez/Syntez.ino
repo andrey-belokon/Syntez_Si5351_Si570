@@ -6,14 +6,16 @@
 // GNU GPL license
 //
 
-// !!! all user setting defined in config.h file !!!
+// !!! all user setting defined in config.h, config_hw.h and config_sw.h files !!!
 #include "config.h"
 
 #include <avr/eeprom.h> 
 #include "utils.h"
 #include "i2c.h"
 #include "pins.h"
-#include "Encoder.h"
+#ifdef ENCODER_ENABLE
+  #include "Encoder.h"
+#endif
 #ifdef KEYPAD_7
   #include "Keypad_7_I2C.h"
 #endif
@@ -23,12 +25,14 @@
 #include "TinyRTC.h"
 #include "Eeprom24C32.h"
 #include "TRX.h"
+
 #ifdef DISPLAY_1602
   #include "disp_1602.h"
 #endif
 #ifdef DISPLAY_ILI9341
   #include "disp_ILI9341.h"
 #endif
+
 #ifdef VFO_SI5351
   #include "si5351a.h"
 #endif
@@ -36,20 +40,28 @@
   #include "Si570.h"
 #endif
 
+#define KEYPAD_DISABLE
 #ifdef KEYPAD_7
   Keypad_7_I2C keypad(I2C_ADR_KEYPAD_7);
+  #undef KEYPAD_DISABLE
 #endif
 #ifdef KEYPAD_12
   Keypad_12_I2C keypad(I2C_ADR_KEYPAD_12);
+  #undef KEYPAD_DISABLE
 #endif
 
-Encoder encoder(ENCODER_PULSE_PER_TURN,ENCODER_FREQ_LO_STEP,ENCODER_FREQ_HI_STEP,ENCODER_FREQ_HI_LO_TRASH);
-
+#define DISPLAY_DISABLE
 #ifdef DISPLAY_1602
   Display_1602_I2C disp(I2C_ADR_DISPLAY_1602);
+  #undef DISPLAY_DISABLE
 #endif
 #ifdef DISPLAY_ILI9341
   Display_ILI9341_SPI disp;
+  #undef DISPLAY_DISABLE
+#endif
+
+#ifdef ENCODER_ENABLE
+  Encoder encoder(ENCODER_PULSE_PER_TURN,ENCODER_FREQ_LO_STEP,ENCODER_FREQ_HI_STEP,ENCODER_FREQ_HI_LO_TRASH);
 #endif
 
 TRX trx;
@@ -95,15 +107,21 @@ void setup()
 #ifdef VFO_SI570  
   vfo570.setup(SI570_CALIBRATION);
 #endif  
+#ifdef ENCODER_ENABLE
   encoder.setup();
+#endif  
+#ifndef KEYPAD_DISABLE
   keypad.setup();
+#endif
   inTX.setup();
   inTune.setup();
   inRIT.setup();
   outTX.setup();
   outQRP.setup();
   outTone.setup();
+#ifndef DISPLAY_DISABLE
   disp.setup();
+#endif
   if (RTC_found()) {
     ee24c32.setup();
     trx.StateLoad(ee24c32);
@@ -338,12 +356,15 @@ void UpdateBandCtrl()
   #include "CAT.h"
 #endif    
 
-#include "menu.h"
+#ifndef KEYPAD_DISABLE
+  #include "menu.h"
+#endif    
 
 void loop()
 {
   bool tune = inTune.Read();
   trx.TX = tune || inTX.Read();
+#ifndef KEYPAD_DISABLE
   uint8_t cmd;
   static long last_menu_tm = 0;
   if ((cmd = keypad.Read()) != cmdNone) {
@@ -373,16 +394,21 @@ void loop()
     }
 #endif    
   }
+#endif    
   if (trx.RIT)
     trx.RIT_Value = (long)inRIT.ReadRaw()*2*RIT_MAX_VALUE/1024-RIT_MAX_VALUE;
+#ifdef ENCODER_ENABLE
   long delta = encoder.GetDelta();
   if (delta) {
+#ifndef KEYPAD_DISABLE
     if (keypad.IsFnPressed()) {
       delta*=ENCODER_FN_MULT;
       keypad.SetKeyPressed();
     }
+#endif    
     trx.ChangeFreq(delta);
   }
+#endif    
   UpdateFreq();
   outQRP.Write(trx.QRP || tune);
   outTone.Write(tune);
@@ -399,7 +425,9 @@ void loop()
     }
   }
   // refresh display
+#ifndef DISPLAY_DISABLE
   disp.Draw(trx);
+#endif  
 #ifdef CAT_ENABLE
   // CAT
   if (Serial.available() > 0) {
