@@ -32,6 +32,9 @@
 #ifdef DISPLAY_ILI9341
   #include "disp_ILI9341.h"
 #endif
+#ifdef DISPLAY_ST7735
+  #include "disp_ST7735.h"
+#endif
 
 #ifdef VFO_SI5351
   #include "si5351a.h"
@@ -57,6 +60,10 @@
 #endif
 #ifdef DISPLAY_ILI9341
   Display_ILI9341_SPI disp;
+  #undef DISPLAY_DISABLE
+#endif
+#ifdef DISPLAY_ST7735
+  Display_ST7735_SPI disp;
   #undef DISPLAY_DISABLE
 #endif
 
@@ -86,7 +93,9 @@ InputAnalogPin inRIT(PIN_IN_RIT,5);
 InputAnalogPin inSMeter(PIN_IN_SMETER);
 OutputTonePin outTone(PIN_OUT_TONE,1000);
 
-OutputPCF8574 outBandCtrl(I2C_ADR_BAND_CTRL,0);
+#ifdef BANDCTRL_ENABLE
+  OutputPCF8574 outBandCtrl(I2C_ADR_BAND_CTRL,0);
+#endif
 
 void setup()
 {
@@ -329,6 +338,7 @@ void UpdateFreq()
 
 void UpdateBandCtrl() 
 {
+#ifdef BANDCTRL_ENABLE
   outBandCtrl.Set(BCPN_BAND_0, trx.BandIndex & 0x1);
   outBandCtrl.Set(BCPN_BAND_1, trx.BandIndex & 0x2);
   outBandCtrl.Set(BCPN_BAND_2, trx.BandIndex & 0x4);
@@ -350,6 +360,7 @@ void UpdateBandCtrl()
   }
   outBandCtrl.Set(BCPN_CW, trx.inCW());
   outBandCtrl.Write();
+#endif
 }
 
 #ifdef CAT_ENABLE
