@@ -2,17 +2,17 @@
 #define CONFIG_HW_H
 
 // раскоментировать используемый дисплей (только один!). закоментировать все если нет дисплея
-//#define DISPLAY_ST7735
-#define DISPLAY_ILI9341
+#define DISPLAY_ST7735
+//#define DISPLAY_ILI9341
 //#define DISPLAY_1602
 
 // раскоментировать используемую клавиатуру (только одну!). закоментировать все если нет клавиатуры
-#define KEYPAD_7
-//#define KEYPAD_12
+//#define KEYPAD_7
+#define KEYPAD_12
 
 // раскоментировать установленные чипы
-#define VFO_SI5351
-#define VFO_SI570
+//#define VFO_SI5351
+//#define VFO_SI570
 
 // выбрать в меню калибровку и прописать измеренные частоты на выходах синтезаторов
 #define SI5351_CALIBRATION       25003181
@@ -52,17 +52,20 @@
 #define PIN_IN_SMETER   A6
 #define PIN_IN_RIT      A7
 
-#define BANDCTRL_ENABLE
+//#define BANDCTRL_ENABLE
 // распиновка I2C расширителя band control
 // двоичный дешифратор диапазона - пины 0-3
 #define BCPN_BAND_0     0
 #define BCPN_BAND_1     1
 #define BCPN_BAND_2     2
 #define BCPN_BAND_3     3
-// 4й пин - ATT, 5й пин - Preamp, 6й - SSB/CW (можно использовать для переключения фильтров/режимов)
+// 4й пин - ATT, 5й пин - Preamp
 #define BCPN_ATT        4
 #define BCPN_PRE        5
+// 6й - SSB/CW (можно использовать для переключения фильтров/режимов)
 #define BCPN_CW         6
+// 7й - LSB - 0, USB - 1 (можно использовать для переключения фильтров/режимов)
+#define BCPN_SB         7
 
 // закоментировать если нет валкодера
 #define ENCODER_ENABLE
