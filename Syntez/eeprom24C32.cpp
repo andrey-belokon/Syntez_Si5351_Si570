@@ -10,6 +10,14 @@ void Eeprom24C32::setup()
     i2c_init();
 }
 
+bool Eeprom24C32::found()
+{
+  static uint8_t _pooled = false;
+  static uint8_t _found = false;
+  if (!_pooled) _found = i2c_device_found(m_deviceAddress);
+  return _found;
+}
+
 void Eeprom24C32::writeBytes
 (
     uint16_t    address,

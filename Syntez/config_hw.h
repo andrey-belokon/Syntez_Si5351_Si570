@@ -30,7 +30,7 @@
   0x27  ! LCD 1602 (DISPLAY_1602)
   0x3B  ! PCF8574 (band control I2C_ADR_BAND_CTRL)
   0x3E  ! PCF8574 (7 btn keypad KEYPAD_7)
-  0x50  ! 24C04 at TinyRTC board [optional]
+  0x50  ! AT24C32 at TinyRTC board or single IC [optional]
   0x55  ! Si570 [optional]
   0x60  ! Si5351 [optional]
   0x68  ! DS1307 at TinyRTC board [optional]

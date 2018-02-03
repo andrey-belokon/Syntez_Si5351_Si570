@@ -10,6 +10,7 @@ class Eeprom24C32
     public:
         Eeprom24C32(uint8_t deviceAddress): m_deviceAddress(deviceAddress) {}
 
+        bool found();
         void setup();
 
         void writeBytes

@@ -13,15 +13,18 @@
 #include "utils.h"
 #include "i2c.h"
 #include "pins.h"
+
 #ifdef ENCODER_ENABLE
   #include "Encoder.h"
 #endif
+
 #ifdef KEYPAD_7
   #include "Keypad_7_I2C.h"
 #endif
 #ifdef KEYPAD_12
   #include "Keypad_12_I2C.h"
 #endif
+
 #include "TinyRTC.h"
 #include "Eeprom24C32.h"
 #include "TRX.h"
@@ -131,7 +134,7 @@ void setup()
 #ifndef DISPLAY_DISABLE
   disp.setup();
 #endif
-  if (RTC_found()) {
+  if (ee24c32.found()) {
     ee24c32.setup();
     trx.StateLoad(ee24c32);
   }
@@ -446,7 +449,7 @@ void loop()
     ExecCAT();
   }
 #endif
-  if (RTC_found()) {
+  if (ee24c32.found()) {
     // save current state to 24C32 (if changed)
     static uint16_t state_hash = 0;
     static uint8_t state_changed = false;
