@@ -1,8 +1,5 @@
 ///////////////////////////// menu functions ////////////////////////
 
-#include "TinyRTC.h"
-#include "utils.h"
-
 char *fmt_hex_val(char *buf, char *title, uint8_t val)
 {
   buf = cwr_hex2(cwr_str(buf,title),val);
@@ -51,37 +48,35 @@ void ShowClockMenu()
   long encval;
   RTC_Read(&dt,0,sizeof(dt));
   dt.sec=0;
-  disp.clear();
   PrintRTCData(&dt,buf,items);
+  disp.clear();
   disp.DrawMenu(title,(const char**)items,selected,help,2);
   while (1) {
-    int keycode=keypad.Read();
-    if (keycode >= 0) {
-      switch (keycode) {
-        case cmdBandUp:
-          if (selected > 0) selected--;
-          else selected=5;
-          disp.DrawMenu(title,(const char**)items,selected,help,2);
-          encval=0;
-          break;
-        case cmdBandDown:
-          if (selected < 5) selected++;
-          else selected=0;
-          disp.DrawMenu(title,(const char**)items,selected,help,2);
-          encval=0;
-          break;
-        case cmdVFOSel:
-          RTC_Write(&dt);
-          return;
-        case cmdMenu:
-        case cmdLock:
-          return;
-      }
+    uint8_t keycode=keypad.Read();
+    switch (keycode) {
+      case cmdBandUp:
+        if (selected > 0) selected--;
+        else selected=5;
+        disp.DrawMenu(title,(const char**)items,selected,help,2);
+        encval=0;
+        break;
+      case cmdBandDown:
+        if (selected < 5) selected++;
+        else selected=0;
+        disp.DrawMenu(title,(const char**)items,selected,help,2);
+        encval=0;
+        break;
+      case cmdVFOSel:
+        RTC_Write(&dt);
+        return;
+      case cmdMenu:
+      case cmdLock:
+        return;
     }
 #ifdef ENCODER_ENABLE
     encval += encoder.GetDelta();
 #endif    
-    int delta = encval / 500;
+    int delta = encval / (ENCODER_FREQ_LO_STEP/6);
     if (delta != 0) {
       switch (selected) {
         case 0:
@@ -110,6 +105,123 @@ void ShowClockMenu()
           break;
       }
       PrintRTCData(&dt,buf,items);
+      disp.DrawMenu(title,(const char**)items,selected,help,2);
+      encval=0;
+    }
+  }
+}
+
+void PrintSSBFreqData(
+#ifdef SSBDetectorFreq_LSB
+  long LSB_freq, 
+#endif
+#ifdef SSBDetectorFreq_USB
+  long USB_freq, 
+#endif
+  char *buf, char **items)
+{
+  char *pb=buf;
+#ifdef SSBDetectorFreq_LSB  
+  *items++ = pb;
+  pb = cwr_str(pb,"LSB:  ");
+  pb = cwr_long(pb,LSB_freq);
+  *pb++ = ' ';
+  *pb++ = ' ';
+  *pb++ = 0;
+#endif  
+#ifdef SSBDetectorFreq_USB  
+  *items++ = pb;
+  pb = cwr_str(pb,"USB:  ");
+  pb = cwr_long(pb,USB_freq);
+  *pb++ = ' ';
+  *pb++ = ' ';
+  *pb++ = 0;
+#endif  
+  *items++ = NULL;
+}
+
+void ShowSSBDetFreqMenu()
+{
+  char title[13];
+  char help[84];
+  char buf[40];
+  char *items[3];
+  int LSB_shift=SSBShift_LSB, USB_shift=SSBShift_USB;
+  byte selected=0;
+  long encval;
+  strcpy_P(title,PSTR("Tune IF freq"));
+#ifdef SSBDetectorFreq_LSB && SSBDetectorFreq_USB
+  strcpy_P(help,PSTR("Up/Down - move\nA/B - save & exit\nFn/Lock - exit no save\nuse encoder for change"));
+#else  
+  strcpy_P(help,PSTR("Fn/Lock - exit no save\nA/B - save & exit\nuse encoder for change"));
+#endif    
+  PrintSSBFreqData(
+#ifdef SSBDetectorFreq_LSB
+    SSBDetectorFreq_LSB+LSB_shift, 
+#endif    
+#ifdef SSBDetectorFreq_USB
+    SSBDetectorFreq_USB+USB_shift, 
+#endif    
+    buf, items);
+  disp.clear();
+  disp.DrawMenu(title,(const char**)items,selected,help,2);
+
+  while (1) {
+    uint8_t keycode=keypad.Read();
+    switch (keycode) {
+#ifdef SSBDetectorFreq_LSB && SSBDetectorFreq_USB
+      case cmdBandUp:
+        if (selected > 0) selected--;
+        else selected=1;
+        disp.DrawMenu(title,(const char**)items,selected,help,2);
+        encval=0;
+        break;
+      case cmdBandDown:
+        if (selected < 1) selected++;
+        else selected=0;
+        disp.DrawMenu(title,(const char**)items,selected,help,2);
+        encval=0;
+        break;
+#endif        
+      case cmdVFOSel:
+        SSBShift_LSB=LSB_shift;
+        SSBShift_USB=USB_shift;
+        eeprom_write_word(&SSBShift_LSB_EEMEM, uint16_t(SSBShift_LSB));
+        eeprom_write_word(&SSBShift_USB_EEMEM, uint16_t(SSBShift_USB));
+        return;
+      case cmdMenu:
+      case cmdLock:
+        return;
+    }
+#ifdef ENCODER_ENABLE
+    encval += encoder.GetDelta();
+#endif    
+    int delta = encval / (ENCODER_FREQ_LO_STEP/100);
+    if (delta != 0) {
+#ifdef SSBDetectorFreq_LSB && SSBDetectorFreq_USB
+      switch (selected) {
+        case 0:
+          LSB_shift+=delta;
+          break;
+        case 1:
+          USB_shift+=delta;
+          break;
+      }
+#endif
+#ifdef SSBDetectorFreq_LSB
+      LSB_shift+=delta;
+#endif    
+#ifdef SSBDetectorFreq_USB
+      USB_shift+=delta;
+#endif    
+      PrintSSBFreqData(
+#ifdef SSBDetectorFreq_LSB
+        SSBDetectorFreq_LSB+LSB_shift, 
+#endif    
+#ifdef SSBDetectorFreq_USB
+        SSBDetectorFreq_USB+USB_shift, 
+#endif    
+        buf, items);
       disp.DrawMenu(title,(const char**)items,selected,help,2);
       encval=0;
     }
@@ -148,33 +260,31 @@ void ShowSMeterMenu()
     //sprintf(title,"AGC=%u   ",inSMeter.Read());
     cwr_str(cwr_int(cwr_str(title,"AGC="),inSMeter.Read()),"   ");
     disp.DrawMenu(title,(const char**)items,selected,help,1);
-    int keycode=keypad.Read();
-    if (keycode >= 0) {
-      switch (keycode) {
-        case cmdBandUp:
-          if (selected > 0) selected--;
-          else selected=15;
-          disp.DrawMenu(title,(const char**)items,selected,help,1);
-          break;
-        case cmdBandDown:
-          if (selected < 15) selected++;
-          else selected=0;
-          disp.DrawMenu(title,(const char**)items,selected,help,1);
-          break;
-        case cmdVFOSel:
-          if (selected < 15) {
-            smeter[selected]=inSMeter.Read();
-            PrintSMeterData(smeter,buf,items);
-          } else {
-            memcpy(SMeterMap,smeter,sizeof(SMeterMap));
-            eeprom_write_block(SMeterMap, SMeterMap_EEMEM, sizeof(SMeterMap));
-            return;
-          }
-          break;
-        case cmdMenu:
-        case cmdLock:
+    uint8_t  keycode=keypad.Read();
+    switch (keycode) {
+      case cmdBandUp:
+        if (selected > 0) selected--;
+        else selected=15;
+        disp.DrawMenu(title,(const char**)items,selected,help,1);
+        break;
+      case cmdBandDown:
+        if (selected < 15) selected++;
+        else selected=0;
+        disp.DrawMenu(title,(const char**)items,selected,help,1);
+        break;
+      case cmdVFOSel:
+        if (selected < 15) {
+          smeter[selected]=inSMeter.Read();
+          PrintSMeterData(smeter,buf,items);
+        } else {
+          memcpy(SMeterMap,smeter,sizeof(SMeterMap));
+          eeprom_write_block(SMeterMap, SMeterMap_EEMEM, sizeof(SMeterMap));
           return;
-      }
+        }
+        break;
+      case cmdMenu:
+      case cmdLock:
+        return;
     }
   }
 }
@@ -200,7 +310,7 @@ void ShowSiCalibrationMenu()
 
 void ShowMenu()
 {
-  char* MenuItems[] = {"Clock","S-Meter","Si calibration",NULL};
+  char* MenuItems[] = {"Clock","S-Meter","Si calibration","SSB freq",NULL};
   char title[10];
   char help[45];
   strcpy_P(title,PSTR("Main menu"));
@@ -209,40 +319,41 @@ void ShowMenu()
   disp.clear();
   disp.DrawMenu(title,MenuItems,selected,help,2);
   while (true) {
-    int keycode=keypad.Read();
-    if (keycode >= 0) {
-      switch (keycode) {
-        case cmdBandUp:
-          if (selected > 0) selected--;
-          else selected=3;
-          disp.DrawMenu(title,MenuItems,selected,help,2);
-          break;
-        case cmdBandDown:
-          if (selected < 3) selected++;
-          else selected=0;
-          disp.DrawMenu(title,MenuItems,selected,help,2);
-          break;
-        case cmdVFOSel:
-          switch (selected) {
-            case 0:
-              if (RTC_found()) ShowClockMenu();
-              break;
-            case 1:
-              ShowSMeterMenu();
-              break;
-            case 2:
-              ShowSiCalibrationMenu();
-              break;
-          }
-          // redraw
-          disp.clear();
-          disp.DrawMenu(title,MenuItems,selected,help,2);
-          break;
-        case cmdMenu:
-        case cmdLock:
-          disp.clear();
-          return;
-      }
+    uint8_t  keycode=keypad.Read();
+    switch (keycode) {
+      case cmdBandUp:
+        if (selected > 0) selected--;
+        else selected=3;
+        disp.DrawMenu(title,MenuItems,selected,help,2);
+        break;
+      case cmdBandDown:
+        if (selected < 3) selected++;
+        else selected=0;
+        disp.DrawMenu(title,MenuItems,selected,help,2);
+        break;
+      case cmdVFOSel:
+        switch (selected) {
+          case 0:
+            if (RTC_found()) ShowClockMenu();
+            break;
+          case 1:
+            ShowSMeterMenu();
+            break;
+          case 2:
+            ShowSiCalibrationMenu();
+            break;
+          case 3:
+            ShowSSBDetFreqMenu();
+            break;
+        }
+        // redraw
+        disp.clear();
+        disp.DrawMenu(title,MenuItems,selected,help,2);
+        break;
+      case cmdMenu:
+      case cmdLock:
+        disp.clear();
+        return;
     }
   }
 }

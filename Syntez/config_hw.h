@@ -2,17 +2,17 @@
 #define CONFIG_HW_H
 
 // раскоментировать используемый дисплей (только один!). закоментировать все если нет дисплея
-#define DISPLAY_ST7735
-//#define DISPLAY_ILI9341
+//#define DISPLAY_ST7735
+#define DISPLAY_ILI9341
 //#define DISPLAY_1602
 
 // раскоментировать используемую клавиатуру (только одну!). закоментировать все если нет клавиатуры
-//#define KEYPAD_7
-#define KEYPAD_12
+#define KEYPAD_7
+//#define KEYPAD_12
 
 // раскоментировать установленные чипы
-//#define VFO_SI5351
-//#define VFO_SI570
+#define VFO_SI5351
+#define VFO_SI570
 
 // выбрать в меню калибровку и прописать измеренные частоты на выходах синтезаторов
 #define SI5351_CALIBRATION       25003181
@@ -52,7 +52,7 @@
 #define PIN_IN_SMETER   A6
 #define PIN_IN_RIT      A7
 
-//#define BANDCTRL_ENABLE
+#define BANDCTRL_ENABLE
 // распиновка I2C расширителя band control
 // двоичный дешифратор диапазона - пины 0-3
 #define BCPN_BAND_0     0
