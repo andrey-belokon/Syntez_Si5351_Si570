@@ -1,7 +1,7 @@
 //
 // UR5FFR Si570/Si5351 VFO
-// v1.1 from 6.08.2017
-// Copyright (c) Andrey Belokon, 2016-2017 Odessa 
+// v2.0 from 4.02.2018
+// Copyright (c) Andrey Belokon, 2016-2018 Odessa 
 // https://github.com/andrey-belokon/
 // GNU GPL license
 //

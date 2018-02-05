@@ -59,11 +59,12 @@
 #define BCPN_BAND_1     1
 #define BCPN_BAND_2     2
 #define BCPN_BAND_3     3
-// 4й пин - ATT, 5й пин - Preamp
-#define BCPN_ATT        4
-#define BCPN_PRE        5
-// 6й - SSB/CW (можно использовать для переключения фильтров/режимов)
-#define BCPN_CW         6
+// 4й - SSB/CW (можно использовать для переключения фильтров/режимов)
+// пин отустствует (не разведен) на I2C-LCD адаптерах
+#define BCPN_CW         4
+// 5й пин - ATT, 6й пин - Preamp
+#define BCPN_ATT        5
+#define BCPN_PRE        6
 // 7й - LSB - 0, USB - 1 (можно использовать для переключения фильтров/режимов)
 #define BCPN_SB         7
 
