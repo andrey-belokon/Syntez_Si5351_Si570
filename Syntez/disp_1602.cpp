@@ -1,4 +1,5 @@
 #include "disp_1602.h"
+#include "TinyRTC.h"
 #include "utils.h"
 
 byte chInverseT[8] = { 0b11111, 0b11111, 0b11111, 0b10001, 0b11011, 0b11011, 0b11111, 0b11111};
@@ -27,9 +28,7 @@ void Display_1602_I2C::setup() {
 void Display_1602_I2C::Draw(TRX& trx) {
   char buf[2][17];
   int vfo_idx = trx.GetVFOIndex();
-  bool freq_cw = trx.BandIndex >= 0 && Bands[trx.BandIndex].startSSB > 0 &&
-    trx.state.VFO[vfo_idx] < Bands[trx.BandIndex].startSSB &&
-    trx.state.VFO[vfo_idx] >= Bands[trx.BandIndex].start;
+  bool freq_cw = trx.inCW();
   bool wrong_sb = trx.BandIndex >= 0 && Bands[trx.BandIndex].sideband != trx.state.sideband;
   long f = (trx.state.VFO[vfo_idx]+50) / 100;
 
@@ -74,46 +73,66 @@ void Display_1602_I2C::Draw(TRX& trx) {
 
   switch (trx.state.AttPre) {
     case 1:
-      buf[1][5] = 'A';
-	  buf[1][6] = 'T';
-      buf[1][7] = 'T';
+      buf[1][3] = 'A';
+	    buf[1][4] = 'T';
+      buf[1][5] = 'T';
       break;
     case 2:
-      buf[1][5] = 'P';
-      buf[1][6] = 'R';
-      buf[1][7] = 'E';
+      buf[1][3] = 'P';
+      buf[1][4] = 'R';
+      buf[1][5] = 'E';
       break;
   }
 
   if (!wrong_sb || ((millis() / 700) & 1)) {
-    buf[1][10] = 'S';
-    buf[1][11] = 'B';
-    if (trx.state.sideband == LSB) buf[1][9]  = 'L';
-    else buf[1][9]  = 'U';
+    buf[1][8] = 'S';
+    buf[1][9] = 'B';
+    if (trx.state.sideband == LSB) buf[1][7]  = 'L';
+    else buf[1][7]  = 'U';
   }
 
-  if (trx.state.Split || trx.RIT) {
+  static long last_tmtm=0;
+  if (trx.state.Split && trx.RIT) {
     if ((millis() / 700) & 1) {
-      if (trx.state.Split) {
-        buf[1][13] = 'S';
-        buf[1][14] = 'P';
-        buf[1][15] = 'L';
-      }
+      buf[1][12] = 'S';
+      buf[1][13] = 'P';
+      buf[1][14] = 'L';
     } else {
-      if (trx.RIT) {
-        buf[1][13] = 'R';
-        buf[1][14] = 'I';
-        buf[1][15] = 'T';
-      }
+      buf[1][12] = 'R';
+      buf[1][13] = 'I';
+      buf[1][14] = 'T';
     }
+  } else if (trx.state.Split) {
+    buf[1][12] = 'S';
+    buf[1][13] = 'P';
+    buf[1][14] = 'L';
+  } else if (trx.RIT) {
+    buf[1][12] = 'R';
+    buf[1][13] = 'I';
+    buf[1][14] = 'T';
+  } else if (RTC_found()) {
+    RTCData d;
+    char *pb;
+    last_tmtm=millis();
+    RTC_Read(&d,0,sizeof(d));
+    //sprintf(buf,"%2x:%02x",d.hour,d.min);
+    pb=cwr_hex2sp(buf[1]+11,d.hour);
+    if (millis()/1000 & 1) *pb++=':';
+    else *pb++=' ';
+    pb=cwr_hex2(pb,d.min);
   }
 
   if (trx.BandIndex >= 0) {
     int mc = Bands[trx.BandIndex].mc;
-    buf[1][3] = 'm';
-    buf[1][2] = '0'+mc%10; mc/=10;
-    buf[1][1] = '0'+mc%10; mc/=10;
-    if (mc > 0) buf[1][0] = '0'+mc;
+    if (mc > 99) {
+      buf[1][2] = '0'+mc%10; mc/=10;
+      buf[1][1] = '0'+mc%10; mc/=10;
+      buf[1][0] = '0'+mc;
+    } else {
+      // buf[1][2] = 'm';
+      buf[1][1] = '0'+mc%10; mc/=10;
+      buf[1][0] = '0'+mc%10; 
+    }
   }
 
   // S-meter

@@ -130,6 +130,7 @@ void TRX::ExecCommand(uint8_t cmd) {
       } else {
         if ((state.VFO[state.VFO_Index]+=1000000) > FREQ_MAX)
           state.VFO[state.VFO_Index] = FREQ_MAX;
+        Lock = false;
       }
       break;
     case cmdBandDown:
@@ -142,6 +143,7 @@ void TRX::ExecCommand(uint8_t cmd) {
       } else {
         if ((state.VFO[state.VFO_Index]-=1000000) < FREQ_MIN)
           state.VFO[state.VFO_Index] = FREQ_MIN;
+        Lock = false;
       }
       break;
     case cmdHam:

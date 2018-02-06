@@ -6,6 +6,25 @@
 #define DISPLAY_ILI9341
 //#define DISPLAY_1602
 
+// ST7735 has several variations, set your version based on this list (using the color of the "tab" on the screen cover).
+// NOTE: The tab colors refer to Adafruit versions, other suppliers may vary (you may have to experiment to find the right one).
+// при неправильном указании варианта некоректно отображаются цвета
+enum {
+  ST7735_INITB      = 0,        // 1.8" (128x160) ST7735B chipset (only one type)
+  ST7735_INITR_GREENTAB   = 1,        // 1.8" (128x160) ST7735R chipset with green tab (same as ST7735_INITR_18GREENTAB)
+  ST7735_INITR_REDTAB   = 2,        // 1.8" (128x160) ST7735R chipset with red tab (same as ST7735_INITR_18REDTAB)
+  ST7735_INITR_BLACKTAB   = 3,        // 1.8" (128x160) ST7735S chipset with black tab (same as ST7735_INITR_18BLACKTAB)
+  ST7735_INITR_144GREENTAB    = 4,        // 1.4" (128x128) ST7735R chipset with green tab
+  ST7735_INITR_18GREENTAB   = ST7735_INITR_GREENTAB,  // 1.8" (128x160) ST7735R chipset with green tab
+  ST7735_INITR_18REDTAB   = ST7735_INITR_REDTAB,    // 1.8" (128x160) ST7735R chipset with red tab
+  ST7735_INITR_18BLACKTAB   = ST7735_INITR_BLACKTAB,  // 1.8" (128x160) ST7735S chipset with black tab
+};
+
+#define ST7735_CHIPSET ST7735_INITR_BLACKTAB // <= Set ST7735 LCD chipset/variation here
+
+// значения 0/1 определяют ориентацию вывода на TFT
+#define TFT_ORIENTATION   1
+
 // раскоментировать используемую клавиатуру (только одну!). закоментировать все если нет клавиатуры
 #define KEYPAD_7
 //#define KEYPAD_12

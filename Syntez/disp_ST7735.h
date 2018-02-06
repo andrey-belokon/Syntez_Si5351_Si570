@@ -3,12 +3,7 @@
 
 // ST7735 SPI TFT. адаптация: Дмитрий Фролов
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
-
 #include "TRX.h"
 
 class Display_ST7735_SPI: public TRXDisplay {
@@ -22,30 +17,14 @@ class Display_ST7735_SPI: public TRXDisplay {
 	  void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize);
 };
 
-//#include "TinyRTC.h"
+#include "TinyRTC.h"
 #include <SPI.h>        // must include this here (or else IDE can't find it)                                         
 #include "utils.h"
 
 #define ST7735_CS_PIN    10      // <= /CS pin (chip-select, LOW to get attention of ILI9341, HIGH and it ignores SPI bus)
 #define ST7735_DC_PIN    9     // <= DC pin (1=data or 0=command indicator line) also called RS
-#define ST7735_RST_PIN   8     // <= RST pin (optional) - not used
+//#define ST7735_RST_PIN   8     // <= RST pin (optional) - not used
 #define ST7735_SAVE_SPCR 0     // <= 0/1 with 1 to save/restore AVR SPI control register (to "play nice" when other SPI use)
-
-// ST7735 has several variations, set your version based on this list (using the color of the "tab" on the screen cover).
-// NOTE: The tab colors refer to Adafruit versions, other suppliers may vary (you may have to experiment to find the right one).
-enum
-{
-  ST7735_INITB      = 0,        // 1.8" (128x160) ST7735B chipset (only one type)
-  ST7735_INITR_GREENTAB   = 1,        // 1.8" (128x160) ST7735R chipset with green tab (same as ST7735_INITR_18GREENTAB)
-  ST7735_INITR_REDTAB   = 2,        // 1.8" (128x160) ST7735R chipset with red tab (same as ST7735_INITR_18REDTAB)
-  ST7735_INITR_BLACKTAB   = 3,        // 1.8" (128x160) ST7735S chipset with black tab (same as ST7735_INITR_18BLACKTAB)
-  ST7735_INITR_144GREENTAB    = 4,        // 1.4" (128x128) ST7735R chipset with green tab
-  ST7735_INITR_18GREENTAB   = ST7735_INITR_GREENTAB,  // 1.8" (128x160) ST7735R chipset with green tab
-  ST7735_INITR_18REDTAB   = ST7735_INITR_REDTAB,    // 1.8" (128x160) ST7735R chipset with red tab
-  ST7735_INITR_18BLACKTAB   = ST7735_INITR_BLACKTAB,  // 1.8" (128x160) ST7735S chipset with black tab
-};
-
-#define ST7735_CHIPSET ST7735_INITR_BLACKTAB // <= Set ST7735 LCD chipset/variation here
 
 #include <PDQ_GFX.h>        // PDQ: Core graphics library
 #include <PDQ_ST7735.h>      // PDQ: Hardware-specific driver library
@@ -86,14 +65,15 @@ int cur_ritval=0xffff;
 byte cur_cw=0xff;
 long last_tmtm=0;
 
-//bool is_rtc_found;
-
 void Display_ST7735_SPI::setup() 
 {
   tft.begin();
-  tft.setRotation(1);
+#ifdef TFT_ORIENTATION
+  tft.setRotation((TFT_ORIENTATION << 1)+1);
+#else
+  tft.setRotation(3);
+#endif  
   tft.fillScreen(ST7735_BLACK);
-  //is_rtc_found=RTC_found();
 }
 
 void Display_ST7735_SPI::reset()
@@ -282,17 +262,17 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
 
   if (trx.QRP != cur_qrp) {
     if (cur_qrp=trx.QRP) 
-      drawBtn(43,BTN_Y,30,20,"QRP",ST7735_BLUE,ST7735_WHITE);
+      drawBtn(32,BTN_Y,30,20,"QRP",ST7735_BLUE,ST7735_WHITE);
     else
-      drawBtn(43,BTN_Y,30,20,"QRP",ST7735_BLACK,ST7735_DARKGRAY);
+      drawBtn(32,BTN_Y,30,20,"QRP",ST7735_BLACK,ST7735_DARKGRAY);
   }
   
   if (trx.RIT != cur_rit) {
     if (cur_rit=trx.RIT) {
-      drawBtn(87,BTN_Y,30,20,"RIT",ST7735_BLUE,ST7735_WHITE);
+      drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLUE,ST7735_WHITE);
       cur_ritval=0xffff;
     } else {
-      drawBtn(87,BTN_Y,30,20,"RIT",ST7735_BLACK,ST7735_DARKGRAY);
+      drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLACK,ST7735_DARKGRAY);
       tft.fillRect(0,(cur_vfo_idx ? FREQ_Y+56 : FREQ_Y+91),65,7,ST7735_BLACK);
     }
   }
@@ -331,17 +311,17 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
 
   if (trx.state.Split != cur_split) {
     if (cur_split=trx.state.Split)
-      drawBtn(130,BTN_Y,30,20,"SPL",ST7735_BLUE,ST7735_WHITE);
+      drawBtn(98,BTN_Y,30,20,"SPL",ST7735_BLUE,ST7735_WHITE);
     else
-      drawBtn(130,BTN_Y,30,20,"SPL",ST7735_BLACK,ST7735_DARKGRAY);
+      drawBtn(98,BTN_Y,30,20,"SPL",ST7735_BLACK,ST7735_DARKGRAY);
   }
 
   if (trx.Lock != cur_lock) {
     cur_lock=trx.Lock;
     if (cur_lock)
-      drawBtn(120,0,40,20,"LOCK",ST7735_RED,ST7735_YELLOW);
+      drawBtn(130,BTN_Y,30,20,"LCK",ST7735_RED,ST7735_YELLOW);
     else
-      drawBtn(120,0,40,20,"LOCK",ST7735_BLACK,ST7735_DARKGRAY);
+      drawBtn(130,BTN_Y,30,20,"LCK",ST7735_BLACK,ST7735_DARKGRAY);
   }
 
   if (trx.TX != cur_tx) {
@@ -376,48 +356,37 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
       drawBtn(29,0,30,20,"",ST7735_BLACK,ST7735_BLUE);
   }
 
-  byte cw=trx.BandIndex >= 0 && Bands[trx.BandIndex].startSSB > 0 &&
-          trx.state.VFO[vfo_idx] < Bands[trx.BandIndex].startSSB &&
-          trx.state.VFO[vfo_idx] >= Bands[trx.BandIndex].start;
+  uint8_t cw=trx.inCW();
   if (cw != cur_cw) {
     if (cur_cw=cw)
-      drawBtn(56,1,30,20,"CW",ST7735_BLACK,ST7735_DARKYELLOW);
+      drawBtn(56,0,30,20,"CW",ST7735_BLACK,ST7735_DARKYELLOW);
     else
-      drawBtn(56,1,30,20,"CW",ST7735_BLACK,ST7735_DARKGRAY);
+      drawBtn(56,0,30,20,"CW",ST7735_BLACK,ST7735_DARKGRAY);
   }
-/*
-// RTC IS NOT SUPPORTED WHITH ST7735 LCD
-  if (is_rtc_found && millis()-last_tmtm > 200) {
+  if (RTC_found() && millis()-last_tmtm > 200) {
     RTCData d;
     char buf[12],*pb;
     last_tmtm=millis();
     RTC_Read(&d,0,sizeof(d));
-    //sprintf(buf,"%2x:%02x:%02x",d.hour,d.min,d.sec);
+    //sprintf(buf,"%2x:%02x",d.hour,d.min);
     pb=cwr_hex2sp(buf,d.hour);
-    *pb++=':';
+    if (millis()/1000 & 1) *pb++=':';
+    else *pb++=' ';
     pb=cwr_hex2(pb,d.min);
-    *pb++=':';
-    pb=cwr_hex2(pb,d.sec);
     *pb=0;
     tft.setFont(NULL);
-    tft.setTextSize(2);
-    tft.setTextColor(ST7735_CYAN,ST7735_BLACK);
-    tft.setCursor(220,13);
-    tft.print(buf);
     tft.setTextSize(1);
-    tft.setCursor(255,2);
-    //sprintf(buf,"%x.%02x.20%02x",d.day,d.month,d.year);
+    tft.setTextColor(ST7735_CYAN,ST7735_BLACK);
+    tft.setCursor(128,11);
+    tft.print(buf);
+    tft.setCursor(128,0);
+    //sprintf(buf,"%x.%02x.20",d.day,d.month);
     pb=cwr_hex2sp(buf,d.day);
-    *pb++='.';
+    *pb++='/';
     pb=cwr_hex2(pb,d.month);
-    *pb++='.';
-    *pb++='2';
-    *pb++='0';
-    pb=cwr_hex2(pb,d.year);
     *pb=0;
     tft.print(buf);
   }
-*/
 }
 
 void Display_ST7735_SPI::clear()

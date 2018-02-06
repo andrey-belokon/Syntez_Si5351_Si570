@@ -61,7 +61,11 @@ long last_tmtm=0;
 void Display_ILI9341_SPI::setup() 
 {
   tft.begin();
+#ifdef TFT_ORIENTATION
+  tft.setRotation((TFT_ORIENTATION << 1)+1);
+#else
   tft.setRotation(3);
+#endif  
   tft.fillScreen(ILI9341_BLACK);
 }
 
