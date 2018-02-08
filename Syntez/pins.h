@@ -43,16 +43,6 @@ class OutputBinPin {
     void Write(uint8_t value);
 };
 
-class OutputTonePin {
-  private:
-    uint8_t pin;
-    int freq;
-  public:
-    OutputTonePin(uint8_t _pin, int _freq):pin(_pin),freq(_freq) {}
-    void setup();
-    void Write(uint8_t value);
-};
-
 class OutputPCF8574 {
   private:
 	  uint8_t i2c_addr,value,old_value;
@@ -63,5 +53,7 @@ class OutputPCF8574 {
 	  void Set(uint8_t pin, uint8_t state);
 	  void Write();
 };
+
+void OutputTone(uint8_t pin, uint8_t value);
 
 #endif

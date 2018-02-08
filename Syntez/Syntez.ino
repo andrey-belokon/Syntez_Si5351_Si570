@@ -99,7 +99,6 @@ OutputBinPin outTX(PIN_OUT_TX,false,HIGH);
 OutputBinPin outQRP(PIN_OUT_QRP,false,HIGH);
 InputAnalogPin inRIT(PIN_IN_RIT,5);
 InputAnalogPin inSMeter(PIN_IN_SMETER);
-OutputTonePin outTone(PIN_OUT_TONE,1000);
 
 #ifdef BANDCTRL_ENABLE
   OutputPCF8574 outBandCtrl(I2C_ADR_BAND_CTRL,0);
@@ -137,7 +136,6 @@ void setup()
   inRIT.setup();
   outTX.setup();
   outQRP.setup();
-  outTone.setup();
 #ifndef DISPLAY_DISABLE
   disp.setup();
 #endif
@@ -419,6 +417,18 @@ void loop()
 #endif    
   if (trx.RIT)
     trx.RIT_Value = (long)inRIT.ReadRaw()*2*RIT_MAX_VALUE/1024-RIT_MAX_VALUE;
+/*
+  // debug code for measure loop() excecution speed
+  // n v.2.0 1.5 msec
+  static long zzz=0, last_zzz=0;
+  zzz++;
+  if (millis()-last_zzz >= 1000) {
+    last_zzz=millis();
+    trx.RIT=1;
+    trx.RIT_Value = zzz;
+    zzz=0;
+  }
+*/
 #ifdef ENCODER_ENABLE
   long delta = encoder.GetDelta();
   if (delta) {
@@ -433,7 +443,7 @@ void loop()
 #endif    
   UpdateFreq();
   outQRP.Write(trx.QRP || tune);
-  outTone.Write(tune);
+  OutputTone(PIN_OUT_TONE,tune);
   outTX.Write(trx.TX);
   UpdateBandCtrl();
   // read and convert smeter
