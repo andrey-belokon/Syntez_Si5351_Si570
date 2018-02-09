@@ -307,27 +307,20 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
   
   if (cur_rit && trx.RIT_Value != cur_ritval) {
     int y,v=trx.RIT_Value;
-    char buf[8];
+    char buf[14];
     if (cur_vfo_idx == 0) y=FREQ_Y+82;
     else y=FREQ_Y+4;
     cur_ritval=trx.RIT_Value;
     if (v == 0) {
-      strcpy(buf,"0    ");
+      cwr_str(buf,"0    ");
     } else {
       if (v < 0) {
         buf[0]='-';
         v=-v;
       }
       else buf[0]='+'; 
-      //sprintf(buf+5,"%dHz",v);
-      //itoa(v,buf+5,10);
-      cwr_str(cwr_int(buf+1,v),"Hz");
-      //strcat(buf+5,"Hz");
-      for (byte i=1; i<=6; i++)
-        if (buf[i] == 0) buf[i]=' ';
-      buf[7]=0;
+      cwr_str(cwr_int(buf+1,v),"Hz   ");
     }
-    tft.fillRect(10,y,90,16,ILI9341_BLACK);
     tft.setFont(NULL);
     tft.setTextSize(2);
     tft.setTextColor(ILI9341_BLUE,ILI9341_BLACK);

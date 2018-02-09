@@ -277,34 +277,26 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     }
   }
   
-  if (cur_rit && trx.RIT_Value != cur_ritval) {
+    if (cur_rit && trx.RIT_Value != cur_ritval) {
     int y,v=trx.RIT_Value;
-    char buf[16];
+    char buf[14];
     if (cur_vfo_idx == 0) y=FREQ_Y+91;
     else y=FREQ_Y+56;
     cur_ritval=trx.RIT_Value;
-    tft.fillRect(0,y,65,7,ST7735_BLACK);
-    tft.setFont(NULL);
-    tft.setTextSize(1);
-    tft.setTextColor(ST7735_CYAN,ST7735_BLACK);
-    tft.setCursor(0,y);
-    buf[0]='R'; buf[1]='I'; buf[2]='T'; buf[3]=' ';
     if (v == 0) {
-      strcpy(buf+4,"0    ");
+      cwr_str(buf,"0    ");
     } else {
       if (v < 0) {
-        buf[4]='-';
+        buf[0]='-';
         v=-v;
       }
-      else buf[4]='+'; 
-      //sprintf(buf+5,"%dHz",v);
-      //itoa(v,buf+5,10);
-      cwr_str(cwr_int(buf+5,v),"Hz");
-      //strcat(buf+5,"Hz");
-      for (byte i=5; i<=10; i++)
-        if (buf[i] == 0) buf[i]=' ';
-      buf[11]=0;
+      else buf[0]='+'; 
+      cwr_str(cwr_int(buf+1,v),"Hz   ");
     }
+    tft.setFont(NULL);
+    tft.setTextSize(1);
+    tft.setTextColor(ST7735_BLUE,ST7735_BLACK);
+    tft.setCursor(10,y);
     tft.print(buf);
     tft.setTextSize(1);
   }

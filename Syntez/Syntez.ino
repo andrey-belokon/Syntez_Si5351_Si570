@@ -419,13 +419,12 @@ void loop()
     trx.RIT_Value = (long)inRIT.ReadRaw()*2*RIT_MAX_VALUE/1024-RIT_MAX_VALUE;
 /*
   // debug code for measure loop() excecution speed
-  // n v.2.0 1.5 msec
+  // n v.2.0 16-25 msec
   static long zzz=0, last_zzz=0;
   zzz++;
   if (millis()-last_zzz >= 1000) {
     last_zzz=millis();
-    trx.RIT=1;
-    trx.RIT_Value = zzz;
+    trx.state.VFO[trx.GetVFOIndex()^1] = zzz*10;
     zzz=0;
   }
 */
