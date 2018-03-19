@@ -19,15 +19,6 @@
 #define SI_CLK1_PHASE  166
 #define SI_CLK2_PHASE  167
 
-#define SI_R_DIV_1    0b00000000      // R-division ratio definitions
-#define SI_R_DIV_2    0b00010000
-#define SI_R_DIV_4    0b00100000
-#define SI_R_DIV_8    0b00110000
-#define SI_R_DIV_16   0b01000000
-#define SI_R_DIV_32   0b01010000
-#define SI_R_DIV_64   0b01100000
-#define SI_R_DIV_128  0b01110000
-
 #define R_DIV(x) ((x) << 4)
 
 #define SI_CLK_SRC_PLL_A  0b00000000
@@ -255,9 +246,6 @@ void Si5351::update_freq12(uint8_t freq1_changed, uint8_t* need_reset_pll)
       if (divider != freq1_div || rdiv != freq1_rdiv) {
         si5351_setup_msynth_int(SI_SYNTH_MS_1, divider, R_DIV(rdiv));
         si5351_write_reg(SI_CLK1_CONTROL, 0x4C | power1 | SI_CLK_SRC_PLL_B);
-        if (freq2) {
-          si5351_write_reg(SI_CLK2_CONTROL, 0x4C | power2 | SI_CLK_SRC_PLL_B);
-        }
         freq1_div = divider;
         freq1_rdiv = rdiv;
         *need_reset_pll |= SI_PLL_RESET_B;
@@ -268,20 +256,22 @@ void Si5351::update_freq12(uint8_t freq1_changed, uint8_t* need_reset_pll)
     if (freq2) {
       // CLK2 --> PLL_B with fractional or integer multisynth 
       divider = freq_pll_b / freq2;
-      if (divider < 6) {
+      if (divider < 8) {
         disable_out(2);
         return;
       }
       rdiv = 0;
-      ff = freq2;
-      while (divider > 300) {
+      uint32_t ff = freq2;
+      while (divider > 64) {
         rdiv++;
         ff <<= 1;
         divider >>= 1;
       }
+      divider = freq_pll_b / ff;
       num = (uint64_t)(freq_pll_b % ff) * FRAC_DENOM / ff;
-  
+        
       si5351_setup_msynth(SI_SYNTH_MS_2,divider, num, (num?FRAC_DENOM:1), R_DIV(rdiv));
+      si5351_write_reg(SI_CLK2_CONTROL, (num?0x0C:0x4C) | power2 | SI_CLK_SRC_PLL_B);
       freq2_div = 1; // non zero for correct enable/disable CLK2
     }
   } else if (freq2) {
