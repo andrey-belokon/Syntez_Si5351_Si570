@@ -38,6 +38,9 @@
 #ifdef DISPLAY_ST7735
   #include "disp_ST7735.h"
 #endif
+#ifdef DISPLAY_MAX7219
+  #include "disp_MAX7219.h"
+#endif
 
 #ifdef VFO_SI5351
   #include "si5351a.h"
@@ -67,6 +70,10 @@
 #endif
 #ifdef DISPLAY_ST7735
   Display_ST7735_SPI disp;
+  #undef DISPLAY_DISABLE
+#endif
+#ifdef DISPLAY_MAX7219
+  Display_MAX7219 disp(MAX7219_BRIGHT);
   #undef DISPLAY_DISABLE
 #endif
 

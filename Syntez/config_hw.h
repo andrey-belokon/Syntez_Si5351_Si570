@@ -3,8 +3,9 @@
 
 // раскоментировать используемый дисплей (только один!). закоментировать все если нет дисплея
 //#define DISPLAY_ST7735
-#define DISPLAY_ILI9341
+//#define DISPLAY_ILI9341
 //#define DISPLAY_1602
+#define DISPLAY_MAX7219
 
 // ST7735 has several variations, set your version based on this list (using the color of the "tab" on the screen cover).
 // NOTE: The tab colors refer to Adafruit versions, other suppliers may vary (you may have to experiment to find the right one).
@@ -25,13 +26,16 @@ enum {
 // значения 0/1 определяют ориентацию вывода на TFT
 #define TFT_ORIENTATION   1
 
+// яркость LCD MAX7219 - 1..15
+#define MAX7219_BRIGHT  10
+
 // раскоментировать используемую клавиатуру (только одну!). закоментировать все если нет клавиатуры
-#define KEYPAD_7
-//#define KEYPAD_12
+//#define KEYPAD_7
+#define KEYPAD_12
 
 // раскоментировать установленные чипы
-#define VFO_SI5351
-#define VFO_SI570
+//#define VFO_SI5351
+//#define VFO_SI570
 
 // выбрать в меню калибровку и прописать измеренные частоты на выходах синтезаторов
 #define SI5351_CALIBRATION       25003181
@@ -71,7 +75,7 @@ enum {
 #define PIN_IN_SMETER   A6
 #define PIN_IN_RIT      A7
 
-#define BANDCTRL_ENABLE
+//#define BANDCTRL_ENABLE
 // распиновка I2C расширителя band control
 // двоичный дешифратор диапазона - пины 0-3
 #define BCPN_BAND_0     0
@@ -88,7 +92,7 @@ enum {
 #define BCPN_SB         7
 
 // закоментировать если нет валкодера
-#define ENCODER_ENABLE
+//#define ENCODER_ENABLE
 // количество импульсов на оборот примененного энкодера
 #define ENCODER_PULSE_PER_TURN    360
 // изменение частоты в Гц на один оборот в обычном режиме
