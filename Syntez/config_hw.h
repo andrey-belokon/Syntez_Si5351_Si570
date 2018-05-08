@@ -30,12 +30,12 @@ enum {
 #define MAX7219_BRIGHT  10
 
 // раскоментировать используемую клавиатуру (только одну!). закоментировать все если нет клавиатуры
-//#define KEYPAD_7
-#define KEYPAD_12
+#define KEYPAD_7
+//#define KEYPAD_12
 
 // раскоментировать установленные чипы
-//#define VFO_SI5351
-//#define VFO_SI570
+#define VFO_SI5351
+#define VFO_SI570
 
 // выбрать в меню калибровку и прописать измеренные частоты на выходах синтезаторов
 #define SI5351_CALIBRATION       25003181
