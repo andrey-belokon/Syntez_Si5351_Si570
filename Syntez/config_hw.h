@@ -3,9 +3,9 @@
 
 // раскоментировать используемый дисплей (только один!). закоментировать все если нет дисплея
 //#define DISPLAY_ST7735
-//#define DISPLAY_ILI9341
+#define DISPLAY_ILI9341
 //#define DISPLAY_1602
-#define DISPLAY_MAX7219
+//#define DISPLAY_MAX7219
 
 // ST7735 has several variations, set your version based on this list (using the color of the "tab" on the screen cover).
 // NOTE: The tab colors refer to Adafruit versions, other suppliers may vary (you may have to experiment to find the right one).
@@ -92,16 +92,20 @@ enum {
 #define BCPN_SB         7
 
 // закоментировать если нет валкодера
-//#define ENCODER_ENABLE
+#define ENCODER_ENABLE
 // количество импульсов на оборот примененного энкодера
+// 360-400 for optic encoders and 20 for mechanic
 #define ENCODER_PULSE_PER_TURN    360
+//#define ENCODER_PULSE_PER_TURN    20
 // изменение частоты в Гц на один оборот в обычном режиме
 #define ENCODER_FREQ_LO_STEP      3000
 // изменение частоты в Гц на один оборот в ускоренном режиме
 #define ENCODER_FREQ_HI_STEP      12000
 // порог переключения в ускоренный режим. если частота изменится более
 // чем на ENCODER_FREQ_HI_LO_TRASH Гц за секунду то переходим в ускоренный режим
-#define ENCODER_FREQ_HI_LO_TRASH  8000                   
+// 8000 for optic encoders and 600 for mechanic
+#define ENCODER_FREQ_HI_LO_TRASH  8000
+//#define ENCODER_FREQ_HI_LO_TRASH  600
 // кратность перестройки частоты при нажатой кнопке Fn
 #define ENCODER_FN_MULT           10
 

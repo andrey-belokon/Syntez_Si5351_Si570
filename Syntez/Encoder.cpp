@@ -6,7 +6,7 @@
 
 int LO_STEP;
 int HI_STEP;
-int HILO_TRASHOLD_TM;
+long HILO_TRASHOLD_TM;
 // подключение энкодера - GREEN -> pin 2; WHITE -> pin 3
 // !!!!! не изменять пины - завязано на прерывания !!!!!
 #define pinA 2
