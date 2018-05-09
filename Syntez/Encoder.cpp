@@ -23,8 +23,10 @@ Encoder::Encoder(int EncPulsePerTurn, int StepLo, int StepHi, int HiLoStepTrasho
 }
 
 void Encoder::SetValue(long Value) {
+  cli();
   last_tm = 0;
   EncoderValue = Value;
+  sei();
 }
 
 long Encoder::GetValue() {
@@ -32,8 +34,11 @@ long Encoder::GetValue() {
 }
 
 long Encoder::GetDelta() {
-  long val = EncoderValue;
+  long val;
+  cli();
+  val = EncoderValue;
   EncoderValue = 0;
+  sei();
   return val;
 }
 
