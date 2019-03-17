@@ -28,6 +28,14 @@
 
 #define FRAC_DENOM 0xFFFFF
 
+uint32_t Si5351::VCOFreq_Max = 900000000;
+uint32_t Si5351::VCOFreq_Min = 600000000;
+
+static uint16_t freq0_div, freq1_div, freq2_div;
+static uint8_t freq0_rdiv, freq1_rdiv, freq2_rdiv;
+static uint8_t power0, power1, power2;
+static uint32_t xtal_freq=270000000, freq0, freq1, freq2, freq_pll_b;
+
 void si5351_write_reg(uint8_t reg, uint8_t data)
 {
   i2c_begin_write(SI5351_I2C_ADDR);
@@ -93,6 +101,16 @@ void Si5351::setup(uint8_t _power0, uint8_t _power1, uint8_t _power2)
   si5351_write_reg(SI_CLK0_CONTROL, 0x80);
   si5351_write_reg(SI_CLK1_CONTROL, 0x80);
   si5351_write_reg(SI_CLK2_CONTROL, 0x80);
+}
+
+void Si5351::set_power(uint8_t _power0, uint8_t _power1, uint8_t _power2)
+{
+  uint32_t f0=freq0, f1=freq1, f2=freq2;
+  power0 = _power0 & 0x3;
+  power1 = _power1 & 0x3;
+  power2 = _power2 & 0x3;
+  freq0 = freq1 = freq2 = 0;
+  set_freq(f0, f1, f2);
 }
 
 void Si5351::set_xtal_freq(uint32_t freq, uint8_t reset_pll)
@@ -180,7 +198,7 @@ void Si5351::update_freq0(uint8_t* need_reset_pll)
     return;
   }
   
-  divider = 900000000 / freq0;
+  divider = VCOFreq_Max / freq0;
   if (divider < 6) {
     disable_out(0);
     return;
@@ -226,7 +244,7 @@ void Si5351::update_freq12(uint8_t freq1_changed, uint8_t* need_reset_pll)
 
   if (freq1) {
     if (freq1_changed) {
-      divider = 900000000 / freq1;
+      divider = VCOFreq_Max / freq1;
       if (divider < 6) {
         disable_out(1);
         return;
@@ -276,7 +294,7 @@ void Si5351::update_freq12(uint8_t freq1_changed, uint8_t* need_reset_pll)
     }
   } else if (freq2) {
     // PLL_B --> CLK2, multisynth integer
-    divider = 900000000 / freq2;
+    divider = VCOFreq_Max / freq2;
     if (divider < 6) {
       disable_out(2);
       return;
@@ -318,12 +336,12 @@ void Si5351::update_freq01_quad(uint8_t* need_reset_pll)
   }
   
   if (freq0 >= 7000000) {
-    divider = (900000000 / freq0);
+    divider = (VCOFreq_Max / freq0);
   } else if (freq0 >= 4000000) {
-    divider = (600000000 / freq0);
+    divider = (VCOFreq_Min / freq0);
   } else if (freq0 >= 2000000) {
-    // VFO run on freq less than 600MHz. possible unstable
-    // comment this for disable operation below 600MHz VFO (4MHz on out)
+    // VCO run on freq less than 600MHz. possible unstable
+    // comment this for disable operation below 600MHz VCO (4MHz on out)
     divider = 0x7F;
   } else {
     divider = 0; // disable out on invalid freq
@@ -368,7 +386,7 @@ void Si5351::update_freq2(uint8_t* need_reset_pll)
   }
 
   // PLL_B --> CLK2, multisynth integer
-  divider = 900000000 / freq2;
+  divider = VCOFreq_Max / freq2;
   if (divider < 6) {
     disable_out(2);
     return;
@@ -410,4 +428,3 @@ uint8_t Si5351::set_freq_quadrature(uint32_t f01, uint32_t f2)
     si5351_write_reg(SI_PLL_RESET, need_reset_pll);
   return need_reset_pll;
 }
-

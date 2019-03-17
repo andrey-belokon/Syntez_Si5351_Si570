@@ -18,10 +18,6 @@
  
 class Si5351 {
   private:
-    uint32_t xtal_freq, freq0, freq1, freq2, freq_pll_b;
-    uint16_t freq0_div, freq1_div, freq2_div;
-    uint8_t freq0_rdiv, freq1_rdiv, freq2_rdiv;
-    uint8_t power0, power1, power2;
     void update_freq0(uint8_t* need_reset_pll);
     void update_freq12(uint8_t freq1_changed, uint8_t* need_reset_pll);
     void update_freq2(uint8_t* need_reset_pll);
@@ -29,19 +25,29 @@ class Si5351 {
     void disable_out(uint8_t clk_num); // 0,1,2
     void set_control(uint8_t clk_num, uint8_t ctrl); // 0,1,2
   public:
-    Si5351 ():xtal_freq(270000000) {}
+    static uint32_t VCOFreq_Max; // == 900000000
+    static uint32_t VCOFreq_Min; // == 600000000
+    
     // power 0=2mA, 1=4mA, 2=6mA, 3=8mA
     void setup(uint8_t _power1 = 3, uint8_t _power2 = 3, uint8_t _power3 = 3);
+
     // out xtal freq to CLK0
     void out_calibrate_freq();
+    
+    // change out power
+    void set_power(uint8_t _power0, uint8_t _power1, uint8_t _power2);
+    
     // set xtal freq 
     void set_xtal_freq(uint32_t freq, uint8_t reset_pll = 1);
+    
     // pass zero frequency for disable out
     // return true if PLL was reset
     uint8_t set_freq(uint32_t f0, uint32_t f1, uint32_t f2);
+    
     // CLK0,CLK1 in qudrature, CLK2 = f2
     // return true if PLL was reset
     uint8_t set_freq_quadrature(uint32_t f01, uint32_t f2);
+    
     // check that freq set corrected
     uint8_t is_freq_ok(uint8_t clk_num);
 };
