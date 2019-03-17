@@ -291,63 +291,55 @@ void UpdateFreq()
   #endif 
 #endif
 
-#ifdef MODE_DOUBLE_IF
-  long IFreq = (trx.state.sideband == USB ? SSBDetectorFreq_USB+SSBShift_USB : SSBDetectorFreq_LSB+SSBShift_LSB);
-  vfo_set_freq(
-    CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
-    CLK1_MULT*(IFreqEx + IFreq),
-    CLK2_MULT*(IFreq)
-  );
-#endif
+#if defined(MODE_DOUBLE_IF_SWAP23) || defined(MODE_DOUBLE_IF)
 
-#ifdef MODE_DOUBLE_IF_LSB
-  vfo_set_freq(
-    CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
-    CLK1_MULT*(IFreqEx + (trx.state.sideband == LSB ? SSBDetectorFreq_LSB+SSBShift_LSB : -(SSBDetectorFreq_LSB+SSBShift_LSB))),
-    CLK2_MULT*(SSBDetectorFreq_LSB+SSBShift_LSB)
-  );
-#endif
+  #ifndef IFreqEx
+    #define IFreqEx   (trx.state.sideband == USB ? IFreqEx_LSB : IFreqEx_USB)
+  #endif
 
-#ifdef MODE_DOUBLE_IF_USB
-  vfo_set_freq(
-    CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
-    CLK1_MULT*(IFreqEx + (trx.state.sideband == USB ? SSBDetectorFreq_USB+SSBShift_USB : -(SSBDetectorFreq_USB+SSBShift_USB))),
-    CLK2_MULT*(SSBDetectorFreq_USB+SSBShift_USB)
-  );
-#endif
+  #if defined(SSBDetectorFreq_USB) && defined(SSBDetectorFreq_LSB)
+    long IFreq = (trx.state.sideband == USB ? SSBDetectorFreq_USB+SSBShift_USB : SSBDetectorFreq_LSB+SSBShift_LSB); 
+    long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
+    long f2 = CLK1_MULT*(IFreqEx + IFreq);
+    long f3 = CLK2_MULT*(IFreq);
+    #if defined(MODE_DOUBLE_IF_SWAP23)
+      vfo_set_freq(f1,
+        trx.TX ? f3 : f2,
+        trx.TX ? f2 : f3
+      );
+    #else
+      vfo_set_freq(f1,f2,f3);
+    #endif
+  #endif
+  
+  #if !defined(SSBDetectorFreq_USB) && defined(SSBDetectorFreq_LSB)
+    long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
+    long f2 = CLK1_MULT*(IFreqEx + (trx.state.sideband == LSB ? SSBDetectorFreq_LSB+SSBShift_USB : -(SSBDetectorFreq_LSB+SSBShift_LSB)));
+    long f3 = CLK2_MULT*(SSBDetectorFreq_LSB+SSBShift_LSB);
+    #if defined(MODE_DOUBLE_IF_SWAP23)
+      vfo_set_freq(f1,
+        trx.TX ? f3 : f2,
+        trx.TX ? f2 : f3
+      );
+    #else
+      vfo_set_freq(f1,f2,f3);
+    #endif
+  #endif
+  
+  #if defined(SSBDetectorFreq_USB) && !defined(SSBDetectorFreq_LSB)
+    long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
+    long f2 = CLK1_MULT*(IFreqEx + (trx.state.sideband == USB ? SSBDetectorFreq_USB+SSBShift_USB : -(SSBDetectorFreq_USB+SSBShift_USB)));
+    long f3 = CLK2_MULT*(SSBDetectorFreq_USB+SSBShift_USB);
+    #if defined(MODE_DOUBLE_IF_SWAP23)
+      vfo_set_freq(f1,
+        trx.TX ? f3 : f2,
+        trx.TX ? f2 : f3
+      );
+    #else
+      vfo_set_freq(f1,f2,f3);
+    #endif
+  #endif
 
-#ifdef MODE_DOUBLE_IF_SWAP23
-  long IFreq = (trx.state.sideband == USB ? SSBDetectorFreq_USB+SSBShift_USB : SSBDetectorFreq_LSB+SSBShift_LSB); 
-  long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
-  long f2 = CLK1_MULT*(IFreqEx + IFreq);
-  long f3 = CLK2_MULT*(IFreq);
-  vfo_set_freq(
-    f1,
-    trx.TX ? f3 : f2,
-    trx.TX ? f2 : f3
-  );
-#endif
-
-#ifdef MODE_DOUBLE_IF_LSB_SWAP23
-  long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
-  long f2 = CLK1_MULT*(IFreq + (trx.state.sideband == LSB ? SSBDetectorFreq_LSB+SSBShift_USB : -(SSBDetectorFreq_LSB+SSBShift_LSB)));
-  long f3 = CLK2_MULT*(SSBDetectorFreq_LSB+SSBShift_LSB);
-  vfo_set_freq(
-    f1,
-    trx.TX ? f3 : f2,
-    trx.TX ? f2 : f3
-  );
-#endif
-
-#ifdef MODE_DOUBLE_IF_USB_SWAP23
-  long f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + (trx.RIT && !trx.TX ? trx.RIT_Value : 0));
-  long f2 = CLK1_MULT*(IFreq + (trx.state.sideband == USB ? SSBDetectorFreq_USB+SSBShift_USB : -(SSBDetectorFreq_USB+SSBShift_USB)));
-  long f3 = CLK2_MULT*(SSBDetectorFreq_USB+SSBShift_USB);
-  vfo_set_freq(
-    f1,
-    trx.TX ? f3 : f2,
-    trx.TX ? f2 : f3
-  );
 #endif
 }
 
