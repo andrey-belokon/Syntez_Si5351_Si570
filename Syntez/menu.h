@@ -113,10 +113,10 @@ void ShowClockMenu()
 
 void PrintSSBFreqData(
 #ifdef SSBDetectorFreq_LSB
-  long LSB_freq, 
+  int LSB_freq, 
 #endif
 #ifdef SSBDetectorFreq_USB
-  long USB_freq, 
+  int USB_freq, 
 #endif
   char *buf, char **items)
 {
@@ -124,7 +124,7 @@ void PrintSSBFreqData(
 #ifdef SSBDetectorFreq_LSB  
   *items++ = pb;
   pb = cwr_str(pb,"LSB:  ");
-  pb = cwr_long(pb,LSB_freq);
+  pb = cwr_long(pb,SSBDetectorFreq_LSB+LSB_freq);
   *pb++ = ' ';
   *pb++ = ' ';
   *pb++ = 0;
@@ -132,7 +132,7 @@ void PrintSSBFreqData(
 #ifdef SSBDetectorFreq_USB  
   *items++ = pb;
   pb = cwr_str(pb,"USB:  ");
-  pb = cwr_long(pb,USB_freq);
+  pb = cwr_long(pb,SSBDetectorFreq_USB+USB_freq);
   *pb++ = ' ';
   *pb++ = ' ';
   *pb++ = 0;
@@ -148,23 +148,15 @@ void ShowSSBDetFreqMenu()
   char *items[3];
   int LSB_shift=SSBShift_LSB, USB_shift=SSBShift_USB;
   byte selected=0;
-  long encval;
+  long encval=0;
   strcpy_P(title,PSTR("Tune IF freq"));
 #ifdef SSBDetectorFreq_LSB && SSBDetectorFreq_USB
-  strcpy_P(help,PSTR("Up/Down - move\nA/B - save & exit\nFn/Lock - exit no save\nuse encoder for change"));
+  strcpy_P(help,PSTR("Up/Down - move\nA=B - reset\nA/B - save & exit\nFn/Lock - exit no save\nuse encoder for change"));
 #else  
-  strcpy_P(help,PSTR("Fn/Lock - exit no save\nA/B - save & exit\nuse encoder for change"));
+  strcpy_P(help,PSTR("A=B - reset\nFn/Lock - exit no save\nA/B - save & exit\nuse encoder for change"));
 #endif    
-  PrintSSBFreqData(
-#ifdef SSBDetectorFreq_LSB
-    SSBDetectorFreq_LSB+LSB_shift, 
-#endif    
-#ifdef SSBDetectorFreq_USB
-    SSBDetectorFreq_USB+USB_shift, 
-#endif    
-    buf, items);
   disp.clear();
-  disp.DrawMenu(title,(const char**)items,selected,help,2);
+  goto l_redraw_full;
 
   while (1) {
     uint8_t keycode=keypad.Read();
@@ -173,16 +165,15 @@ void ShowSSBDetFreqMenu()
       case cmdBandUp:
         if (selected > 0) selected--;
         else selected=1;
-        disp.DrawMenu(title,(const char**)items,selected,help,2);
-        encval=0;
-        break;
+        goto l_redraw;
       case cmdBandDown:
         if (selected < 1) selected++;
         else selected=0;
-        disp.DrawMenu(title,(const char**)items,selected,help,2);
-        encval=0;
-        break;
+        goto l_redraw;
 #endif        
+      case cmdVFOEQ:
+        LSB_shift=USB_shift=0;
+        goto l_redraw_full;
       case cmdVFOSel:
         SSBShift_LSB=LSB_shift;
         SSBShift_USB=USB_shift;
@@ -207,21 +198,21 @@ void ShowSSBDetFreqMenu()
           USB_shift+=delta;
           break;
       }
-#endif
-#ifdef SSBDetectorFreq_LSB
+#elif SSBDetectorFreq_LSB
       LSB_shift+=delta;
-#endif    
-#ifdef SSBDetectorFreq_USB
+#elif SSBDetectorFreq_USB
       USB_shift+=delta;
-#endif    
+#endif
+    l_redraw_full:
       PrintSSBFreqData(
 #ifdef SSBDetectorFreq_LSB
-        SSBDetectorFreq_LSB+LSB_shift, 
+        LSB_shift, 
 #endif    
 #ifdef SSBDetectorFreq_USB
-        SSBDetectorFreq_USB+USB_shift, 
+        USB_shift, 
 #endif    
         buf, items);
+    l_redraw:
       disp.DrawMenu(title,(const char**)items,selected,help,2);
       encval=0;
     }
@@ -357,5 +348,3 @@ void ShowMenu()
     }
   }
 }
-
-
