@@ -256,12 +256,10 @@ void ShowSMeterMenu()
       case cmdBandUp:
         if (selected > 0) selected--;
         else selected=15;
-        disp.DrawMenu(title,(const char**)items,selected,help,1);
         break;
       case cmdBandDown:
         if (selected < 15) selected++;
         else selected=0;
-        disp.DrawMenu(title,(const char**)items,selected,help,1);
         break;
       case cmdVFOSel:
         if (selected < 15) {
@@ -308,19 +306,17 @@ void ShowMenu()
   strcpy_P(help,PSTR("Up/Down - move\nA/B - select\nFn/Lock - exit"));
   byte selected=0;
   disp.clear();
-  disp.DrawMenu(title,MenuItems,selected,help,2);
   while (true) {
     uint8_t  keycode=keypad.Read();
+    disp.DrawMenu(title,MenuItems,selected,help,2);
     switch (keycode) {
       case cmdBandUp:
         if (selected > 0) selected--;
         else selected=3;
-        disp.DrawMenu(title,MenuItems,selected,help,2);
         break;
       case cmdBandDown:
         if (selected < 3) selected++;
         else selected=0;
-        disp.DrawMenu(title,MenuItems,selected,help,2);
         break;
       case cmdVFOSel:
         switch (selected) {
@@ -339,7 +335,6 @@ void ShowMenu()
         }
         // redraw
         disp.clear();
-        disp.DrawMenu(title,MenuItems,selected,help,2);
         break;
       case cmdMenu:
       case cmdLock:
