@@ -35,16 +35,16 @@ enum {
 
 // раскоментировать установленные чипы
 #define VFO_SI5351
-#define VFO_SI570
+//#define VFO_SI570
 
 // выбрать в меню калибровку и прописать измеренные частоты на выходах синтезаторов
 #define SI5351_CALIBRATION       25003181
 #define SI570_CALIBRATION        56319832
 
 // уровень сигнала на выходе Si5351. 0=2mA, 1=4mA, 2=6mA, 3=8mA
-#define SI5351_CLK0_DRIVE   0
-#define SI5351_CLK1_DRIVE   0
-#define SI5351_CLK2_DRIVE   0
+#define SI5351_CLK0_DRIVE   3
+#define SI5351_CLK1_DRIVE   3
+#define SI5351_CLK2_DRIVE   3
 
 /*
   I2C address mapping
