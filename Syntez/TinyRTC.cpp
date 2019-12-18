@@ -27,7 +27,9 @@ bool RTC_found()
 {
   static uint8_t rtc_pooled = false;
   static uint8_t rtc_found = false;
-  if (!rtc_pooled) rtc_found = i2c_device_found(DS1307_I2C_ADDRESS);
+  if (!rtc_pooled) {
+    rtc_found = i2c_device_found(DS1307_I2C_ADDRESS);
+    rtc_pooled = true;
+  }
   return rtc_found;
 }
-

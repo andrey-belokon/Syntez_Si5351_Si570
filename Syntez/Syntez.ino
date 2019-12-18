@@ -6,6 +6,15 @@
 // GNU GPL license
 //
 
+/* Universal board
+I2C device found at address 0x3B  !
+I2C device found at address 0x3E  !
+I2C device found at address 0x50  !
+I2C device found at address 0x51  !
+I2C device found at address 0x55  !
+I2C device found at address 0x60  
+*/
+
 // !!! all user setting defined in config.h, config_hw.h and config_sw.h files !!!
 #include "config.h"
 
