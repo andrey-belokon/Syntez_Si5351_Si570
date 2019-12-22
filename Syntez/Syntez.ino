@@ -37,7 +37,9 @@ I2C device found at address 0x60
   #include "Keypad_12_I2C.h"
 #endif
 
-#include "TinyRTC.h"
+#ifdef RTC_ENABLE
+#include "RTC.h"
+#endif
 #include "Eeprom24C32.h"
 #include "TRX.h"
 

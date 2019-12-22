@@ -17,7 +17,7 @@ class Display_ST7735_SPI: public TRXDisplay {
 	  void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize);
 };
 
-#include "TinyRTC.h"
+#include "RTC.h"
 #include <SPI.h>        // must include this here (or else IDE can't find it)                                         
 #include "utils.h"
 
@@ -355,11 +355,12 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     else
       drawBtn(56,0,30,20,"CW",ST7735_BLACK,ST7735_DARKGRAY);
   }
-  if (RTC_found() && millis()-last_tmtm > 200) {
+#ifdef RTC_ENABLE
+  if (millis()-last_tmtm > 200) {
     RTCData d;
     char buf[12],*pb;
     last_tmtm=millis();
-    RTC_Read(&d,0,sizeof(d));
+    RTC_Read(&d);
     //sprintf(buf,"%2x:%02x",d.hour,d.min);
     pb=cwr_hex2sp(buf,d.hour);
     if (millis()/1000 & 1) *pb++=':';
@@ -379,6 +380,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     *pb=0;
     tft.print(buf);
   }
+#endif
 }
 
 void Display_ST7735_SPI::clear()

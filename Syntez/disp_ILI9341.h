@@ -15,7 +15,7 @@ class Display_ILI9341_SPI: public TRXDisplay {
 	  void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize);
 };
 
-#include "TinyRTC.h"
+#include "RTC.h"
 #include <SPI.h>        // must include this here (or else IDE can't find it)                                         
 #include "utils.h"
 
@@ -387,11 +387,12 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
       drawBtn(90,0,50,36,"",ILI9341_BLACK,ILI9341_DARKYELLOW);
   }
 
-  if (RTC_found() && millis()-last_tmtm > 200) {
+#ifdef RTC_ENABLE
+  if (millis()-last_tmtm > 200) {
     RTCData d;
     char buf[12],*pb;
     last_tmtm=millis();
-    RTC_Read(&d,0,sizeof(d));
+    RTC_Read(&d);
     //sprintf(buf,"%2x:%02x:%02x",d.hour,d.min,d.sec);
     pb=cwr_hex2sp(buf,d.hour);
     *pb++=':';
@@ -417,6 +418,7 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
     *pb=0;
     tft.print(buf);
   }
+#endif
 }
 
 void Display_ILI9341_SPI::clear()

@@ -1,5 +1,5 @@
 #include "disp_1602.h"
-#include "TinyRTC.h"
+#include "RTC.h"
 #include "utils.h"
 
 byte chInverseT[8] = { 0b11111, 0b11111, 0b11111, 0b10001, 0b11011, 0b11011, 0b11111, 0b11111};
@@ -110,16 +110,18 @@ void Display_1602_I2C::Draw(TRX& trx) {
     buf[1][12] = 'R';
     buf[1][13] = 'I';
     buf[1][14] = 'T';
-  } else if (RTC_found()) {
+  } else {
+#ifdef RTC_ENABLE
     RTCData d;
     char *pb;
     last_tmtm=millis();
-    RTC_Read(&d,0,sizeof(d));
+    RTC_Read(&d);
     //sprintf(buf,"%2x:%02x",d.hour,d.min);
     pb=cwr_hex2sp(buf[1]+11,d.hour);
     if (millis()/1000 & 1) *pb++=':';
     else *pb++=' ';
     pb=cwr_hex2(pb,d.min);
+#endif
   }
 
   if (trx.BandIndex >= 0) {
@@ -188,4 +190,3 @@ void Display_1602_I2C::DrawMenu(const char* title, const char** items, uint8_t s
   lcd.setCursor(0, 1);
   lcd.print(buf[1]);
 }
-

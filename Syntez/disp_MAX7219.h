@@ -14,6 +14,9 @@ class Display_MAX7219: public TRXDisplay {
 	  Display_MAX7219(uint8_t _bright);
 	  void setup();
 	  void Draw(TRX& trx);
+    void reset() {}
+    void clear() {}
+    void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize) {}
 };
 
 #endif

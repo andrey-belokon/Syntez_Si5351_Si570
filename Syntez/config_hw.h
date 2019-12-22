@@ -56,6 +56,15 @@ enum {
 #define SI5351_CLK1_DRIVE   0
 #define SI5351_CLK2_DRIVE   0
 
+// раскоментировать используемый модуль часов Real Time CLock (RTC)
+//#define RTC_DS1307
+#define RTC_PCF8563
+//#define RTC_DS3231
+
+#if defined(RTC_DS1307) || defined(RTC_PCF8563) || defined(RTC_DS3231)
+  #define RTC_ENABLE
+#endif
+
 /*
   I2C address mapping
   0x25  ! PCF8574/LCD board (alt band control I2C_ADR_BAND_CTRL)

@@ -46,7 +46,7 @@ void ShowClockMenu()
   RTCData dt;
   byte selected=0;
   long encval=0;
-  RTC_Read(&dt,0,sizeof(dt));
+  RTC_Read(&dt);
   dt.sec=0;
   PrintRTCData(&dt,buf,items);
   disp.clear();
@@ -321,7 +321,9 @@ void ShowMenu()
       case cmdVFOSel:
         switch (selected) {
           case 0:
-            if (RTC_found()) ShowClockMenu();
+#ifdef RTC_ENABLE
+            ShowClockMenu();
+#endif
             break;
           case 1:
             ShowSMeterMenu();
