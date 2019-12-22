@@ -7,7 +7,7 @@
 
 void Eeprom24C32::setup()
 {
-    i2c_init();
+
 }
 
 bool Eeprom24C32::found()
@@ -93,4 +93,3 @@ void Eeprom24C32::writePage
     // Write cycle time (tWR). See EEPROM memory datasheet for more details.
     delay(10);
 }
-

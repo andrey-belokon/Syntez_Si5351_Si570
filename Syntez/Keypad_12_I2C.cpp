@@ -11,7 +11,6 @@ const uint8_t KeyMap[4][4] = {
 };
 
 void Keypad_12_I2C::setup() {
-  i2c_init();
   if (i2c_device_found(i2c_addr))
     pcf8574_write(0xFF);
   else

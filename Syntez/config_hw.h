@@ -29,9 +29,19 @@ enum {
 // яркость LCD MAX7219 - 1..15
 #define MAX7219_BRIGHT  10
 
+// I2C адрес 1602 LCD
+#define I2C_ADR_DISPLAY_1602  0x27
+
 // раскоментировать используемую клавиатуру (только одну!). закоментировать все если нет клавиатуры
-#define KEYPAD_7
-//#define KEYPAD_12
+#define KEYPAD_6          0x3E
+//#define KEYPAD_7          0x3E
+//#define KEYPAD_12         0x26
+
+// управление RIT потенциометром 0..5в на аналоговый вход. при работе с двумя Si5351 A7 используется для их переключения а RIT управляется валкодером (KEYPAD_6)
+#if defined(KEYPAD_7) || defined(KEYPAD_12)
+  #define PIN_IN_RIT      A7
+#endif
+#define RIT_MAX_VALUE   1200      // максимальная расстройка
 
 // раскоментировать установленные чипы
 #define VFO_SI5351
@@ -43,8 +53,8 @@ enum {
 
 // уровень сигнала на выходе Si5351. 0=2mA, 1=4mA, 2=6mA, 3=8mA
 #define SI5351_CLK0_DRIVE   3
-#define SI5351_CLK1_DRIVE   3
-#define SI5351_CLK2_DRIVE   3
+#define SI5351_CLK1_DRIVE   0
+#define SI5351_CLK2_DRIVE   0
 
 /*
   I2C address mapping
@@ -60,9 +70,6 @@ enum {
 */
 
 // I2C адреса устройств
-#define I2C_ADR_KEYPAD_7      0x3E
-#define I2C_ADR_KEYPAD_12     0x26
-#define I2C_ADR_DISPLAY_1602  0x27
 #define I2C_ADR_EE24C32       0x50
 #define I2C_ADR_BAND_CTRL     0x3B
 
@@ -73,7 +80,6 @@ enum {
 #define PIN_OUT_QRP     7
 #define PIN_OUT_TONE    8
 #define PIN_IN_SMETER   A6
-#define PIN_IN_RIT      A7
 
 #define BANDCTRL_ENABLE
 // распиновка I2C расширителя band control
@@ -112,6 +118,9 @@ enum {
 #define CAT_ENABLE
 #define COM_BAUND_RATE  9600      // скорость обмена COM-порта
 
-#define RIT_MAX_VALUE   1200      // максимальная расстройка
+// интервал опроса S-метра, msec
+#define POLL_SMETER     50
+// интервал проверки и сохранения текущего состояния синтезатора в EEPROM
+#define POLL_EEPROM_STATE 250
 
 #endif

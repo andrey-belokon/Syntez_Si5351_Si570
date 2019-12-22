@@ -1,14 +1,14 @@
-#ifndef KEYPAD7I2C_H
-#define KEYPAD7I2C_H
+#ifndef KEYPAD6I2C_H
+#define KEYPAD6I2C_H
 
 #include <Arduino.h>
 
 /*
- * 7-buttons keypad on PCF8574
- * button connected to P0..P6
+ * 6-buttons keypad on PCF8574
+ * button connected to P0..P5
  */
 
-class Keypad_7_I2C {
+class Keypad_6_I2C {
   private:
     uint8_t i2c_addr;
     uint8_t last_code;
@@ -19,7 +19,7 @@ class Keypad_7_I2C {
     void pcf8574_write(uint8_t data);
     uint8_t pcf8574_byte_read();
   public:
-	  Keypad_7_I2C(uint8_t _i2c_addr): i2c_addr(_i2c_addr), last_code(-1), FnPressed(0), KeyPressed(0), last_code_tm(0), fn_press_tm(0) {}
+	  Keypad_6_I2C(uint8_t _i2c_addr): i2c_addr(_i2c_addr), last_code(-1), FnPressed(0), KeyPressed(0), last_code_tm(0), fn_press_tm(0) {}
     
     void setup();
     
@@ -31,6 +31,7 @@ class Keypad_7_I2C {
     // нажата ли Fn
     uint8_t IsFnPressed() { return FnPressed; }
     void SetKeyPressed() { KeyPressed = true; }
+    uint8_t IsKeyPressed() { return KeyPressed; }
 };
 
 #endif

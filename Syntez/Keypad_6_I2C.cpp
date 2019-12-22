@@ -1,15 +1,21 @@
-#include "Keypad_7_I2C.h"
+#include "Keypad_6_I2C.h"
 #include "i2c.h"
 #include "config.h"
 
-void Keypad_7_I2C::setup() {
+void Keypad_6_I2C::setup() {
   if (i2c_device_found(i2c_addr))
     pcf8574_write(0xFF);
   else
     i2c_addr=0;
 }
 
-uint8_t Keypad_7_I2C::Read() 
+const uint8_t KeyMap[11] = {
+  cmdNone,
+  cmdBandDown, cmdBandUp, cmdAttPre, cmdVFOSel, cmdRIT,
+  cmdLock, cmdZero, cmdHam, cmdSplit, cmdUSBLSB // with Fn pressed
+};
+
+uint8_t Keypad_6_I2C::Read() 
 {
   if (i2c_addr == 0) return cmdNone;
   if (millis()-last_code_tm < 50) return cmdNone;
@@ -17,23 +23,23 @@ uint8_t Keypad_7_I2C::Read()
   pcf8574_write(0xFF);
   uint8_t scan = ~pcf8574_byte_read();
   uint8_t code = 0;
-  if (scan & 0x01) code = cmdBandUp;
-  else if (scan & 0x02) code = cmdBandDown;
-  else if (scan & 0x04) code = cmdLock;
-  else if (scan & 0x08) code = cmdVFOSel;
-  else if (scan & 0x20) code = cmdAttPre;
-  else if (scan & 0x10) code = cmdVFOEQ;
+  if (scan & 0x01) code = 1;
+  else if (scan & 0x02) code = 2;
+  else if (scan & 0x04) code = 3;
+  else if (scan & 0x08) code = 4;
+  else if (scan & 0x10) code = 5;
 
   if (code) {
     if (last_code) return cmdNone;
     else {
-      if (scan & 0x40) code+=6;
+      if (scan & 0x20) code+=5;
+      code = KeyMap[code];
       last_code = code;
       last_code_tm = millis();
       KeyPressed = true;
       return code;
     }
-  } else if (scan & 0x40) {
+  } else if (scan & 0x20) {
     last_code = 0;
     FnPressed = true;
     fn_press_tm = millis();
@@ -53,14 +59,14 @@ uint8_t Keypad_7_I2C::Read()
   }
 }
 
-void Keypad_7_I2C::pcf8574_write(uint8_t data) 
+void Keypad_6_I2C::pcf8574_write(uint8_t data) 
 {
   i2c_begin_write(i2c_addr);
   i2c_write(data);
   i2c_end();
 }
 
-uint8_t Keypad_7_I2C::pcf8574_byte_read() 
+uint8_t Keypad_6_I2C::pcf8574_byte_read() 
 {
   i2c_begin_read(i2c_addr);
   uint8_t data = i2c_read();

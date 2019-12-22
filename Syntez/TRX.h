@@ -44,12 +44,11 @@ class TRX {
 
 class TRXDisplay {
   public:
-    virtual void setup() {}
-    virtual void reset() {}
-	  virtual void Draw(TRX& trx) {}
-    virtual void clear() {}
-    virtual void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize) {}
+    virtual void setup() = 0;
+    virtual void reset() = 0;
+	  virtual void Draw(TRX& trx) = 0;
+    virtual void clear() = 0;
+    virtual void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize) = 0;
 };
 
 #endif
-

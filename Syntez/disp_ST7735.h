@@ -130,7 +130,7 @@ void drawFreq(int x, int y, long f, color_t c)
     tft.fillRect(x+w,y-40,160-w,32,ST7735_BLACK);
     tft.setCursor(x+w,y);
     tft.print(buf);
-    while (*oldbuf++=*buf++);
+    while ((*oldbuf++=*buf++) != 0);
   }
 }
 
@@ -261,14 +261,14 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   }
 
   if (trx.QRP != cur_qrp) {
-    if (cur_qrp=trx.QRP) 
+    if ((cur_qrp=trx.QRP) != 0) 
       drawBtn(32,BTN_Y,30,20,"QRP",ST7735_BLUE,ST7735_WHITE);
     else
       drawBtn(32,BTN_Y,30,20,"QRP",ST7735_BLACK,ST7735_DARKGRAY);
   }
   
   if (trx.RIT != cur_rit) {
-    if (cur_rit=trx.RIT) {
+    if ((cur_rit=trx.RIT) != 0) {
       drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLUE,ST7735_WHITE);
       cur_ritval=0xffff;
     } else {
@@ -302,7 +302,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   }
 
   if (trx.state.Split != cur_split) {
-    if (cur_split=trx.state.Split)
+    if ((cur_split=trx.state.Split) != 0)
       drawBtn(98,BTN_Y,30,20,"SPL",ST7735_BLUE,ST7735_WHITE);
     else
       drawBtn(98,BTN_Y,30,20,"SPL",ST7735_BLACK,ST7735_DARKGRAY);
@@ -317,7 +317,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   }
 
   if (trx.TX != cur_tx) {
-    if (cur_tx=trx.TX) 
+    if ((cur_tx=trx.TX) != 0) 
       drawBtn(0,1,30,20,"TX",ST7735_RED,ST7735_YELLOW);
     else
       drawBtn(0,1,30,20,"RX",ST7735_BLACK,ST7735_GREEN);
@@ -326,7 +326,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   uint8_t sb = trx.state.sideband;
   if (trx.BandIndex >= 0 && Bands[trx.BandIndex].sideband != trx.state.sideband) sb |= 0x80;
   if (sb != cur_sideband) {
-    char *sb_txt = (trx.state.sideband == LSB ? "LSB" : "USB");
+    const char *sb_txt = (trx.state.sideband == LSB ? "LSB" : "USB");
     cur_sideband=sb;
     if (sb & 0x80)
       drawBtn(87,0,30,20,sb_txt,ST7735_RED,ST7735_YELLOW);
@@ -350,7 +350,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
 
   uint8_t cw=trx.inCW();
   if (cw != cur_cw) {
-    if (cur_cw=cw)
+    if ((cur_cw=cw) != 0)
       drawBtn(56,0,30,20,"CW",ST7735_BLACK,ST7735_DARKYELLOW);
     else
       drawBtn(56,0,30,20,"CW",ST7735_BLACK,ST7735_DARKGRAY);
@@ -388,6 +388,7 @@ void Display_ST7735_SPI::clear()
 
 void Display_ST7735_SPI::DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize)
 {
+  (void)(fontsize); // supress warning about unused params
   tft.setFont(NULL);
   tft.setTextSize(1); // override and use always small font size
   tft.setTextColor(ST7735_YELLOW,ST7735_BLACK);

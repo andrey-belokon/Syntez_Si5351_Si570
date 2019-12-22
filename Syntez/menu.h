@@ -1,6 +1,6 @@
 ///////////////////////////// menu functions ////////////////////////
 
-char *fmt_hex_val(char *buf, char *title, uint8_t val)
+char *fmt_hex_val(char *buf, const char *title, uint8_t val)
 {
   buf = cwr_hex2(cwr_str(buf,title),val);
   *buf++ = 0;
@@ -45,7 +45,7 @@ void ShowClockMenu()
   char *items[7];
   RTCData dt;
   byte selected=0;
-  long encval;
+  long encval=0;
   RTC_Read(&dt,0,sizeof(dt));
   dt.sec=0;
   PrintRTCData(&dt,buf,items);
@@ -75,7 +75,6 @@ void ShowClockMenu()
     }
 #ifdef ENCODER_ENABLE
     encval += encoder.GetDelta();
-#endif    
     int delta = encval / (ENCODER_FREQ_LO_STEP/6);
     if (delta != 0) {
       switch (selected) {
@@ -107,6 +106,7 @@ void ShowClockMenu()
       PrintRTCData(&dt,buf,items);
       disp.DrawMenu(title,(const char**)items,selected,help,2);
       encval=0;
+#endif    
     }
   }
 }
@@ -149,8 +149,9 @@ void ShowSSBDetFreqMenu()
   int LSB_shift=SSBShift_LSB, USB_shift=SSBShift_USB;
   byte selected=0;
   long encval=0;
+  int delta;
   strcpy_P(title,PSTR("Tune IF freq"));
-#ifdef SSBDetectorFreq_LSB && SSBDetectorFreq_USB
+#if defined(SSBDetectorFreq_LSB) && defined(SSBDetectorFreq_USB)
   strcpy_P(help,PSTR("Up/Down - move\nA=B - reset\nA/B - save & exit\nFn/Lock - exit no save\nuse encoder for change"));
 #else  
   strcpy_P(help,PSTR("A=B - reset\nFn/Lock - exit no save\nA/B - save & exit\nuse encoder for change"));
@@ -159,9 +160,8 @@ void ShowSSBDetFreqMenu()
   goto l_redraw_full;
 
   while (1) {
-    uint8_t keycode=keypad.Read();
-    switch (keycode) {
-#ifdef SSBDetectorFreq_LSB && SSBDetectorFreq_USB
+    switch (keypad.Read()) {
+#if defined(SSBDetectorFreq_LSB) && defined(SSBDetectorFreq_USB)
       case cmdBandUp:
         if (selected > 0) selected--;
         else selected=1;
@@ -177,8 +177,8 @@ void ShowSSBDetFreqMenu()
       case cmdVFOSel:
         SSBShift_LSB=LSB_shift;
         SSBShift_USB=USB_shift;
-        eeprom_write_word(&SSBShift_LSB_EEMEM, uint16_t(SSBShift_LSB));
-        eeprom_write_word(&SSBShift_USB_EEMEM, uint16_t(SSBShift_USB));
+        eeprom_write_word((uint16_t*)&SSBShift_LSB_EEMEM, (uint16_t)SSBShift_LSB);
+        eeprom_write_word((uint16_t*)&SSBShift_USB_EEMEM, (uint16_t)SSBShift_USB);
         return;
       case cmdMenu:
       case cmdLock:
@@ -186,10 +186,9 @@ void ShowSSBDetFreqMenu()
     }
 #ifdef ENCODER_ENABLE
     encval += encoder.GetDelta();
-#endif    
-    int delta = encval / (ENCODER_FREQ_LO_STEP/100);
+    delta = encval / (ENCODER_FREQ_LO_STEP/100);
     if (delta != 0) {
-#ifdef SSBDetectorFreq_LSB && SSBDetectorFreq_USB
+#if defined(SSBDetectorFreq_LSB) && defined(SSBDetectorFreq_USB)
       switch (selected) {
         case 0:
           LSB_shift+=delta;
@@ -198,11 +197,12 @@ void ShowSSBDetFreqMenu()
           USB_shift+=delta;
           break;
       }
-#elif SSBDetectorFreq_LSB
+#elif defined(SSBDetectorFreq_LSB)
       LSB_shift+=delta;
-#elif SSBDetectorFreq_USB
+#elif defined(SSBDetectorFreq_USB)
       USB_shift+=delta;
 #endif
+#endif    
     l_redraw_full:
       PrintSSBFreqData(
 #ifdef SSBDetectorFreq_LSB
@@ -280,13 +280,13 @@ void ShowSMeterMenu()
 
 void ShowSiCalibrationMenu()
 {
-  char* MenuItems[] = {NULL};
+  const char* MenuItems[] = {NULL};
   char title[15];
   char help[22];
   strcpy_P(title,PSTR("Si Calibration"));
   strcpy_P(help,PSTR("press any key to exit"));
   disp.clear();
-  byte selected;
+  byte selected=0;
   disp.DrawMenu(title,MenuItems,selected,help,2);
 #ifdef VFO_SI5351
   vfo5351.out_calibrate_freq();
@@ -299,7 +299,7 @@ void ShowSiCalibrationMenu()
 
 void ShowMenu()
 {
-  char* MenuItems[] = {"Clock","S-Meter","Si calibration","SSB freq",NULL};
+  const char* MenuItems[] = {"Clock","S-Meter","Si calibration","SSB freq",NULL};
   char title[10];
   char help[45];
   strcpy_P(title,PSTR("Main menu"));

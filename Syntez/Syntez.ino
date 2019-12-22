@@ -27,6 +27,9 @@ I2C device found at address 0x60
   #include "Encoder.h"
 #endif
 
+#ifdef KEYPAD_6
+  #include "Keypad_6_I2C.h"
+#endif
 #ifdef KEYPAD_7
   #include "Keypad_7_I2C.h"
 #endif
@@ -59,12 +62,16 @@ I2C device found at address 0x60
 #endif
 
 #define KEYPAD_DISABLE
+#ifdef KEYPAD_6
+  Keypad_6_I2C keypad(KEYPAD_6);
+  #undef KEYPAD_DISABLE
+#endif
 #ifdef KEYPAD_7
-  Keypad_7_I2C keypad(I2C_ADR_KEYPAD_7);
+  Keypad_7_I2C keypad(KEYPAD_7);
   #undef KEYPAD_DISABLE
 #endif
 #ifdef KEYPAD_12
-  Keypad_12_I2C keypad(I2C_ADR_KEYPAD_12);
+  Keypad_12_I2C keypad(KEYPAD_12);
   #undef KEYPAD_DISABLE
 #endif
 
@@ -113,19 +120,28 @@ InputPullUpPin inTX(PIN_IN_TX);
 InputPullUpPin inTune(PIN_IN_TUNE);
 OutputBinPin outTX(PIN_OUT_TX,false,HIGH);
 OutputBinPin outQRP(PIN_OUT_QRP,false,HIGH);
+#ifdef PIN_IN_RIT
 InputAnalogPin inRIT(PIN_IN_RIT,5);
+#endif
 InputAnalogPin inSMeter(PIN_IN_SMETER);
 
 #ifdef BANDCTRL_ENABLE
   OutputPCF8574 outBandCtrl(I2C_ADR_BAND_CTRL,0);
 #endif
 
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+
 void setup()
 {
-  i2c_init();
+  // set an ADC prescale to 16 --> 76.8kHz per sample
+  sbi(ADCSRA, ADPS2);
+  cbi(ADCSRA, ADPS1);
+  cbi(ADCSRA, ADPS0);
+  i2c_init(400000);
   eeprom_read_block(SMeterMap, SMeterMap_EEMEM, sizeof(SMeterMap));
-  SSBShift_LSB = (int)eeprom_read_word(&SSBShift_LSB_EEMEM);
-  SSBShift_USB = (int)eeprom_read_word(&SSBShift_USB_EEMEM);
+  SSBShift_LSB = (int)eeprom_read_word((const uint16_t*)&SSBShift_LSB_EEMEM);
+  SSBShift_USB = (int)eeprom_read_word((const uint16_t*)&SSBShift_USB_EEMEM);
 #ifdef CAT_ENABLE
   Serial.begin(COM_BAUND_RATE);
 #endif    
@@ -149,7 +165,9 @@ void setup()
 #endif
   inTX.setup();
   inTune.setup();
+#ifdef PIN_IN_RIT
   inRIT.setup();
+#endif
   outTX.setup();
   outQRP.setup();
 #ifndef DISPLAY_DISABLE
@@ -159,6 +177,9 @@ void setup()
     ee24c32.setup();
     trx.StateLoad(ee24c32);
   }
+  // si5351
+  pinMode(A7,OUTPUT);
+  digitalWrite(A7,0);
 }
 
 void vfo_set_freq(long f1, long f2, long f3)
@@ -392,9 +413,13 @@ void loop()
 {
   bool tune = inTune.Read();
   trx.TX = tune || inTX.Read();
+
 #ifndef KEYPAD_DISABLE
   uint8_t cmd;
   static long last_menu_tm = 0;
+#ifdef KEYPAD_6
+  static long last_vfosel_tm = 0;
+#endif
   if ((cmd = keypad.Read()) != cmdNone) {
     if (cmd == cmdMenu) {
       // double press at 1sec
@@ -411,8 +436,26 @@ void loop()
         last_menu_tm = millis();
       }
     } else {
+#ifdef KEYPAD_6
+      if (cmd == cmdVFOSel) {
+        cmd = cmdNone;
+        last_vfosel_tm = millis();
+      } else
+#endif
       trx.ExecCommand(cmd);
     }
+#ifdef KEYPAD_6
+  } else {
+    if (last_vfosel_tm > 0) {
+      if (millis()-last_vfosel_tm >= 1000) {
+        trx.ExecCommand(cmdVFOEQ);
+        last_vfosel_tm = 0;
+      } else if (!keypad.IsKeyPressed()) {
+        trx.ExecCommand(cmdVFOSel);
+        last_vfosel_tm = 0;
+      }
+    }
+#endif
 #ifdef KEYPAD_12
   } else {
     // при однократном нажатии Menu включаем Lock через 1 сек
@@ -423,22 +466,17 @@ void loop()
 #endif    
   }
 #endif    
-  if (trx.RIT)
-    trx.RIT_Value = (long)inRIT.ReadRaw()*2*RIT_MAX_VALUE/1024-RIT_MAX_VALUE;
-/*
-  // debug code for measure loop() excecution speed
-  // n v.2.0 16-25 msec
-  static long zzz=0, last_zzz=0;
-  zzz++;
-  if (millis()-last_zzz >= 1000) {
-    last_zzz=millis();
-    trx.state.VFO[trx.GetVFOIndex()^1] = zzz*10;
-    zzz=0;
-  }
-*/
+
 #ifdef ENCODER_ENABLE
   long delta = encoder.GetDelta();
   if (delta) {
+#ifdef KEYPAD_6
+    if (keypad.IsKeyPressed() && keypad.GetLastCode() == cmdRIT) {  
+      trx.RIT_Value = trx.RIT_Value + delta/10;
+      if (trx.RIT_Value > RIT_MAX_VALUE) trx.RIT_Value = RIT_MAX_VALUE;
+      if (trx.RIT_Value < -RIT_MAX_VALUE) trx.RIT_Value = -RIT_MAX_VALUE;
+    } else {
+#endif
 #ifndef KEYPAD_DISABLE
     if (keypad.IsFnPressed()) {
       delta*=ENCODER_FN_MULT;
@@ -446,47 +484,80 @@ void loop()
     }
 #endif    
     trx.ChangeFreq(delta);
+#ifdef KEYPAD_6
+    }
+#endif    
   }
 #endif    
   UpdateFreq();
+
   outQRP.Write(trx.QRP || tune);
   OutputTone(PIN_OUT_TONE,tune);
   outTX.Write(trx.TX);
   UpdateBandCtrl();
+
   // read and convert smeter
-  int val = inSMeter.Read();
-  trx.SMeter =  0;
-  bool rev_order = SMeterMap[0] > SMeterMap[14];
-  for (uint8_t i=14; i >= 0; i--) {
-    if (!rev_order && val > SMeterMap[i] || rev_order && val < SMeterMap[i]) {
-      trx.SMeter =  i+1;
-      break;
+  static long smeter_tm = 0;
+  if (millis()-smeter_tm > POLL_SMETER) {
+    int val = inSMeter.Read();
+    trx.SMeter =  0;
+    bool rev_order = SMeterMap[0] > SMeterMap[14];
+    for (int8_t i=14; i >= 0; i--) {
+      if ((!rev_order && val > SMeterMap[i]) || (rev_order && val < SMeterMap[i])) {
+        trx.SMeter =  i+1;
+        break;
+      }
     }
+#ifdef PIN_IN_RIT
+    if (trx.RIT)
+      trx.RIT_Value = (long)inRIT.ReadRaw()*2*RIT_MAX_VALUE/1024-RIT_MAX_VALUE;
+#endif
+    smeter_tm = millis();
   }
+
   // refresh display
 #ifndef DISPLAY_DISABLE
   disp.Draw(trx);
 #endif  
+
 #ifdef CAT_ENABLE
   // CAT
   if (Serial.available() > 0) {
     ExecCAT();
   }
 #endif
+
+  // save state to EEPROM
   if (ee24c32.found()) {
     // save current state to 24C32 (if changed)
-    static uint16_t state_hash = 0;
-    static uint8_t state_changed = false;
-    static long state_changed_tm = 0;
-    uint16_t new_state_hash = trx.StateHash();
-    if (new_state_hash != state_hash) {
-      state_hash = new_state_hash;
-      state_changed = true;
-      state_changed_tm = millis();
-    } else if (state_changed && (millis()-state_changed_tm > 5000)) {
-      // save state
-      trx.StateSave(ee24c32);
-      state_changed = false;
+    static long state_poll_tm = 0;
+    if (millis()-state_poll_tm > POLL_EEPROM_STATE) {
+      static uint16_t state_hash = 0;
+      static uint8_t state_changed = false;
+      static long state_changed_tm = 0;
+      uint16_t new_state_hash = trx.StateHash();
+      if (new_state_hash != state_hash) {
+        state_hash = new_state_hash;
+        state_changed = true;
+        state_changed_tm = millis();
+      } else if (state_changed && (millis()-state_changed_tm > 5000)) {
+        // save state
+        trx.StateSave(ee24c32);
+        state_changed = false;
+      }
+      state_poll_tm = millis();
     }
   }
+  
+/*
+  // debug code for measure loop() excecution speed
+  // 1.4-7 msec ST7735
+  static long zzz=0, last_zzz=0;
+  zzz++;
+  if (millis()-last_zzz >= 1000) {
+    last_zzz=millis();
+    trx.state.VFO[trx.GetVFOIndex()^1] = zzz*100;
+    zzz=0;
+  }
+*/
 }

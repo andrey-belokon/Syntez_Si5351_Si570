@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include "utils.h"
 
-char *cwr_str(char *p, char *v)
+char *cwr_str(char *p, const char *v)
 {
-  while (*p++=*v++) ;
+  while ((*p++=*v++) != 0) ;
   return p-1;
 }
 
@@ -67,4 +67,3 @@ long atoln(char *buf, uint8_t n)
     v = v*10 + (*buf++) - 0x30;
   return v;
 }
-
