@@ -5,7 +5,6 @@
 #define DISPLAY_ST7735
 //#define DISPLAY_ILI9341
 //#define DISPLAY_1602
-//#define DISPLAY_MAX7219
 
 // ST7735 has several variations, set your version based on this list (using the color of the "tab" on the screen cover).
 // NOTE: The tab colors refer to Adafruit versions, other suppliers may vary (you may have to experiment to find the right one).
@@ -25,9 +24,6 @@ enum {
 
 // значения 0/1 определяют ориентацию вывода на TFT
 #define TFT_ORIENTATION   1
-
-// яркость LCD MAX7219 - 1..15
-#define MAX7219_BRIGHT  10
 
 // I2C адрес 1602 LCD
 #define I2C_ADR_DISPLAY_1602  0x27
