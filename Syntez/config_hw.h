@@ -45,16 +45,29 @@ enum {
 
 // раскоментировать установленные чипы
 #define VFO_SI5351
+#define VFO_SI5351_2
 //#define VFO_SI570
+
+#if defined(VFO_SI5351_2) && !defined(VFO_SI5351)
+  #error Invalid combination of used SI5351
+#endif
+
+#ifdef VFO_SI5351_2
+  #define PIN_SELECT_SI5351   A7
+#endif
 
 // выбрать в меню калибровку и прописать измеренные частоты на выходах синтезаторов
 #define SI5351_CALIBRATION       26000000
+#define SI5351_2_CALIBRATION     26000000
 #define SI570_CALIBRATION        56319832
 
 // уровень сигнала на выходе Si5351. 0=2mA, 1=4mA, 2=6mA, 3=8mA
 #define SI5351_CLK0_DRIVE   3
 #define SI5351_CLK1_DRIVE   0
 #define SI5351_CLK2_DRIVE   0
+#define SI5351_2_CLK0_DRIVE   3
+#define SI5351_2_CLK1_DRIVE   0
+#define SI5351_2_CLK2_DRIVE   0
 
 // раскоментировать используемый модуль часов Real Time CLock (RTC)
 //#define RTC_DS1307

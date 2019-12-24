@@ -1,19 +1,10 @@
 //
 // UR5FFR Si570/Si5351 VFO
-// v2.0 from 4.02.2018
-// Copyright (c) Andrey Belokon, 2016-2018 Odessa 
+// v3.0 from 24.12.2019
+// Copyright (c) Andrey Belokon, 2016-2019 Odessa 
 // https://github.com/andrey-belokon/
 // GNU GPL license
 //
-
-/* Universal board
-I2C device found at address 0x3B  !
-I2C device found at address 0x3E  !
-I2C device found at address 0x50  !
-I2C device found at address 0x51  !
-I2C device found at address 0x55  !
-I2C device found at address 0x60  
-*/
 
 // !!! all user setting defined in config.h, config_hw.h and config_sw.h files !!!
 #include "config.h"
@@ -56,7 +47,7 @@ I2C device found at address 0x60
   #include "disp_MAX7219.h"
 #endif
 
-#ifdef VFO_SI5351
+#if defined(VFO_SI5351) || defined(VFO_SI5351_2)
   #include "si5351a.h"
 #endif
 #ifdef VFO_SI570  
@@ -106,8 +97,17 @@ Eeprom24C32 ee24c32(I2C_ADR_EE24C32);
 #ifdef VFO_SI5351
   Si5351 vfo5351;
 #endif
+#ifdef VFO_SI5351_2
+  Si5351 vfo5351_2;
+#endif
 #ifdef VFO_SI570  
   Si570 vfo570;
+#endif
+
+#if defined(VFO_SI5351) && defined(VFO_SI5351_2)
+  #define   SELECT_SI5351(x)    digitalWrite(PIN_SELECT_SI5351,x)
+#else
+  #define   SELECT_SI5351(x)
 #endif
 
 int EEMEM SMeterMap_EEMEM[15] = {0};
@@ -141,6 +141,10 @@ void setup()
   cbi(ADCSRA, ADPS1);
   cbi(ADCSRA, ADPS0);
   i2c_init(400000);
+#ifdef PIN_SELECT_SI5351
+  pinMode(PIN_SELECT_SI5351,OUTPUT);
+  digitalWrite(PIN_SELECT_SI5351,0);
+#endif
   eeprom_read_block(SMeterMap, SMeterMap_EEMEM, sizeof(SMeterMap));
   SSBShift_LSB = (int)eeprom_read_word((const uint16_t*)&SSBShift_LSB_EEMEM);
   SSBShift_USB = (int)eeprom_read_word((const uint16_t*)&SSBShift_USB_EEMEM);
@@ -149,12 +153,23 @@ void setup()
 #endif    
 #ifdef VFO_SI5351
   // change for required output level
+  SELECT_SI5351(0);
   vfo5351.setup(
     SI5351_CLK0_DRIVE,
     SI5351_CLK1_DRIVE,
     SI5351_CLK2_DRIVE
   );
   vfo5351.set_xtal_freq(SI5351_CALIBRATION);
+#endif  
+#ifdef VFO_SI5351_2
+  // change for required output level
+  SELECT_SI5351(1);
+  vfo5351_2.setup(
+    SI5351_2_CLK0_DRIVE,
+    SI5351_2_CLK1_DRIVE,
+    SI5351_2_CLK2_DRIVE
+  );
+  vfo5351_2.set_xtal_freq(SI5351_2_CALIBRATION);
 #endif  
 #ifdef VFO_SI570  
   vfo570.setup(SI570_CALIBRATION);
@@ -179,21 +194,32 @@ void setup()
     ee24c32.setup();
     trx.StateLoad(ee24c32);
   }
-  // si5351
-  pinMode(A7,OUTPUT);
-  digitalWrite(A7,0);
 }
 
 void vfo_set_freq(long f1, long f2, long f3)
 {
 #ifdef VFO_SI570  
   vfo570.set_freq(f1);
-  #ifdef VFO_SI5351
-    vfo5351.set_freq(f2,f3,0);
+  #ifdef VFO_SI5351_2
+    SELECT_SI5351(0);
+    vfo5351.set_freq(f2,0,0);
+    SELECT_SI5351(1);
+    vfo5351_2.set_freq(f3,0,0);
+  #else
+    #ifdef VFO_SI5351
+      vfo5351.set_freq(f2,f3,0);
+    #endif
   #endif
 #else
-  #ifdef VFO_SI5351
-    vfo5351.set_freq(f1,f2,f3);
+  #ifdef VFO_SI5351_2
+    SELECT_SI5351(0);
+    vfo5351.set_freq(f1,0,0);
+    SELECT_SI5351(1);
+    vfo5351_2.set_freq(f2,f3,0);
+  #else
+    #ifdef VFO_SI5351
+      vfo5351.set_freq(f1,f2,f3);
+    #endif
   #endif
 #endif
 }
@@ -211,6 +237,7 @@ void UpdateFreq()
 
 #ifdef MODE_DC_QUADRATURE
   #ifdef VFO_SI5351
+    SELECT_SI5351(0);
     vfo5351.set_freq_quadrature(
       trx.state.VFO[trx.GetVFOIndex()] + (trx.RIT && !trx.TX ? trx.RIT_Value : 0),
       0

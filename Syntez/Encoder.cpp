@@ -14,7 +14,7 @@ long HILO_TRASHOLD_TM;
 volatile uint8_t aFlag = 0;
 volatile uint8_t bFlag = 0;
 volatile long EncoderValue = 0;
-volatile unsigned long last_tm = 0;
+volatile long last_tm = 0;
 
 Encoder::Encoder(int EncPulsePerTurn, int StepLo, int StepHi, int HiLoStepTrashold) {
     LO_STEP = StepLo/EncPulsePerTurn;
@@ -82,4 +82,3 @@ void Encoder::setup() {
   attachInterrupt(1,PinB,RISING); // set an interrupt on PinB, looking for a rising edge signal and executing the "PinB" Interrupt Service Routine (below)
   sei();
 }
-

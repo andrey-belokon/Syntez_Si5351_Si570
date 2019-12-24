@@ -289,7 +289,12 @@ void ShowSiCalibrationMenu()
   byte selected=0;
   disp.DrawMenu(title,MenuItems,selected,help,2);
 #ifdef VFO_SI5351
+  SELECT_SI5351(0);
   vfo5351.out_calibrate_freq();
+#endif
+#ifdef VFO_SI5351_2
+  SELECT_SI5351(1);
+  vfo5351_2.out_calibrate_freq();
 #endif
 #ifdef VFO_SI570
   vfo570.out_calibrate_freq();

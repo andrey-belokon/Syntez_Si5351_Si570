@@ -91,7 +91,6 @@ void Display_1602_I2C::Draw(TRX& trx) {
     else buf[1][7]  = 'U';
   }
 
-  static long last_tmtm=0;
   if (trx.state.Split && trx.RIT) {
     if ((millis() / 700) & 1) {
       buf[1][12] = 'S';
@@ -112,15 +111,18 @@ void Display_1602_I2C::Draw(TRX& trx) {
     buf[1][14] = 'T';
   } else {
 #ifdef RTC_ENABLE
-    RTCData d;
-    char *pb;
-    last_tmtm=millis();
-    RTC_Read(&d);
-    //sprintf(buf,"%2x:%02x",d.hour,d.min);
-    pb=cwr_hex2sp(buf[1]+11,d.hour);
-    if (millis()/1000 & 1) *pb++=':';
-    else *pb++=' ';
-    pb=cwr_hex2(pb,d.min);
+    static long last_tmtm=0;
+    if (millis()-last_tmtm > 200) {
+      RTCData d;
+      char *pb;
+      last_tmtm=millis();
+      RTC_Read(&d);
+      //sprintf(buf,"%2x:%02x",d.hour,d.min);
+      pb=cwr_hex2sp(buf[1]+11,d.hour);
+      if (millis()/1000 & 1) *pb++=':';
+      else *pb++=' ';
+      pb=cwr_hex2(pb,d.min);
+    }
 #endif
   }
 
@@ -174,6 +176,8 @@ void Display_1602_I2C::DrawMenu(const char* title, const char** items, uint8_t s
 {
   char buf[2][17];
 
+  (void)(help); // supress warning about unused params
+  (void)(fontsize); // supress warning about unused params
   memset(buf,' ',34);
   strncpy(buf[0],title,16);
   //sprintf(buf[1],">%s",items[selected]);

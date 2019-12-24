@@ -82,42 +82,46 @@ int InputAnalogPin::ReadRaw()
   return value;
 }
 
-void OutputBinPin::setup() {
+void OutputBinPin::setup() 
+{
   if (pin != PIN_NC) {
     pinMode(pin, OUTPUT);
     Write(def_value);
   }
 }
 
-void OutputBinPin::Write(uint8_t value) {
+void OutputBinPin::Write(uint8_t value) 
+{
   if (pin != PIN_NC && state != value) {
 	  digitalWrite(pin,value?(active_level == HIGH?HIGH:LOW):(active_level == HIGH?LOW:HIGH));
 	  state = value;
   }
 }
 
-void OutputPCF8574::setup() {
+void OutputPCF8574::setup() 
+{
   pcf8574_write(value);
 }
 
-void OutputPCF8574::Set(uint8_t pin, uint8_t state) {
+void OutputPCF8574::Set(uint8_t pin, uint8_t state) 
+{
   if (state) value |= (1 << (pin & 0x7));
   else value &= ~(1 << (pin & 0x7));
 }
 
-void OutputPCF8574::Write() {
+void OutputPCF8574::Write() 
+{
   if (value != old_value) {
 	  pcf8574_write(value);
 	  old_value = value;
   }
 }
 
-void OutputPCF8574::pcf8574_write(uint8_t data) {
-  if (i2c_addr >= 0) {
-	  i2c_begin_write(i2c_addr);
-	  i2c_write(data);
-    i2c_end();
-  }
+void OutputPCF8574::pcf8574_write(uint8_t data) 
+{
+  i2c_begin_write(i2c_addr);
+	i2c_write(data);
+  i2c_end();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
