@@ -79,10 +79,6 @@
   #undef DISPLAY_DISABLE
 #endif
 
-#ifdef ENCODER_ENABLE
-  Encoder encoder(ENCODER_PULSE_PER_TURN,ENCODER_FREQ_LO_STEP,ENCODER_FREQ_HI_STEP,ENCODER_FREQ_HI_LO_TRASH);
-#endif
-
 TRX trx;
 
 Eeprom24C32 ee24c32(I2C_ADR_EE24C32);
@@ -168,7 +164,7 @@ void setup()
   vfo570.setup(SI570_CALIBRATION);
 #endif  
 #ifdef ENCODER_ENABLE
-  encoder.setup();
+  Encoder_Setup();
 #endif  
 #ifndef KEYPAD_DISABLE
   keypad.setup();
@@ -490,7 +486,7 @@ void loop()
 #endif    
 
 #ifdef ENCODER_ENABLE
-  long delta = encoder.GetDelta();
+  long delta = Encoder_GetDelta();
   if (delta) {
 #ifdef KEYPAD_6
     if (keypad.IsKeyPressed() && keypad.GetLastCode() == cmdRIT) {  
