@@ -17,7 +17,9 @@ class Display_ST7735_SPI: public TRXDisplay {
 	  void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize);
 };
 
-#include "RTC.h"
+#ifdef RTC_ENABLE
+  #include "RTC.h"
+#endif
 #include <SPI.h>        // must include this here (or else IDE can't find it)                                         
 #include "utils.h"
 

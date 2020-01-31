@@ -1,5 +1,7 @@
 #include "disp_1602.h"
-#include "RTC.h"
+#ifdef RTC_ENABLE
+  #include "RTC.h"
+#endif
 #include "utils.h"
 
 byte chInverseT[8] = { 0b11111, 0b11111, 0b11111, 0b10001, 0b11011, 0b11011, 0b11111, 0b11111};

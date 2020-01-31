@@ -1,5 +1,7 @@
 ///////////////////////////// menu functions ////////////////////////
 
+#ifdef RTC_ENABLE
+
 char *fmt_hex_val(char *buf, const char *title, uint8_t val)
 {
   buf = cwr_hex2(cwr_str(buf,title),val);
@@ -110,6 +112,8 @@ void ShowClockMenu()
     }
   }
 }
+
+#endif
 
 void PrintSSBFreqData(
 #ifdef SSBDetectorFreq_LSB

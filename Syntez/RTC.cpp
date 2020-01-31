@@ -2,6 +2,8 @@
 #include "RTC.h"
 #include "i2c.h"
 
+#ifdef RTC_ENABLE
+
 #ifdef RTC_PCF8563
 #define RTC_I2C_ADDRESS 0x51
 #define REG_ADDR        0x2
@@ -12,8 +14,6 @@
 #define REG_ADDR        0
 #endif
 
-//const uint8_t RTC_BITMASK[7] = {B01111111, B01111111, B00111111, B00111111, B00000111, B00011111, 0xFF};
- 
 void RTC_Write(RTCData* data)
 {
   byte *p=(byte *)data;
@@ -35,3 +35,15 @@ void RTC_Read(RTCData* data)
     //for (byte i=0; i < 7; i++) *p++ &= RTC_BITMASK[i];
   }
 }
+
+#else
+
+void RTC_Write(RTCData* data)
+{
+}
+
+void RTC_Read(RTCData* data)
+{
+}
+
+#endif

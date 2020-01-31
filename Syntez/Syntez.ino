@@ -29,7 +29,7 @@
 #endif
 
 #ifdef RTC_ENABLE
-#include "RTC.h"
+  #include "RTC.h"
 #endif
 #include "Eeprom24C32.h"
 #include "TRX.h"
@@ -567,7 +567,7 @@ void loop()
     }
   }
   
-/*
+/*  
   // debug code for measure loop() excecution speed
   // 1.4-7 msec ST7735
   static long zzz=0, last_zzz=0;
@@ -577,5 +577,5 @@ void loop()
     trx.state.VFO[trx.GetVFOIndex()^1] = zzz*100;
     zzz=0;
   }
-*/
+*/  
 }

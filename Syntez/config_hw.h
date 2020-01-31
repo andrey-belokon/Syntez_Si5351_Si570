@@ -67,7 +67,7 @@ enum {
 
 // раскоментировать используемый модуль часов Real Time CLock (RTC)
 //#define RTC_DS1307
-#define RTC_PCF8563
+//#define RTC_PCF8563
 //#define RTC_DS3231
 
 #if defined(RTC_DS1307) || defined(RTC_PCF8563) || defined(RTC_DS3231)
