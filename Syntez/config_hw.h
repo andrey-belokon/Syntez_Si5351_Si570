@@ -42,7 +42,7 @@ enum {
 // раскоментировать установленные чипы
 #define VFO_SI5351
 #define VFO_SI5351_2
-//#define VFO_SI570
+#define VFO_SI570
 
 #if defined(VFO_SI5351_2) && !defined(VFO_SI5351)
   #error Invalid combination of used SI5351
@@ -68,7 +68,7 @@ enum {
 // раскоментировать используемый модуль часов Real Time CLock (RTC)
 //#define RTC_DS1307
 //#define RTC_PCF8563
-//#define RTC_DS3231
+#define RTC_DS3231
 
 #if defined(RTC_DS1307) || defined(RTC_PCF8563) || defined(RTC_DS3231)
   #define RTC_ENABLE
@@ -85,10 +85,15 @@ enum {
   0x55  ! Si570 [optional]
   0x60  ! Si5351 [optional]
   0x68  ! DS1307 at TinyRTC board [optional]
+  0x68  ! DS3132 [optional]
 */
 
 // I2C адреса устройств
-#define I2C_ADR_EE24C32       0x50
+#ifdef RTC_DS3231
+  #define I2C_ADR_EE24C32       0x57
+#else
+  #define I2C_ADR_EE24C32       0x50
+#endif
 #define I2C_ADR_BAND_CTRL     0x3B
 
 // Pin mapping

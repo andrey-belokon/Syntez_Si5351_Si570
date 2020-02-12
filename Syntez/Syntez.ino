@@ -1,12 +1,15 @@
 //
 // UR5FFR Si570/Si5351 VFO
 // v3.0 from 24.12.2019
-// Copyright (c) Andrey Belokon, 2016-2019 Odessa 
+// Copyright (c) Andrey Belokon, 2016-2020 Odessa 
 // https://github.com/andrey-belokon/
 // GNU GPL license
 //
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! all user setting defined in config.h, config_hw.h and config_sw.h files !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #include "config.h"
 
 #include <avr/eeprom.h> 
@@ -31,6 +34,7 @@
 #ifdef RTC_ENABLE
   #include "RTC.h"
 #endif
+
 #include "Eeprom24C32.h"
 #include "TRX.h"
 
@@ -94,7 +98,7 @@ Eeprom24C32 ee24c32(I2C_ADR_EE24C32);
 #endif
 
 #if defined(VFO_SI5351) && defined(VFO_SI5351_2)
-  #define   SELECT_SI5351(x)    digitalWrite(PIN_SELECT_SI5351,x)
+  #define   SELECT_SI5351(x)    digitalWrite(PIN_SELECT_SI5351,(x))
 #else
   #define   SELECT_SI5351(x)
 #endif

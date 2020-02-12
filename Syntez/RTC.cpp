@@ -14,6 +14,11 @@
 #define REG_ADDR        0
 #endif
 
+#ifdef RTC_DS3231
+#define RTC_I2C_ADDRESS 0x68
+#define REG_ADDR        0
+#endif
+
 void RTC_Write(RTCData* data)
 {
   byte *p=(byte *)data;

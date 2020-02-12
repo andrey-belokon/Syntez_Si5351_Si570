@@ -42,8 +42,6 @@ int ReadV11Ref()
       ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
   #endif
 
-  //delay(3); // Wait for Vref to settle
-
   for (byte i=0; i < 3; i++) {
     ADCSRA |= _BV(ADSC); // Start conversion
     while (bit_is_set(ADCSRA,ADSC)); // measuring
