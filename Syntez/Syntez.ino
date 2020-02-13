@@ -168,7 +168,7 @@ void setup()
   vfo570.setup(SI570_CALIBRATION);
 #endif  
 #ifdef ENCODER_ENABLE
-  Encoder_Setup();
+  Encoder::Setup();
 #endif  
 #ifndef KEYPAD_DISABLE
   keypad.setup();
@@ -490,7 +490,7 @@ void loop()
 #endif    
 
 #ifdef ENCODER_ENABLE
-  long delta = Encoder_GetDelta();
+  long delta = Encoder::GetDelta();
   if (delta) {
 #ifdef KEYPAD_6
     if (keypad.IsKeyPressed() && keypad.GetLastCode() == cmdRIT) {  

@@ -76,7 +76,7 @@ void ShowClockMenu()
         return;
     }
 #ifdef ENCODER_ENABLE
-    encval += Encoder_GetDelta();
+    encval += Encoder::GetDelta();
     int delta = encval / (ENCODER_FREQ_LO_STEP/6);
     if (delta != 0) {
       switch (selected) {
@@ -189,7 +189,7 @@ void ShowSSBDetFreqMenu()
         return;
     }
 #ifdef ENCODER_ENABLE
-    encval += Encoder_GetDelta();
+    encval += Encoder::GetDelta();
     delta = encval / (ENCODER_FREQ_LO_STEP/100);
     if (delta != 0) {
 #if defined(SSBDetectorFreq_LSB) && defined(SSBDetectorFreq_USB)

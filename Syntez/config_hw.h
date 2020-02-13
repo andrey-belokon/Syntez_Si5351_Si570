@@ -120,23 +120,35 @@ enum {
 // 7й - LSB - 0, USB - 1 (можно использовать для переключения фильтров/режимов)
 #define BCPN_SB         7
 
-// закоментировать если нет валкодера
-#define ENCODER_ENABLE
-// количество импульсов на оборот примененного энкодера
-// 360-400 for optic encoders and 20 for mechanic
-#define ENCODER_PULSE_PER_TURN    360
-//#define ENCODER_PULSE_PER_TURN    20
+// раскоментировать ТОЛЬКО ОДИН требуемый тип энкодера. закоментировать все если нет
+#define ENCODER_OPTICAL
+//#define ENCODER_MECHANIC
+
+#if defined(ENCODER_OPTICAL) && defined(ENCODER_MECHANIC)
+  #error You need select single encoder
+#endif
+
 // изменение частоты в Гц на один оборот в обычном режиме
 #define ENCODER_FREQ_LO_STEP      3000
 // изменение частоты в Гц на один оборот в ускоренном режиме
 #define ENCODER_FREQ_HI_STEP      12000
-// порог переключения в ускоренный режим. если частота изменится более
-// чем на ENCODER_FREQ_HI_LO_TRASH Гц за секунду то переходим в ускоренный режим
-// 8000 for optic encoders and 600 for mechanic
-#define ENCODER_FREQ_HI_LO_TRASH  8000
-//#define ENCODER_FREQ_HI_LO_TRASH  600
 // кратность перестройки частоты при нажатой кнопке Fn
 #define ENCODER_FN_MULT           10
+// порог переключения в ускоренный режим. если частота изменится более
+// чем на ENCODER_FREQ_HI_LO_TRASH Гц за секунду то переходим в ускоренный режим
+#define ENCODER_FREQ_HI_LO_TRASH  4000
+
+#ifdef ENCODER_OPTICAL
+#define ENCODER_ENABLE
+// количество импульсов на оборот примененного оптического энкодера
+#define ENCODER_PULSE_PER_TURN    360
+#endif
+
+#ifdef ENCODER_MECHANIC
+#define ENCODER_ENABLE
+// количество импульсов на оборот примененного механического энкодера
+#define ENCODER_PULSE_PER_TURN    20
+#endif
 
 #define CAT_ENABLE
 #define COM_BAUND_RATE  9600      // скорость обмена COM-порта
@@ -144,6 +156,6 @@ enum {
 // интервал опроса S-метра, msec
 #define POLL_SMETER     50
 // интервал проверки и сохранения текущего состояния синтезатора в EEPROM
-#define POLL_EEPROM_STATE 250
+#define POLL_EEPROM_STATE 500
 
 #endif
