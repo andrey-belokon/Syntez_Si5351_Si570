@@ -21,9 +21,7 @@ void PrintRTCData(RTCData *dt, char *buf, char **items)
   //buf += sprintf(buf,"Hour %x ",dt->hour)+1;
   *items++ = buf = fmt_hex_val(buf,"Hour ",dt->hour);
   //buf += sprintf(buf,"Minute %x ",dt->min)+1;
-  *items++ = buf = fmt_hex_val(buf,"Minute ",dt->min);
-  //buf += sprintf(buf,"Second %x ",dt->sec)+1;
-  fmt_hex_val(buf,"Second ",dt->sec);
+  fmt_hex_val(buf,"Minute ",dt->min);
   *items = NULL;
 }
 
@@ -58,17 +56,18 @@ void ShowClockMenu()
     switch (keycode) {
       case cmdBandUp:
         if (selected > 0) selected--;
-        else selected=5;
+        else selected=4;
         disp.DrawMenu(title,(const char**)items,selected,help,2);
         encval=0;
         break;
       case cmdBandDown:
-        if (selected < 5) selected++;
+        if (selected < 4) selected++;
         else selected=0;
         disp.DrawMenu(title,(const char**)items,selected,help,2);
         encval=0;
         break;
       case cmdVFOSel:
+        dt.sec = 0;
         RTC_Write(&dt);
         return;
       case cmdMenu:
@@ -99,10 +98,6 @@ void ShowClockMenu()
         case 4:
           dt.min = dec2bcd(bcd2dec(dt.min)+delta);
           if (dt.min > 0x59) dt.min=0x59;
-          break;
-        case 5:
-          dt.sec = dec2bcd(bcd2dec(dt.sec)+delta);
-          if (dt.sec > 0x59) dt.sec=0x59;
           break;
       }
       PrintRTCData(&dt,buf,items);
