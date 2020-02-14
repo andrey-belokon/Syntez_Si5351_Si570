@@ -9,10 +9,11 @@ void Keypad_6_I2C::setup() {
     i2c_addr=0;
 }
 
-const uint8_t KeyMap[11] = {
+const uint8_t KeyMap[] = {
   cmdNone,
-  cmdBandDown, cmdBandUp, cmdAttPre, cmdVFOSel, cmdRIT,
-  cmdLock, cmdZero, cmdHam, cmdSplit, cmdUSBLSB // with Fn pressed
+  cmdBandDown,  cmdBandUp,  cmdAttPre,  cmdVFOSel,  cmdRIT,
+  cmdHam,       cmdUSBLSB,  cmdQRP,     cmdSplit,   cmdZero,  // with Fn pressed
+  cmdLock,      cmdMode,    cmdTune,    cmdVFOEQ,   cmdNone   // длинные нажатия
 };
 
 uint8_t Keypad_6_I2C::Read() 
@@ -23,6 +24,7 @@ uint8_t Keypad_6_I2C::Read()
   pcf8574_write(0xFF);
   uint8_t scan = ~pcf8574_byte_read();
   uint8_t code = 0;
+  uint8_t fn = scan & 0x20;
   if (scan & 0x01) code = 1;
   else if (scan & 0x02) code = 2;
   else if (scan & 0x04) code = 3;
@@ -30,16 +32,25 @@ uint8_t Keypad_6_I2C::Read()
   else if (scan & 0x10) code = 5;
 
   if (code) {
-    if (last_code) return cmdNone;
-    else {
-      if (scan & 0x20) code+=5;
-      code = KeyMap[code];
+    if (last_code) {
+      if (longpress && millis()-last_code_tm > 1000) {
+        longpress = 0;
+        return KeyMap[last_code+10];
+      }
+      return cmdNone;
+    } else {
+      if (fn) code+=5;
       last_code = code;
       last_code_tm = millis();
+      code = KeyMap[code];
       KeyPressed = true;
+      if (!fn && KeyMap[last_code+10] != cmdNone) {
+        longpress = 1;
+        code = cmdNone; // long press
+      }
       return code;
     }
-  } else if (scan & 0x20) {
+  } else if (fn) {
     last_code = 0;
     FnPressed = true;
     fn_press_tm = millis();
@@ -54,6 +65,10 @@ uint8_t Keypad_6_I2C::Read()
   } else {
     FnPressed = false;
     KeyPressed = false;
+    if (longpress) {
+      longpress = 0;
+      return KeyMap[last_code];
+    }
     last_code = 0;
     return cmdNone;
   }

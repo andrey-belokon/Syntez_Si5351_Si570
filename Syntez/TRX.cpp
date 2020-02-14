@@ -91,7 +91,7 @@ void TRX::ChangeFreq(long freq_delta) {
 }
 
 void TRX::ExecCommand(uint8_t cmd) {
-  if (TX && (cmd != cmdQRP)) return; // блокируем при передаче
+  if (TX && (cmd != cmdQRP) && (cmd != cmdTune)) return; // блокируем при передаче
   switch (cmd) {
     case cmdAttPre: // переключает по кругу аттенюатор/увч
       if (++state.AttPre > 2) state.AttPre = 0;
@@ -104,6 +104,9 @@ void TRX::ExecCommand(uint8_t cmd) {
       break;
     case cmdVFOEQ:
       state.VFO[state.VFO_Index ^ 1] = state.VFO[state.VFO_Index];
+      break;
+    case cmdTune:
+      Tune = !Tune;
       break;
     case cmdQRP:
       QRP = !QRP;
@@ -146,6 +149,7 @@ void TRX::ExecCommand(uint8_t cmd) {
         Lock = false;
       }
       break;
+#ifdef GENERAL_COVERAGE_ENABLED
     case cmdHam:
       if (BandIndex >= 0) {
         memcpy(&BandData[BandIndex],&state,sizeof(TVFOState));
@@ -160,6 +164,7 @@ void TRX::ExecCommand(uint8_t cmd) {
       }
       Lock = RIT = false;
       break;
+#endif
   }
 }
 
@@ -170,4 +175,3 @@ uint8_t TRX::inCW() {
     state.VFO[vfo_idx] < Bands[BandIndex].startSSB &&
     state.VFO[vfo_idx] >= Bands[BandIndex].start;
 }
-

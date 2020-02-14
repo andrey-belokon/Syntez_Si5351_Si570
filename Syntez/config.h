@@ -27,11 +27,12 @@ extern const struct _Bands {
 // для режима general coverage
 #define FREQ_MIN  1000000L
 #define FREQ_MAX 30000000L
+// закоментировать для отключения режима непрерывного перекрытия
+#define GENERAL_COVERAGE_ENABLED
 
 // список комманд трансивера. порядок критичен и соответствует обходу физического расположения клавиш слева направо, снизу вверх (7-btn keypad)
 enum {
   cmdNone = 0,
-  
   // без нажатия Fn  
   cmdBandUp,   // переключение диапазонов или частоты
   cmdBandDown,
@@ -39,7 +40,6 @@ enum {
   cmdVFOSel,   // VFO A/B
   cmdAttPre,   // переключает по кругу аттенюатор/увч
   cmdVFOEQ,    // VFO A=B
-
   // с нажатой Fn  
   cmdRIT,      // RIT
   cmdZero,     // устанавливает частоту точно по еденицам кГц. 3623145->3623000
@@ -48,8 +48,9 @@ enum {
   cmdQRP,      // режим уменьшенной выходной мощности
   cmdHam,      // режим Ham band/General coverage. в режиме Ham кнопки cmdBandUp/Down переключают диапазоны
                // в режиме General coverage - изменяют частоту на +/-1MHz
-  
-  cmdMenu
+  cmdMenu,
+  cmdMode,     // смена моды CW/SSB/AM
+  cmdTune      // режим настройки - TX+QRP
 };
 
 // конфиг "железа"

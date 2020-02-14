@@ -433,51 +433,40 @@ void UpdateBandCtrl()
 
 void loop()
 {
-  bool tune = inTune.Read();
-  trx.TX = tune || inTX.Read();
-
 #ifndef KEYPAD_DISABLE
   uint8_t cmd;
-  static long last_menu_tm = 0;
+  static uint8_t delay_cmd = cmdNone;
+  static long delay_cmd_tm = 0;
 #ifdef KEYPAD_6
   static long last_vfosel_tm = 0;
 #endif
-  if ((cmd = keypad.Read()) != cmdNone) {
+  cmd = keypad.Read();
+  if (cmd != cmdNone && trx.Tune) {
+    trx.Tune = 0;
+    cmd = cmdNone;
+  }
+  if (trx.Lock && (cmd == cmdBandUp || cmd == cmdBandDown)) {
+    trx.Lock = 0;
+    cmd = cmdNone;
+  }
+  if (cmd != cmdNone) {
     if (cmd == cmdMenu) {
       // double press at 1sec
-      if (millis()-last_menu_tm <= 1000) {
+      if (millis()-delay_cmd_tm <= 1000) {
         // call to menu
         ShowMenu();
         // перерисовываем дисплей
         disp.clear();
         disp.reset();
         disp.Draw(trx);
-        last_menu_tm = 0;
+        delay_cmd_tm = 0;
         return;
       } else {
-        last_menu_tm = millis();
+        delay_cmd_tm = millis();
       }
     } else {
-#ifdef KEYPAD_6
-      if (cmd == cmdVFOSel) {
-        cmd = cmdNone;
-        last_vfosel_tm = millis();
-      } else
-#endif
       trx.ExecCommand(cmd);
     }
-#ifdef KEYPAD_6
-  } else {
-    if (last_vfosel_tm > 0) {
-      if (millis()-last_vfosel_tm >= 1000) {
-        trx.ExecCommand(cmdVFOEQ);
-        last_vfosel_tm = 0;
-      } else if (!keypad.IsKeyPressed()) {
-        trx.ExecCommand(cmdVFOSel);
-        last_vfosel_tm = 0;
-      }
-    }
-#endif
 #ifdef KEYPAD_12
   } else {
     // при однократном нажатии Menu включаем Lock через 1 сек
@@ -513,8 +502,14 @@ void loop()
 #endif    
   UpdateFreq();
 
-  outQRP.Write(trx.QRP || tune);
-  OutputTone(PIN_OUT_TONE,tune);
+  static uint8_t last_tune_in = 0;
+  uint8_t new_tune = inTune.Read();
+  if (new_tune != last_tune_in && new_tune != trx.Tune)
+    trx.Tune = new_tune;
+  last_tune_in = new_tune;
+  trx.TX = trx.Tune || inTX.Read();
+  outQRP.Write(trx.QRP || trx.Tune);
+  OutputTone(PIN_OUT_TONE, trx.Tune);
   outTX.Write(trx.TX);
   UpdateBandCtrl();
 

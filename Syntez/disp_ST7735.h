@@ -262,8 +262,8 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     }  
   }
 
-  if (trx.QRP != cur_qrp) {
-    if ((cur_qrp=trx.QRP) != 0) 
+  if ((trx.QRP | trx.Tune) != cur_qrp) {
+    if ((cur_qrp = trx.QRP | trx.Tune) != 0) 
       drawBtn(32,BTN_Y,30,20,"QRP",ST7735_BLUE,ST7735_WHITE);
     else
       drawBtn(32,BTN_Y,30,20,"QRP",ST7735_BLACK,ST7735_DARKGRAY);

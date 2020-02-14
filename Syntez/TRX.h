@@ -25,6 +25,7 @@ class TRX {
     uint8_t RIT;
     int RIT_Value;
 	  uint8_t QRP;
+    uint8_t Tune;
 	  uint8_t SMeter; // 0..15 
 
 	  TRX();
