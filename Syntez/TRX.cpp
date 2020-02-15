@@ -1,17 +1,20 @@
 #include "TRX.h"
 
-const struct _Bands Bands[BAND_COUNT] = {
+const struct _Bands Bands[] = {
   DEFINED_BANDS
+};
+
+const struct _Modes Modes[] = {
+  DEFINED_MODES ,
+  { NULL, false, false, {0, 0} }
 };
 
 TRX::TRX() {
   for (byte i=0; i < BAND_COUNT; i++) {
 	  BandData[i].VFO_Index = 0;
-	  if (Bands[i].startSSB != 0)
-	    BandData[i].VFO[0] = BandData[i].VFO[1] = Bands[i].startSSB;
-	  else
-	    BandData[i].VFO[0] = BandData[i].VFO[1] = Bands[i].start;
-	  BandData[i].sideband = Bands[i].sideband;
+    BandData[i].VFO[0] = BandData[i].VFO[1] = ((Bands[i].start+Bands[i].end)/2000)*1000;
+    BandData[i].mode = Bands[i].mode;
+    BandData[i].sideband = Bands[i].sideband;
 	  BandData[i].AttPre = 0;
 	  BandData[i].Split = false;
   }
@@ -35,7 +38,7 @@ uint16_t TRX::StateHash() {
   return hval;
 }
 
-#define STATE_SIGN  0x59CE
+#define STATE_SIGN  0x56DE
 
 void TRX::StateLoad(Eeprom24C32 &eep) {
   uint16_t sign=0,addr=0;
@@ -81,12 +84,15 @@ void TRX::ChangeFreq(long freq_delta) {
         state.VFO[state.VFO_Index] = Bands[BandIndex].start;
       else if (state.VFO[state.VFO_Index] > Bands[BandIndex].end)
         state.VFO[state.VFO_Index] = Bands[BandIndex].end;
+#ifdef GENERAL_COVERAGE_ENABLED
     } else {
       if (state.VFO[state.VFO_Index] < FREQ_MIN)
         state.VFO[state.VFO_Index] = FREQ_MIN;
       else if (state.VFO[state.VFO_Index] > FREQ_MAX)
         state.VFO[state.VFO_Index] = FREQ_MAX;
+#endif
     }
+    RIT = false;
   }
 }
 
@@ -102,11 +108,16 @@ void TRX::ExecCommand(uint8_t cmd) {
     case cmdUSBLSB:
       state.sideband = (state.sideband == LSB ? USB : LSB);
       break;
+    case cmdMode:
+      if (Modes[++state.mode].name == NULL) state.mode = 0; // по кругу
+      if (!Modes[state.mode].tx_enabled) Tune = 0;
+      break;
     case cmdVFOEQ:
       state.VFO[state.VFO_Index ^ 1] = state.VFO[state.VFO_Index];
       break;
     case cmdTune:
-      Tune = !Tune;
+      if (!Modes[state.mode].tx_enabled) Tune = 0;
+      else Tune = !Tune;
       break;
     case cmdQRP:
       QRP = !QRP;
@@ -130,10 +141,12 @@ void TRX::ExecCommand(uint8_t cmd) {
           BandIndex = 0;
         memcpy(&state,&BandData[BandIndex],sizeof(TVFOState));
         Lock = RIT = false;
+#ifdef GENERAL_COVERAGE_ENABLED
       } else {
         if ((state.VFO[state.VFO_Index]+=1000000) > FREQ_MAX)
           state.VFO[state.VFO_Index] = FREQ_MAX;
         Lock = false;
+#endif
       }
       break;
     case cmdBandDown:
@@ -143,10 +156,12 @@ void TRX::ExecCommand(uint8_t cmd) {
           BandIndex = BAND_COUNT-1;
         memcpy(&state,&BandData[BandIndex],sizeof(TVFOState));
         Lock = RIT = false;
+#ifdef GENERAL_COVERAGE_ENABLED
       } else {
         if ((state.VFO[state.VFO_Index]-=1000000) < FREQ_MIN)
           state.VFO[state.VFO_Index] = FREQ_MIN;
         Lock = false;
+#endif
       }
       break;
 #ifdef GENERAL_COVERAGE_ENABLED
@@ -166,12 +181,4 @@ void TRX::ExecCommand(uint8_t cmd) {
       break;
 #endif
   }
-}
-
-uint8_t TRX::inCW() {
-  uint8_t vfo_idx = GetVFOIndex();
-  return 
-    BandIndex >= 0 && Bands[BandIndex].startSSB > 0 &&
-    state.VFO[vfo_idx] < Bands[BandIndex].startSSB &&
-    state.VFO[vfo_idx] >= Bands[BandIndex].start;
 }

@@ -30,7 +30,6 @@ void Display_1602_I2C::setup() {
 void Display_1602_I2C::Draw(TRX& trx) {
   char buf[2][17];
   int vfo_idx = trx.GetVFOIndex();
-  bool freq_cw = trx.inCW();
   bool wrong_sb = trx.BandIndex >= 0 && Bands[trx.BandIndex].sideband != trx.state.sideband;
   long f = (trx.state.VFO[vfo_idx]+50) / 100;
 
@@ -52,7 +51,7 @@ void Display_1602_I2C::Draw(TRX& trx) {
     buf[0][0] = (char)6;
     buf[0][1] = (char)7;
   } else {
-    if (freq_cw)
+    if (trx.state.mode == MODE_CW)
       buf[0][0] = (char)6;
     if (trx.Lock)
       buf[0][1] = (char)7;
@@ -126,19 +125,6 @@ void Display_1602_I2C::Draw(TRX& trx) {
       pb=cwr_hex2(pb,d.min);
     }
 #endif
-  }
-
-  if (trx.BandIndex >= 0) {
-    int mc = Bands[trx.BandIndex].mc;
-    if (mc > 99) {
-      buf[1][2] = '0'+mc%10; mc/=10;
-      buf[1][1] = '0'+mc%10; mc/=10;
-      buf[1][0] = '0'+mc;
-    } else {
-      // buf[1][2] = 'm';
-      buf[1][1] = '0'+mc%10; mc/=10;
-      buf[1][0] = '0'+mc%10; 
-    }
   }
 
   // S-meter

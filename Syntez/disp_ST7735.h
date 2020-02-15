@@ -60,11 +60,10 @@ byte cur_rit=0xff;
 byte cur_tx=0xff;
 byte cur_qrp=0xff;
 byte cur_attpre=0xFF;
-int cur_band=-1;
 byte init_smetr=0;
 byte cur_sm[15];
 int cur_ritval=0xffff;
-byte cur_cw=0xff;
+byte cur_mode=0xff;
 long last_tmtm=0;
 
 void Display_ST7735_SPI::setup() 
@@ -91,11 +90,10 @@ void Display_ST7735_SPI::reset()
   cur_tx=0xff;
   cur_qrp=0xff;
   cur_attpre=0xFF;
-  cur_band=-1;
   init_smetr=0;
   for (uint8_t i=0; i < 15; i++) cur_sm[i]=0;
   cur_ritval=0xffff;
-  cur_cw=0xff;
+  cur_mode=0xff;
   last_tmtm=0;
 }
 
@@ -279,7 +277,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     }
   }
   
-    if (cur_rit && trx.RIT_Value != cur_ritval) {
+  if (cur_rit && trx.RIT_Value != cur_ritval) {
     int y,v=trx.RIT_Value;
     char buf[14];
     if (cur_vfo_idx == 0) y=FREQ_Y+91;
@@ -320,66 +318,48 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
 
   if (trx.TX != cur_tx) {
     if ((cur_tx=trx.TX) != 0) 
-      drawBtn(0,1,30,20,"TX",ST7735_RED,ST7735_YELLOW);
+      drawBtn(0,0,30,16,"TX",ST7735_RED,ST7735_YELLOW);
     else
-      drawBtn(0,1,30,20,"RX",ST7735_BLACK,ST7735_GREEN);
+      drawBtn(0,0,30,16,"RX",ST7735_BLACK,ST7735_GREEN);
   }
 
   uint8_t sb = trx.state.sideband;
   if (trx.BandIndex >= 0 && Bands[trx.BandIndex].sideband != trx.state.sideband) sb |= 0x80;
+  if (!Modes[trx.state.mode].allow_sideband) sb |= 0x40;
   if (sb != cur_sideband) {
-    const char *sb_txt = (trx.state.sideband == LSB ? "LSB" : "USB");
+    const char *sb_txt = (sb & 0x40 ? "   " : (trx.state.sideband == LSB ? "LSB" : "USB"));
     cur_sideband=sb;
     if (sb & 0x80)
-      drawBtn(87,0,30,20,sb_txt,ST7735_RED,ST7735_YELLOW);
+      drawBtn(60,0,30,16,sb_txt,ST7735_RED,ST7735_YELLOW);
     else
-      drawBtn(87,0,30,20,sb_txt,ST7735_BLACK,ST7735_BLUE);
+      drawBtn(60,0,30,16,sb_txt,ST7735_BLACK,ST7735_BLUE);
   }
 
- if (trx.BandIndex != cur_band) {
-    if ((cur_band=trx.BandIndex) >= 0) {
-      int mc = Bands[trx.BandIndex].mc;
-      char buf[4];
-      buf[3] = 0;
-      buf[2] = '0'+mc%10; mc/=10;
-      buf[1] = '0'+mc%10; mc/=10;
-      if (mc > 0) buf[0] = '0'+mc;
-      else buf[0] = '!';
-      drawBtn(29,0,30,20,buf,ST7735_BLACK,ST7735_BLUE);
-    } else
-      drawBtn(29,0,30,20,"",ST7735_BLACK,ST7735_BLUE);
-  }
-
-  uint8_t cw=trx.inCW();
-  if (cw != cur_cw) {
-    if ((cur_cw=cw) != 0)
-      drawBtn(56,0,30,20,"CW",ST7735_BLACK,ST7735_DARKYELLOW);
-    else
-      drawBtn(56,0,30,20,"CW",ST7735_BLACK,ST7735_DARKGRAY);
+  uint8_t mode = trx.state.mode;
+  if (mode != cur_mode) {
+    drawBtn(30,0,30,16,Modes[mode].name,ST7735_BLACK,ST7735_DARKYELLOW);
+    cur_mode = mode;
   }
 #ifdef RTC_ENABLE
   if (millis()-last_tmtm > 200) {
     RTCData d;
     char buf[12],*pb;
     last_tmtm=millis();
-    RTC_Read(&d);
+    RTC_Read(&d);   
     //sprintf(buf,"%2x:%02x",d.hour,d.min);
     pb=cwr_hex2sp(buf,d.hour);
     if (millis()/1000 & 1) *pb++=':';
     else *pb++=' ';
     pb=cwr_hex2(pb,d.min);
+    //sprintf(buf,"%x.%02x.20",d.day,d.month);
+/*    pb=cwr_hex2sp(pb,d.day);
+    *pb++='/';
+    pb=cwr_hex2(pb,d.month); */
     *pb=0;
     tft.setFont(NULL);
     tft.setTextSize(1);
     tft.setTextColor(ST7735_CYAN,ST7735_BLACK);
-    tft.setCursor(128,11);
-    tft.print(buf);
-    tft.setCursor(128,0);
-    //sprintf(buf,"%x.%02x.20",d.day,d.month);
-    pb=cwr_hex2sp(buf,d.day);
-    *pb++='/';
-    pb=cwr_hex2(pb,d.month);
-    *pb=0;
+    tft.setCursor(120,5);
     tft.print(buf);
   }
 #endif

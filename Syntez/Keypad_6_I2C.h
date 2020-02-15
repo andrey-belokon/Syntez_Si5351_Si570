@@ -12,6 +12,7 @@ class Keypad_6_I2C {
   private:
     uint8_t i2c_addr;
     uint8_t last_code;
+    uint8_t last_scan;
     uint8_t FnPressed,KeyPressed;
     uint8_t longpress;
     long last_code_tm;

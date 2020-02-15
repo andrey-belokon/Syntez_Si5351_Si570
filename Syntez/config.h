@@ -4,25 +4,29 @@
 #define LSB 0
 #define USB 1
 
+// predefined modes - index in Modes[] (see config_sw.h)
+#define MODE_SSB  0
+#define MODE_CW   1
+
 // число диапазонов
 #define BAND_COUNT  9
 
 extern const struct _Bands {
-  uint8_t   mc;
-  long  start, startSSB, end;
+  long  start, end;
+  uint8_t mode;
   uint8_t sideband;
 } Bands[];
 
 #define DEFINED_BANDS \
-  {160,  1810000L,  1840000L,  2000000L, LSB}, \
-  {80,   3500000L,  3600000L,  3800000L, LSB}, \
-  {40,   7000000L,  7045000L,  7200000L, LSB}, \
-  {30,  10100000L,        0,  10150000L, USB}, \
-  {20,  14000000L, 14100000L, 14350000L, USB}, \
-  {17,  18068000L, 18110000L, 18168000L, USB}, \
-  {15,  21000000L, 21150000L, 21450000L, USB}, \
-  {12,  24890000L, 24930000L, 25140000L, USB}, \
-  {10,  28000000L, 28200000L, 29700000L, USB}
+  { 1810000L,  2000000L, MODE_SSB, LSB}, \
+  { 3500000L,  3800000L, MODE_SSB, LSB}, \
+  { 7000000L,  7200000L, MODE_SSB, LSB}, \
+  {10100000L, 10150000L, MODE_SSB, USB}, \
+  {14000000L, 14350000L, MODE_SSB, USB}, \
+  {18068000L, 18168000L, MODE_SSB, USB}, \
+  {21000000L, 21450000L, MODE_SSB, USB}, \
+  {24890000L, 25140000L, MODE_SSB, USB}, \
+  {28000000L, 29700000L, MODE_SSB, USB}
 
 // для режима general coverage
 #define FREQ_MIN  1000000L

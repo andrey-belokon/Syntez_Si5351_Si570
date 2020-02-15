@@ -11,9 +11,15 @@ void Keypad_6_I2C::setup() {
 
 const uint8_t KeyMap[] = {
   cmdNone,
+//*  вариант когда RIT вынесен на отдельную кнопку
   cmdBandDown,  cmdBandUp,  cmdAttPre,  cmdVFOSel,  cmdRIT,
   cmdHam,       cmdUSBLSB,  cmdQRP,     cmdSplit,   cmdZero,  // with Fn pressed
   cmdLock,      cmdMode,    cmdTune,    cmdVFOEQ,   cmdNone   // длинные нажатия
+/*  вариант когда переключение моды вынесено на отдельную кнопку
+  cmdBandDown,  cmdBandUp,  cmdAttPre,  cmdVFOSel,  cmdMode,
+  cmdHam,       cmdZero,    cmdQRP,     cmdSplit,   cmdNone,  // with Fn pressed
+  cmdLock,      cmdRIT,     cmdTune,    cmdVFOEQ,   cmdUSBLSB   // длинные нажатия
+*/
 };
 
 uint8_t Keypad_6_I2C::Read() 
@@ -32,17 +38,19 @@ uint8_t Keypad_6_I2C::Read()
   else if (scan & 0x10) code = 5;
 
   if (code) {
-    if (last_code) {
+    if (last_scan) {
       if (longpress && millis()-last_code_tm > 1000) {
         longpress = 0;
-        return KeyMap[last_code+10];
+        last_code = KeyMap[last_scan+10];
+        return last_code;
       }
       return cmdNone;
     } else {
       if (fn) code+=5;
-      last_code = code;
+      last_scan = code;
       last_code_tm = millis();
       code = KeyMap[code];
+      last_code = code;
       KeyPressed = true;
       if (!fn && KeyMap[last_code+10] != cmdNone) {
         longpress = 1;
@@ -52,6 +60,7 @@ uint8_t Keypad_6_I2C::Read()
     }
   } else if (fn) {
     last_code = 0;
+    last_scan = 0;
     FnPressed = true;
     fn_press_tm = millis();
     return cmdNone;
@@ -60,6 +69,7 @@ uint8_t Keypad_6_I2C::Read()
     FnPressed = false;
     KeyPressed = false;
     last_code = 0;
+    last_scan = 0;
     last_code_tm = millis();
     return cmdMenu;
   } else {
@@ -67,9 +77,10 @@ uint8_t Keypad_6_I2C::Read()
     KeyPressed = false;
     if (longpress) {
       longpress = 0;
-      return KeyMap[last_code];
+      return KeyMap[last_scan];
     }
     last_code = 0;
+    last_scan = 0;
     return cmdNone;
   }
 }

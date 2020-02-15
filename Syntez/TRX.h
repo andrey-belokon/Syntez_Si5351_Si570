@@ -10,6 +10,7 @@ typedef struct {
   long VFO[2];    // VFO freq A&B
   uint8_t  VFO_Index; // 0-A, 1-B
   uint8_t sideband;
+  uint8_t mode;
   uint8_t AttPre;    // 0-nothing; 1-ATT; 2-Preamp
   uint8_t Split;
 } TVFOState;
@@ -36,8 +37,6 @@ class TRX {
     }
     void ChangeFreq(long freq_delta);
 
-    uint8_t inCW();
-    
     uint16_t StateHash();
     void StateLoad(Eeprom24C32 &eep);
     void StateSave(Eeprom24C32 &eep);
