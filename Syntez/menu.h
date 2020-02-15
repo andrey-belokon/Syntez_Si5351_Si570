@@ -39,8 +39,8 @@ void ShowClockMenu()
 {
   char title[12];
   strcpy_P(title,PSTR("Clock setup"));
-  char help[67];
-  strcpy_P(help,PSTR("Up/Down - move\nA/B - save\nFn/Lock - exit\nuse encoder for change"));
+  char help[62];
+  strcpy_P(help,PSTR("Up/Dn - move\nVFO - save\nMenu - exit\nuse encoder for change"));
   char buf[64];
   char *items[7];
   RTCData dt;
@@ -142,7 +142,7 @@ void PrintSSBFreqData(
 void ShowSSBDetFreqMenu()
 {
   char title[13];
-  char help[84];
+  char help[90];
   char buf[40];
   char *items[3];
   int LSB_shift=SSBShift_LSB, USB_shift=SSBShift_USB;
@@ -151,9 +151,9 @@ void ShowSSBDetFreqMenu()
   int delta;
   strcpy_P(title,PSTR("Tune IF freq"));
 #if defined(SSBDetectorFreq_LSB) && defined(SSBDetectorFreq_USB)
-  strcpy_P(help,PSTR("Up/Down - move\nA=B - reset\nA/B - save & exit\nFn/Lock - exit no save\nuse encoder for change"));
+  strcpy_P(help,PSTR("Up/Dn - move\nA=B - reset\nA/B - save & exit\nMenu - exit no save\nuse encoder for change"));
 #else  
-  strcpy_P(help,PSTR("A=B - reset\nFn/Lock - exit no save\nA/B - save & exit\nuse encoder for change"));
+  strcpy_P(help,PSTR("A=B - reset\nMenu - exit no save\nA/B - save & exit\nuse encoder for change"));
 #endif    
   disp.clear();
   goto l_redraw_full;
@@ -220,15 +220,18 @@ void ShowSSBDetFreqMenu()
 
 void PrintSMeterData(int *dt, char *buf, char **items)
 {
-  for (uint8_t i=0; i < 15; i++) {
-    *items++ = buf;
-    *buf++ = (i < 9 ? 'S' : '+');
-    buf = cwr_byte(buf,(i < 9 ? i+1 : i-8));
-    if (i >= 9) *buf++ = '0';
-    *buf++ = ' ';
-    buf = cwr_int(buf,dt[i]);
-    *buf++ = 0;
-  }
+  for (uint8_t i=0; i < 15; i++) 
+    if ((i & 1) == 0) {
+      *items++ = buf;
+      *buf++ = (i < 9 ? 'S' : '+');
+      //buf = cwr_byte(buf,(i < 9 ? i+1 : i-8));
+      *buf++ = '0' + (i < 9 ? i+1 : i-8);
+      if (i >= 9) *buf++ = '0';
+      else *buf++ = ' ';
+      *buf++ = ' ';
+      buf = cwr_int(buf,dt[i]);
+      *buf++ = 0;
+    }
   *items++ = buf;
   cwr_str(buf,"Save & Exit");
   *items = NULL;
@@ -236,12 +239,12 @@ void PrintSMeterData(int *dt, char *buf, char **items)
 
 void ShowSMeterMenu()
 {
-  char help[48];
-  strcpy_P(help,PSTR("Up/Down - move\nFn/Lock - exit\nA/B - set value"));
+  char help[43];
+  strcpy_P(help,PSTR("Up/Dn - move\nMenu - exit\nVFO - set value"));
   int smeter[15];
-  char buf[145];
+  char buf[100];
   char title[16];
-  char *items[17];
+  char *items[10];
   byte selected=0;
   memcpy(smeter,SMeterMap,sizeof(smeter));
   disp.clear();
@@ -249,22 +252,24 @@ void ShowSMeterMenu()
   while (1) {
     //sprintf(title,"AGC=%u   ",inSMeter.Read());
     cwr_str(cwr_int(cwr_str(title,"AGC="),inSMeter.Read()),"   ");
-    disp.DrawMenu(title,(const char**)items,selected,help,1);
+    disp.DrawMenu(title,(const char**)items,selected,help,2);
     uint8_t  keycode=keypad.Read();
     switch (keycode) {
       case cmdBandUp:
         if (selected > 0) selected--;
-        else selected=15;
+        else selected=8;
         break;
       case cmdBandDown:
-        if (selected < 15) selected++;
+        if (selected < 8) selected++;
         else selected=0;
         break;
       case cmdVFOSel:
-        if (selected < 15) {
-          smeter[selected]=inSMeter.Read();
+        if (selected < 8) {
+          smeter[selected<<1]=inSMeter.Read();
           PrintSMeterData(smeter,buf,items);
         } else {
+          for (byte i=1; i<14; i+=2) 
+            smeter[i] = (smeter[i-1]+smeter[i+1]) >> 1;
           memcpy(SMeterMap,smeter,sizeof(SMeterMap));
           eeprom_write_block(SMeterMap, SMeterMap_EEMEM, sizeof(SMeterMap));
           return;
@@ -305,9 +310,9 @@ void ShowMenu()
 {
   const char* MenuItems[] = {"Clock","S-Meter","Si calibration","SSB freq",NULL};
   char title[10];
-  char help[45];
+  char help[40];
   strcpy_P(title,PSTR("Main menu"));
-  strcpy_P(help,PSTR("Up/Down - move\nA/B - select\nFn/Lock - exit"));
+  strcpy_P(help,PSTR("Up/Dn - move\nVFO - select\nMenu - exit"));
   byte selected=0;
   disp.clear();
   while (true) {

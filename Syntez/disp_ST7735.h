@@ -382,7 +382,6 @@ void Display_ST7735_SPI::DrawMenu(const char* title, const char** items, uint8_t
     tft.println("");
   }
   for (byte i=0; *items; items++,i++) {
-    if (i>7) tft.setCursor(80,(i-4)*8);
     if (i == selected) tft.print(" >");
     else tft.print("  ");
     tft.print(*items);
