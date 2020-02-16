@@ -9,22 +9,6 @@ char *fmt_hex_val(char *buf, const char *title, uint8_t val)
   return buf;
 }
 
-void PrintRTCData(RTCData *dt, char *buf, char **items)
-{
-  *items++ = buf;
-  //buf += sprintf(buf,"Day %x ",dt->day)+1;
-  *items++ = buf = fmt_hex_val(buf,"Day ",dt->day);
-  //buf += sprintf(buf,"Month %x ",dt->month)+1;
-  *items++ = buf = fmt_hex_val(buf,"Month ",dt->month);
-  //buf += sprintf(buf,"Year %x ",dt->year)+1;
-  *items++ = buf = fmt_hex_val(buf,"Year ",dt->year);
-  //buf += sprintf(buf,"Hour %x ",dt->hour)+1;
-  *items++ = buf = fmt_hex_val(buf,"Hour ",dt->hour);
-  //buf += sprintf(buf,"Minute %x ",dt->min)+1;
-  fmt_hex_val(buf,"Minute ",dt->min);
-  *items = NULL;
-}
-
 byte dec2bcd(byte val)
 {
   return( (val/10*16) + (val%10));
@@ -39,18 +23,18 @@ void ShowClockMenu()
 {
   char title[12];
   strcpy_P(title,PSTR("Clock setup"));
-  char help[62];
-  strcpy_P(help,PSTR("Up/Dn - move\nVFO - save\nMenu - exit\nuse encoder for change"));
+  char help[55];
+  strcpy_P(help,PSTR("Up/Dn - move\nVFO - save\nMenu - exit\nEncoder - change"));
   char buf[64];
-  char *items[7];
+  char *items[6];
   RTCData dt;
   byte selected=0;
   long encval=0;
+  char *pb;
   RTC_Read(&dt);
   dt.sec=0;
-  PrintRTCData(&dt,buf,items);
   disp.clear();
-  disp.DrawMenu(title,(const char**)items,selected,help,2);
+  goto l_print;
   while (1) {
     uint8_t keycode=keypad.Read();
     switch (keycode) {
@@ -100,7 +84,20 @@ void ShowClockMenu()
           if (dt.min > 0x59) dt.min=0x59;
           break;
       }
-      PrintRTCData(&dt,buf,items);
+    l_print:
+      pb = buf;
+      items[0] = pb;
+      //buf += sprintf(buf,"Day %x ",dt->day)+1;
+      items[1] = pb = fmt_hex_val(pb,"Day ",dt.day);
+      //buf += sprintf(buf,"Month %x ",dt->month)+1;
+      items[2] = pb = fmt_hex_val(pb,"Month ",dt.month);
+      //buf += sprintf(buf,"Year %x ",dt->year)+1;
+      items[3] = pb = fmt_hex_val(pb,"Year ",dt.year);
+      //buf += sprintf(buf,"Hour %x ",dt->hour)+1;
+      items[4] = pb = fmt_hex_val(pb,"Hour ",dt.hour);
+      //buf += sprintf(buf,"Minute %x ",dt->min)+1;
+      fmt_hex_val(pb,"Minute ",dt.min);
+      items[5] = NULL;
       disp.DrawMenu(title,(const char**)items,selected,help,2);
       encval=0;
 #endif    
@@ -110,75 +107,69 @@ void ShowClockMenu()
 
 #endif
 
-void PrintSSBFreqData(
-#ifdef SSBDetectorFreq_LSB
-  int LSB_freq, 
-#endif
-#ifdef SSBDetectorFreq_USB
-  int USB_freq, 
-#endif
-  char *buf, char **items)
-{
-  char *pb=buf;
-#ifdef SSBDetectorFreq_LSB  
-  *items++ = pb;
-  pb = cwr_str(pb,"LSB:  ");
-  pb = cwr_long(pb,SSBDetectorFreq_LSB+LSB_freq);
-  *pb++ = ' ';
-  *pb++ = ' ';
-  *pb++ = 0;
-#endif  
-#ifdef SSBDetectorFreq_USB  
-  *items++ = pb;
-  pb = cwr_str(pb,"USB:  ");
-  pb = cwr_long(pb,SSBDetectorFreq_USB+USB_freq);
-  *pb++ = ' ';
-  *pb++ = ' ';
-  *pb++ = 0;
-#endif  
-  *items++ = NULL;
-}
-
 void ShowSSBDetFreqMenu()
 {
   char title[13];
-  char help[90];
-  char buf[40];
-  char *items[3];
-  int LSB_shift=SSBShift_LSB, USB_shift=SSBShift_USB;
+  char help[72];
+  char buf[60];
+  char *items[5];
+  byte mode=0;
+  int LSB_shift, USB_shift;
   byte selected=0;
   long encval=0;
   int delta;
+  char *pb;
+  uint32_t freq_lsb,freq_usb;
   strcpy_P(title,PSTR("Tune IF freq"));
-#if defined(SSBDetectorFreq_LSB) && defined(SSBDetectorFreq_USB)
-  strcpy_P(help,PSTR("Up/Dn - move\nA=B - reset\nA/B - save & exit\nMenu - exit no save\nuse encoder for change"));
-#else  
-  strcpy_P(help,PSTR("A=B - reset\nMenu - exit no save\nA/B - save & exit\nuse encoder for change"));
-#endif    
+  strcpy_P(help,PSTR("Up/Dn - move\nAtt/VFO - change\nMenu - exit\nuse encoder for change"));
   disp.clear();
-  goto l_redraw_full;
+  goto l_mode_changed;
 
   while (1) {
     switch (keypad.Read()) {
-#if defined(SSBDetectorFreq_LSB) && defined(SSBDetectorFreq_USB)
       case cmdBandUp:
         if (selected > 0) selected--;
-        else selected=1;
+        else selected=3;
         goto l_redraw;
       case cmdBandDown:
-        if (selected < 1) selected++;
+        if (selected < 3) selected++;
         else selected=0;
         goto l_redraw;
-#endif        
-      case cmdVFOEQ:
-        LSB_shift=USB_shift=0;
-        goto l_redraw_full;
       case cmdVFOSel:
-        SSBShift_LSB=LSB_shift;
-        SSBShift_USB=USB_shift;
-        eeprom_write_word((uint16_t*)&SSBShift_LSB_EEMEM, (uint16_t)SSBShift_LSB);
-        eeprom_write_word((uint16_t*)&SSBShift_USB_EEMEM, (uint16_t)SSBShift_USB);
-        return;
+        switch (selected) {
+          case 0:
+            if (Modes[++mode].name == NULL) mode=0;
+            goto l_mode_changed;
+          case 1:
+            LSB_shift += 20;
+            break;
+          case 2:
+            if (Modes[mode].allow_sideband) USB_shift += 20;
+            break;
+          case 3:
+            trx.IFreqShift[mode][LSB] = LSB_shift;
+            trx.IFreqShift[mode][USB] = USB_shift;
+            trx.IFreqShiftSave(ee24c32);
+            break;
+        };
+        goto l_redraw;
+      case cmdAttPre:
+        switch (selected) {
+          case 0:
+            if (mode == 0) {
+              // последняя мода
+              while (Modes[++mode].name != NULL) ;
+            }
+            mode--;
+            goto l_mode_changed;
+          case 1:
+            LSB_shift -= 20;
+            break;
+          case 2:
+            if (Modes[mode].allow_sideband) USB_shift -= 20;
+            break;
+        };
+        goto l_redraw;
       case cmdMenu:
       case cmdLock:
         return;
@@ -187,34 +178,56 @@ void ShowSSBDetFreqMenu()
     encval += Encoder::GetDelta();
     delta = encval / (ENCODER_FREQ_LO_STEP/100);
     if (delta != 0) {
-#if defined(SSBDetectorFreq_LSB) && defined(SSBDetectorFreq_USB)
       switch (selected) {
-        case 0:
-          LSB_shift+=delta;
-          break;
         case 1:
+          LSB_shift+=delta;
+          goto l_redraw;
+        case 2:
           USB_shift+=delta;
-          break;
+          goto l_redraw;
       }
-#elif defined(SSBDetectorFreq_LSB)
-      LSB_shift+=delta;
-#elif defined(SSBDetectorFreq_USB)
-      USB_shift+=delta;
+    }
 #endif
-#endif    
-    l_redraw_full:
-      PrintSSBFreqData(
-#ifdef SSBDetectorFreq_LSB
-        LSB_shift, 
-#endif    
-#ifdef SSBDetectorFreq_USB
-        USB_shift, 
-#endif    
-        buf, items);
+    continue;
+    
+    l_mode_changed:
+      LSB_shift=trx.IFreqShift[mode][LSB];
+      USB_shift=trx.IFreqShift[mode][USB];
+      freq_lsb=Modes[mode].detector_freq[LSB];
+      freq_usb=Modes[mode].detector_freq[USB];
+      
     l_redraw:
+      pb=buf;
+    
+      items[0] = pb;
+      pb = cwr_str(pb,"Mode: ");
+      pb = cwr_str(pb,Modes[mode].name);
+      *pb++ = 0;
+      
+      items[1] = pb;
+      pb = cwr_str(pb,"LSB:  ");
+      if (freq_lsb != 0)
+        pb = cwr_long(pb,freq_lsb+LSB_shift);
+      else
+        pb = cwr_str(pb,"         ");
+      *pb++ = 0;
+    
+      items[2] = pb;
+      pb = cwr_str(pb,"USB:  ");
+      if (freq_usb != 0) 
+        pb = cwr_long(pb,freq_usb+USB_shift);
+      else
+        pb = cwr_str(pb,"         ");
+      *pb++ = 0;
+    
+      items[3] = pb;
+      pb = cwr_str(pb,"Save");
+      *pb++ = 0;
+      
+      items[4] = NULL;
+
       disp.DrawMenu(title,(const char**)items,selected,help,2);
       encval=0;
-    }
   }
 }
 
@@ -224,7 +237,6 @@ void PrintSMeterData(int *dt, char *buf, char **items)
     if ((i & 1) == 0) {
       *items++ = buf;
       *buf++ = (i < 9 ? 'S' : '+');
-      //buf = cwr_byte(buf,(i < 9 ? i+1 : i-8));
       *buf++ = '0' + (i < 9 ? i+1 : i-8);
       if (i >= 9) *buf++ = '0';
       else *buf++ = ' ';
@@ -239,8 +251,8 @@ void PrintSMeterData(int *dt, char *buf, char **items)
 
 void ShowSMeterMenu()
 {
-  char help[43];
-  strcpy_P(help,PSTR("Up/Dn - move\nMenu - exit\nVFO - set value"));
+  char help[37];
+  strcpy_P(help,PSTR("Up/Dn - move\nMenu - exit\nVFO - set"));
   int smeter[15];
   char buf[100];
   char title[16];
@@ -308,7 +320,7 @@ void ShowSiCalibrationMenu()
 
 void ShowMenu()
 {
-  const char* MenuItems[] = {"Clock","S-Meter","Si calibration","SSB freq",NULL};
+  const char* MenuItems[] = {"Clock","S-Meter","Si calibration","IF freq",NULL};
   char title[10];
   char help[40];
   strcpy_P(title,PSTR("Main menu"));

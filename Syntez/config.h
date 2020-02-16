@@ -8,14 +8,13 @@
 #define MODE_SSB  0
 #define MODE_CW   1
 
-// число диапазонов
-#define BAND_COUNT  9
-
 extern const struct _Bands {
   long  start, end;
   uint8_t mode;
   uint8_t sideband;
 } Bands[];
+
+// для каждого бенда задаем начало/конец, моду и полосу.
 
 #define DEFINED_BANDS \
   { 1810000L,  2000000L, MODE_SSB, LSB}, \

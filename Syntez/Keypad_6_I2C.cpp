@@ -2,6 +2,34 @@
 #include "i2c.h"
 #include "config.h"
 
+uint8_t i2c_addr;
+uint8_t Keypad_6_I2C::last_code = -1;
+uint8_t last_scan = 0;
+uint8_t Keypad_6_I2C::FnPressed = 0, Keypad_6_I2C::KeyPressed = 0;
+uint8_t longpress = 0;
+long last_code_tm = 0;
+long fn_press_tm = 0;
+
+void pcf8574_write(uint8_t data) 
+{
+  i2c_begin_write(i2c_addr);
+  i2c_write(data);
+  i2c_end();
+}
+
+uint8_t pcf8574_byte_read() 
+{
+  i2c_begin_read(i2c_addr);
+  uint8_t data = i2c_read();
+  i2c_end();
+  return data;
+}
+
+Keypad_6_I2C::Keypad_6_I2C(uint8_t _i2c_addr)
+{
+  i2c_addr = _i2c_addr;
+}
+
 void Keypad_6_I2C::setup() {
   if (i2c_device_found(i2c_addr))
     pcf8574_write(0xFF);
@@ -83,19 +111,4 @@ uint8_t Keypad_6_I2C::Read()
     last_scan = 0;
     return cmdNone;
   }
-}
-
-void Keypad_6_I2C::pcf8574_write(uint8_t data) 
-{
-  i2c_begin_write(i2c_addr);
-  i2c_write(data);
-  i2c_end();
-}
-
-uint8_t Keypad_6_I2C::pcf8574_byte_read() 
-{
-  i2c_begin_read(i2c_addr);
-  uint8_t data = i2c_read();
-  i2c_end();
-  return data;
 }

@@ -1,7 +1,7 @@
 #ifndef DISP_ST7735_H
 #define DISP_ST7735_H
 
-// ST7735 SPI TFT. адаптация: Дмитрий Фролов
+// ST7735 SPI TFT. начальная адаптация: Дмитрий Фролов
 
 #include <Arduino.h>
 #include "TRX.h"

@@ -9,7 +9,24 @@ const struct _Modes Modes[] = {
   { NULL, false, false, {0, 0} }
 };
 
+#define BAND_COUNT  (sizeof(Bands)/sizeof(struct _Bands))
+#define MODE_COUNT  (sizeof(Modes)/sizeof(struct _Modes)-1)
+
+int TRX::IFreqShift[MODE_COUNT][2];
+TVFOState TRX::BandData[BAND_COUNT+1];
+int TRX::SaveBandIndex;
+int TRX::BandIndex;  // -1 в режиме General coverage
+TVFOState TRX::state;
+uint8_t TRX::TX;
+uint8_t TRX::Lock;
+uint8_t TRX::RIT;
+int TRX::RIT_Value;
+uint8_t TRX::QRP;
+uint8_t TRX::Tune;
+uint8_t TRX::SMeter; // 0..15 
+
 TRX::TRX() {
+  memset(IFreqShift,0,sizeof(IFreqShift));
   for (byte i=0; i < BAND_COUNT; i++) {
 	  BandData[i].VFO_Index = 0;
     BandData[i].VFO[0] = BandData[i].VFO[1] = ((Bands[i].start+Bands[i].end)/2000)*1000;
@@ -24,9 +41,13 @@ TRX::TRX() {
   SwitchToBand(BAND_COUNT == 1 ? 0 : 1);
 }
 
-uint16_t hash_data(uint16_t hval, uint8_t* data, int sz) {
-  while (sz--)
-    hval += (hval << 5) + *data++;
+uint8_t TRX::GetVFOIndex() {
+  return (state.Split && TX ? state.VFO_Index ^ 1 : state.VFO_Index);
+}
+    
+uint16_t hash_data(uint16_t hval, uint8_t* data, int sz)
+{
+  while (sz--) hval ^= *data++;
   return hval;
 }  
 
@@ -38,12 +59,14 @@ uint16_t TRX::StateHash() {
   return hval;
 }
 
-#define STATE_SIGN  0x56DE
+#define CRC_SIGN          0x469E
+#define IFreqShift_ADDR   0
+#define STATE_ADDR        (sizeof(IFreqShift)+2)
 
 void TRX::StateLoad(Eeprom24C32 &eep) {
-  uint16_t sign=0,addr=0;
+  uint16_t sign=0,addr=STATE_ADDR;
   eep.readBytes(addr,sizeof(sign),(byte*)&sign);
-  if (sign == STATE_SIGN) {
+  if (sign == CRC_SIGN) {
     addr += sizeof(sign);
     eep.readBytes(addr,sizeof(BandData),(byte*)BandData);
     addr += sizeof(BandData);   
@@ -56,7 +79,7 @@ void TRX::StateLoad(Eeprom24C32 &eep) {
 }
 
 void TRX::StateSave(Eeprom24C32 &eep) {
-  uint16_t sign=STATE_SIGN,addr=0;
+  uint16_t sign=CRC_SIGN,addr=STATE_ADDR;
   eep.writeBytes(addr,sizeof(sign),(byte*)&sign);
   addr += sizeof(sign);
   eep.writeBytes(addr,sizeof(BandData),(byte*)BandData);
@@ -66,6 +89,24 @@ void TRX::StateSave(Eeprom24C32 &eep) {
   eep.writeBytes(addr,sizeof(BandIndex),(byte*)&BandIndex);
   addr += sizeof(BandIndex);
   eep.writeBytes(addr,sizeof(state),(byte*)&state);
+}
+
+void TRX::IFreqShiftLoad(Eeprom24C32 &eep)
+{
+  uint16_t sign=0,addr=IFreqShift_ADDR;
+  eep.readBytes(addr,sizeof(sign),(byte*)&sign);
+  if (sign == CRC_SIGN) {
+    addr += sizeof(sign);
+    eep.readBytes(addr,sizeof(IFreqShift),(byte*)IFreqShift);
+  }
+}
+
+void TRX::IFreqShiftSave(Eeprom24C32 &eep)
+{
+  uint16_t sign=CRC_SIGN,addr=IFreqShift_ADDR;
+  eep.writeBytes(addr,sizeof(sign),(byte*)&sign);
+  addr += sizeof(sign);
+  eep.writeBytes(addr,sizeof(IFreqShift),(byte*)IFreqShift);
 }
 
 void TRX::SwitchToBand(int band) {

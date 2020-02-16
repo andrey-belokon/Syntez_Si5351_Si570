@@ -111,7 +111,6 @@ void LiquidCrystal_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 	command(LCD_ENTRYMODESET | _displaymode);
 	
 	home();
-  
 }
 
 /********** high level commands, for the user! */

@@ -17,29 +17,31 @@ typedef struct {
 
 class TRX {
   public:
-	   TVFOState BandData[BAND_COUNT+1]; // last - General coverage
-    int SaveBandIndex;  // для правильного выхода из General coverage
-    int BandIndex;  // -1 в режиме General coverage
-    TVFOState state;
-    uint8_t TX;
-    uint8_t Lock;
-    uint8_t RIT;
-    int RIT_Value;
-	  uint8_t QRP;
-    uint8_t Tune;
-	  uint8_t SMeter; // 0..15 
+	  static TVFOState BandData[]; // last - General coverage
+    static int SaveBandIndex;  // для правильного выхода из General coverage
+    static int BandIndex;  // -1 в режиме General coverage
+    static TVFOState state;
+    static uint8_t TX;
+    static uint8_t Lock;
+    static uint8_t RIT;
+    static int RIT_Value;
+	  static uint8_t QRP;
+    static uint8_t Tune;
+	  static uint8_t SMeter; // 0..15 
 
 	  TRX();
-    void SwitchToBand(int band);
-    void ExecCommand(uint8_t cmd);
-    inline uint8_t GetVFOIndex() {
-      return (state.Split && TX ? state.VFO_Index ^ 1 : state.VFO_Index);
-    }
-    void ChangeFreq(long freq_delta);
+    static void SwitchToBand(int band);
+    static void ExecCommand(uint8_t cmd);
+    static uint8_t GetVFOIndex();
+    static void ChangeFreq(long freq_delta);
 
-    uint16_t StateHash();
-    void StateLoad(Eeprom24C32 &eep);
-    void StateSave(Eeprom24C32 &eep);
+    static uint16_t StateHash();
+    static void StateLoad(Eeprom24C32 &eep);
+    static void StateSave(Eeprom24C32 &eep);
+
+    static int IFreqShift[][2];
+    static void IFreqShiftLoad(Eeprom24C32 &eep);
+    static void IFreqShiftSave(Eeprom24C32 &eep);
 };
 
 class TRXDisplay {
