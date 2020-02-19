@@ -6,13 +6,13 @@ const struct _Bands Bands[] = {
 
 const struct _Modes Modes[] = {
   DEFINED_MODES ,
-  { NULL, false, false, {0, 0} }
+  { NULL, 0, 0, 0, 0, {0, 0} }
 };
 
 #define BAND_COUNT  (sizeof(Bands)/sizeof(struct _Bands))
 #define MODE_COUNT  (sizeof(Modes)/sizeof(struct _Modes)-1)
 
-int TRX::IFreqShift[MODE_COUNT][2];
+int TRX::IFreqShift[MODE_COUNT][3];
 TVFOState TRX::BandData[BAND_COUNT+1];
 int TRX::SaveBandIndex;
 int TRX::BandIndex;  // -1 в режиме General coverage
@@ -31,7 +31,6 @@ TRX::TRX() {
 	  BandData[i].VFO_Index = 0;
     BandData[i].VFO[0] = BandData[i].VFO[1] = ((Bands[i].start+Bands[i].end)/2000)*1000;
     BandData[i].mode = Bands[i].mode;
-    BandData[i].sideband = Bands[i].sideband;
 	  BandData[i].AttPre = 0;
 	  BandData[i].Split = false;
   }
@@ -59,7 +58,7 @@ uint16_t TRX::StateHash() {
   return hval;
 }
 
-#define CRC_SIGN          0x469E
+#define CRC_SIGN          0x56AE
 #define IFreqShift_ADDR   0
 #define STATE_ADDR        (sizeof(IFreqShift)+2)
 
@@ -146,18 +145,15 @@ void TRX::ExecCommand(uint8_t cmd) {
     case cmdVFOSel: // VFO A/B
       state.VFO_Index ^= 1;
       break;
-    case cmdUSBLSB:
-      state.sideband = (state.sideband == LSB ? USB : LSB);
-      break;
     case cmdMode:
       if (Modes[++state.mode].name == NULL) state.mode = 0; // по кругу
-      if (!Modes[state.mode].tx_enabled) Tune = 0;
+      if (!Modes[state.mode].tx_enable) Tune = 0;
       break;
     case cmdVFOEQ:
       state.VFO[state.VFO_Index ^ 1] = state.VFO[state.VFO_Index];
       break;
     case cmdTune:
-      if (!Modes[state.mode].tx_enabled) Tune = 0;
+      if (!Modes[state.mode].tx_enable) Tune = 0;
       else Tune = !Tune;
       break;
     case cmdQRP:

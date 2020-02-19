@@ -9,7 +9,6 @@
 typedef struct {
   long VFO[2];    // VFO freq A&B
   uint8_t  VFO_Index; // 0-A, 1-B
-  uint8_t sideband;
   uint8_t mode;
   uint8_t AttPre;    // 0-nothing; 1-ATT; 2-Preamp
   uint8_t Split;
@@ -39,7 +38,7 @@ class TRX {
     static void StateLoad(Eeprom24C32 &eep);
     static void StateSave(Eeprom24C32 &eep);
 
-    static int IFreqShift[][2];
+    static int IFreqShift[][3];
     static void IFreqShiftLoad(Eeprom24C32 &eep);
     static void IFreqShiftSave(Eeprom24C32 &eep);
 };

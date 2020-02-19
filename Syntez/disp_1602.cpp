@@ -30,7 +30,6 @@ void Display_1602_I2C::setup() {
 void Display_1602_I2C::Draw(TRX& trx) {
   char buf[2][17];
   int vfo_idx = trx.GetVFOIndex();
-  bool wrong_sb = trx.BandIndex >= 0 && Bands[trx.BandIndex].sideband != trx.state.sideband;
   long f = (trx.state.VFO[vfo_idx]+50) / 100;
 
   memset(buf,' ',34);
@@ -85,11 +84,10 @@ void Display_1602_I2C::Draw(TRX& trx) {
       break;
   }
 
-  if (!wrong_sb || ((millis() / 700) & 1)) {
+  if (((millis() / 700) & 1)) {
     buf[1][8] = 'S';
     buf[1][9] = 'B';
-    if (trx.state.sideband == LSB) buf[1][7]  = 'L';
-    else buf[1][7]  = 'U';
+    buf[1][7]  = 'S';
   }
 
   if (trx.state.Split && trx.RIT) {

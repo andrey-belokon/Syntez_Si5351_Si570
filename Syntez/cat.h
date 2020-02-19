@@ -21,7 +21,7 @@ void ExecCAT()
         }
         memset(CAT_buf + 24, '0', 4);
         CAT_buf[28] = '0' + (trx.TX & 1);
-        CAT_buf[29] = '1' + trx.state.sideband;
+        CAT_buf[29] = Modes[trx.state.mode].cat_name;
         CAT_buf[30] = '0' + trx.state.VFO_Index;
         CAT_buf[31] = '0';
         CAT_buf[32] = '0' + (trx.state.Split & 1);
@@ -54,13 +54,17 @@ void ExecCAT()
         }
       } else if (CAT_buf[0] == 'M' && CAT_buf[1] == 'D') {
         if (CAT_buf[2] == ';') {
-          CAT_buf[2] = '1' + trx.state.sideband;
+          CAT_buf[2] = Modes[trx.state.mode].cat_name;
           CAT_buf[3] = ';';
           CAT_buf[4] = 0;
           Serial.write(CAT_buf);
-        } else if (CAT_buf[2] == '1' || CAT_buf[2] == '2') {
-          uint8_t i = CAT_buf[2] - '1';
-          if (i != trx.state.sideband) trx.ExecCommand(cmdUSBLSB);
+        } else {
+          for (uint8_t i=0; Modes[i].cat_name != 0; i++) {
+            if (Modes[i].cat_name == CAT_buf[2]) {
+              trx.state.mode = i;
+              break;
+            }
+          }
         }
       } else if (CAT_buf[0] == 'B' && CAT_buf[1] == 'D') {
         trx.ExecCommand(cmdBandDown);

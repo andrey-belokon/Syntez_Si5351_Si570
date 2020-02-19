@@ -1,31 +1,28 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define LSB 0
-#define USB 1
-
 // predefined modes - index in Modes[] (see config_sw.h)
-#define MODE_SSB  0
-#define MODE_CW   1
+#define MODE_LSB 0
+#define MODE_USB 1
+#define MODE_CW  2
 
 extern const struct _Bands {
   long  start, end;
   uint8_t mode;
-  uint8_t sideband;
 } Bands[];
 
 // для каждого бенда задаем начало/конец, моду и полосу.
 
 #define DEFINED_BANDS \
-  { 1810000L,  2000000L, MODE_SSB, LSB}, \
-  { 3500000L,  3800000L, MODE_SSB, LSB}, \
-  { 7000000L,  7200000L, MODE_SSB, LSB}, \
-  {10100000L, 10150000L, MODE_SSB, USB}, \
-  {14000000L, 14350000L, MODE_SSB, USB}, \
-  {18068000L, 18168000L, MODE_SSB, USB}, \
-  {21000000L, 21450000L, MODE_SSB, USB}, \
-  {24890000L, 25140000L, MODE_SSB, USB}, \
-  {28000000L, 29700000L, MODE_SSB, USB}
+  { 1810000L,  2000000L, MODE_LSB}, \
+  { 3500000L,  3800000L, MODE_LSB}, \
+  { 7000000L,  7200000L, MODE_LSB}, \
+  {10100000L, 10150000L, MODE_USB}, \
+  {14000000L, 14350000L, MODE_USB}, \
+  {18068000L, 18168000L, MODE_USB}, \
+  {21000000L, 21450000L, MODE_USB}, \
+  {24890000L, 25140000L, MODE_USB}, \
+  {28000000L, 29700000L, MODE_USB}
 
 // для режима general coverage
 #define FREQ_MIN  1000000L
@@ -46,13 +43,12 @@ enum {
   // с нажатой Fn  
   cmdRIT,      // RIT
   cmdZero,     // устанавливает частоту точно по еденицам кГц. 3623145->3623000
-  cmdUSBLSB,   // выбор боковой USB/LSB
+  cmdMode,     // смена моды CW/SSB/AM
   cmdSplit,    // Split on/off
   cmdQRP,      // режим уменьшенной выходной мощности
   cmdHam,      // режим Ham band/General coverage. в режиме Ham кнопки cmdBandUp/Down переключают диапазоны
                // в режиме General coverage - изменяют частоту на +/-1MHz
   cmdMenu,
-  cmdMode,     // смена моды CW/SSB/AM
   cmdTune      // режим настройки - TX+QRP
 };
 

@@ -57,20 +57,27 @@ const long CLK2_MULT = 1;
 // При определении обеих констант они должны находится на соответствующих скатах фидьтра.
 // Если используется два раздельных фильтра для выделения LSB/USB то выбор их осуществляется
 // с помощью сигнала BCPN_SB на порту дешифратора диапазонов
-//#define SSBDetectorFreq_LSB   (11060000L+300L)
-//#define SSBDetectorFreq_USB   (11056950L-300L)
+
+// значения для sb_mode - выбор боковой полосы. SBM_DSB в случае приема AM/FM - частота 
+// по центру фильтра и второй гетеродин выключен
+#define SBM_LSB  0
+#define SBM_USB  1
+#define SBM_DSB  2
 
 extern const struct _Modes {
   char* name;
-  uint8_t tx_enabled;
-  uint8_t allow_sideband;
-  uint32_t  detector_freq[2]; // LSB/USB
+  char cat_name;      // '0'-No mode, '1'-LSB, '2'-USB, '3'-CW, '4'-FM, '5'-AM
+  uint8_t sb_mode;    // задает боковую
+  uint8_t tx_enable;  // разрешена передача в этой моде
+  int16_t   rx_shift; // сдвиг при приеме. нужно для CW
+  uint32_t  freq[2];  // частота гетеродинов для SBM_LSB/SBM_USB или центр ПЧ для SBM_DSB
 } Modes[];
 
 #define   DEFINED_MODES \
-  {"SSB", true,  true,  {11060000L+300L, 11056950L-300L} }, \
-  {"CW",  false, true,  {11060000L+300L, 11056950L-300L} }, \
-  {"AM",  false, false, {11070000L, 0} }
+  {"LSB", '1', SBM_LSB,  true,    0, {11060000L+300, 11056950L-300}}, \
+  {"USB", '2', SBM_USB,  true,    0, {11060000L+300, 11056950L-300}}, \
+  {"CW",  '3', SBM_USB,  false, 700, {11060000L-700, 11056950L+700}}, \
+  {"AM",  '5', SBM_DSB,  false,   0, {11070000L, 0}}
 
 // Первая промежуточная частота для трактов с двойным преобразованием частоты
 // Используется только если выбрана одна из мод MODE_DOUBLE_*

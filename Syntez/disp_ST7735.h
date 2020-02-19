@@ -165,6 +165,14 @@ void drawBtn(int x, int y, uint8_t w, uint8_t h, const char *title, color_t cfra
   }
 }
 
+void drawBtn3020(int x, int y,  const char *title, uint8_t pressed)
+{
+  if (pressed)
+      drawBtn(x,y,30,20,title,ST7735_BLUE,ST7735_WHITE);
+    else
+      drawBtn(x,y,30,20,title,ST7735_BLACK,ST7735_DARKGRAY);
+}
+
 void Display_ST7735_SPI::Draw(TRX& trx) {
   const int FREQ_Y = 0;
   const int FREQ_H = 65; 
@@ -232,18 +240,12 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
  
   if (f != cur_freq) {
     cur_freq=f;
-    if (vfo_idx == 0)
-      drawFreq(18,FREQ_Y+78,f,ST7735_YELLOW);
-    else
-      drawFreq(18,FREQ_Y+106,f,ST7735_YELLOW);
+    drawFreq(18,FREQ_Y+(vfo_idx?106:78),f,ST7735_YELLOW);
   }
  
   if (f2 != cur_freq2) {
     cur_freq2=f2;
-    if (vfo_idx == 0)
-      drawFreq2(65,FREQ_Y+103,f2,ST7735_CYAN);
-    else
-      drawFreq2(65,FREQ_Y+68,f2,ST7735_CYAN);
+    drawFreq2(65,FREQ_Y+(vfo_idx?68:103),f2,ST7735_CYAN);
   }
 
   if (trx.state.AttPre != cur_attpre) {
@@ -261,18 +263,18 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   }
 
   if ((trx.QRP | trx.Tune) != cur_qrp) {
-    if ((cur_qrp = trx.QRP | trx.Tune) != 0) 
-      drawBtn(32,BTN_Y,30,20,"QRP",ST7735_BLUE,ST7735_WHITE);
-    else
-      drawBtn(32,BTN_Y,30,20,"QRP",ST7735_BLACK,ST7735_DARKGRAY);
+    cur_qrp = trx.QRP | trx.Tune;
+    drawBtn3020(32,BTN_Y,"QRP",cur_qrp);
   }
   
   if (trx.RIT != cur_rit) {
-    if ((cur_rit=trx.RIT) != 0) {
-      drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLUE,ST7735_WHITE);
+    cur_rit=trx.RIT;
+    drawBtn3020(65,BTN_Y,"RIT",cur_rit);
+    if (cur_rit) {
+      //drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLUE,ST7735_WHITE);
       cur_ritval=0xffff;
     } else {
-      drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLACK,ST7735_DARKGRAY);
+      //drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLACK,ST7735_DARKGRAY);
       tft.fillRect(0,(cur_vfo_idx ? FREQ_Y+56 : FREQ_Y+91),65,7,ST7735_BLACK);
     }
   }
@@ -302,18 +304,14 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   }
 
   if (trx.state.Split != cur_split) {
-    if ((cur_split=trx.state.Split) != 0)
-      drawBtn(98,BTN_Y,30,20,"SPL",ST7735_BLUE,ST7735_WHITE);
-    else
-      drawBtn(98,BTN_Y,30,20,"SPL",ST7735_BLACK,ST7735_DARKGRAY);
+    cur_split=trx.state.Split;
+    drawBtn3020(98,BTN_Y,"SPL",cur_split);
   }
 
   if (trx.Lock != cur_lock) {
     cur_lock=trx.Lock;
-    if (cur_lock)
-      drawBtn(130,BTN_Y,30,20,"LCK",ST7735_RED,ST7735_YELLOW);
-    else
-      drawBtn(130,BTN_Y,30,20,"LCK",ST7735_BLACK,ST7735_DARKGRAY);
+    drawBtn3020(130,BTN_Y,"LCK",cur_lock);
+    //drawBtn(130,BTN_Y,30,20,"LCK",(cur_lock?ST7735_RED:ST7735_BLACK),(cur_lock?ST7735_YELLOW:ST7735_DARKGRAY));
   }
 
   if (trx.TX != cur_tx) {
@@ -323,23 +321,12 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
       drawBtn(0,0,30,16,"RX",ST7735_BLACK,ST7735_GREEN);
   }
 
-  uint8_t sb = trx.state.sideband;
-  if (trx.BandIndex >= 0 && Bands[trx.BandIndex].sideband != trx.state.sideband) sb |= 0x80;
-  if (!Modes[trx.state.mode].allow_sideband) sb |= 0x40;
-  if (sb != cur_sideband) {
-    const char *sb_txt = (sb & 0x40 ? "   " : (trx.state.sideband == LSB ? "LSB" : "USB"));
-    cur_sideband=sb;
-    if (sb & 0x80)
-      drawBtn(60,0,30,16,sb_txt,ST7735_RED,ST7735_YELLOW);
-    else
-      drawBtn(60,0,30,16,sb_txt,ST7735_BLACK,ST7735_BLUE);
-  }
-
   uint8_t mode = trx.state.mode;
   if (mode != cur_mode) {
-    drawBtn(30,0,30,16,Modes[mode].name,ST7735_BLACK,ST7735_DARKYELLOW);
     cur_mode = mode;
+    drawBtn(30,0,30,16,Modes[mode].name,ST7735_BLACK,ST7735_DARKYELLOW);
   }
+  
 #ifdef RTC_ENABLE
   if (millis()-last_tmtm > 200) {
     RTCData d;
@@ -352,14 +339,14 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     else *pb++=' ';
     pb=cwr_hex2(pb,d.min);
     //sprintf(buf,"%x.%02x.20",d.day,d.month);
-/*    pb=cwr_hex2sp(pb,d.day);
+    pb=cwr_hex2sp(pb,d.day);
     *pb++='/';
-    pb=cwr_hex2(pb,d.month); */
+    pb=cwr_hex2(pb,d.month); 
     *pb=0;
     tft.setFont(NULL);
     tft.setTextSize(1);
     tft.setTextColor(ST7735_CYAN,ST7735_BLACK);
-    tft.setCursor(120,5);
+    tft.setCursor(90,5);
     tft.print(buf);
   }
 #endif

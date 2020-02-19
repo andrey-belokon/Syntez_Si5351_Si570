@@ -41,7 +41,7 @@ const uint8_t KeyMap[] = {
   cmdNone,
 //*  вариант когда RIT вынесен на отдельную кнопку
   cmdBandDown,  cmdBandUp,  cmdAttPre,  cmdVFOSel,  cmdRIT,
-  cmdHam,       cmdUSBLSB,  cmdQRP,     cmdSplit,   cmdZero,  // with Fn pressed
+  cmdHam,       cmdNone,    cmdQRP,     cmdSplit,   cmdZero,  // with Fn pressed
   cmdLock,      cmdMode,    cmdTune,    cmdVFOEQ,   cmdNone   // длинные нажатия
 /*  вариант когда переключение моды вынесено на отдельную кнопку
   cmdBandDown,  cmdBandUp,  cmdAttPre,  cmdVFOSel,  cmdMode,
@@ -74,13 +74,13 @@ uint8_t Keypad_6_I2C::Read()
       }
       return cmdNone;
     } else {
-      if (fn) code+=5;
       last_scan = code;
       last_code_tm = millis();
+      if (fn) code+=5;
       code = KeyMap[code];
       last_code = code;
       KeyPressed = true;
-      if (!fn && KeyMap[last_code+10] != cmdNone) {
+      if (!fn && KeyMap[last_scan+10] != cmdNone) {
         longpress = 1;
         code = cmdNone; // long press
       }

@@ -235,31 +235,41 @@ void UpdateFreq()
 #endif
 
 #if defined(MODE_SINGLE_IF) || defined(MODE_SINGLE_IF_RXTX) || defined(MODE_SINGLE_IF_SWAP)
-  uint32_t SSBDetectorFreq_LSB = Modes[trx.state.mode].detector_freq[LSB]+trx.IFreqShift[trx.state.mode][LSB];
+  struct _Modes *mm = &Modes[trx.state.mode];
+  int *freq_shift = trx.IFreqShift[trx.state.mode];
+  uint32_t SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
   int rit_val = (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
-  if (Modes[trx.state.mode].allow_sideband) {
-    uint32_t SSBDetectorFreq_USB = Modes[trx.state.mode].detector_freq[USB]+trx.IFreqShift[trx.state.mode][USB];
+  int shift_rx = (trx.TX ? 0 : mm->rx_shift+freq_shift[2]);
+  uint8_t sbm = mm->sb_mode;
+  if (sbm == SBM_DSB) {
+    // no sideband. use freq as filter center freq
+    vfo_set_freq( // гетеродин сверху
+      CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + SSBDetectorFreq_LSB + rit_val),
+      0, 0
+    );
+  } else {
+    uint32_t SSBDetectorFreq_USB = mm->freq[1]+freq_shift[1];
     long vfo,bfo;
     if (SSBDetectorFreq_LSB != 0 && SSBDetectorFreq_USB != 0) {
       // инверсия боковой - гетеродин сверху
-      vfo = trx.state.VFO[trx.GetVFOIndex()] + (trx.state.sideband == LSB ? SSBDetectorFreq_USB : SSBDetectorFreq_LSB) + rit_val;
-      bfo = trx.state.sideband == LSB ? SSBDetectorFreq_USB : SSBDetectorFreq_LSB;
+      bfo = ((sbm == SBM_LSB) ? SSBDetectorFreq_USB-shift_rx : SSBDetectorFreq_LSB+shift_rx);
+      vfo = trx.state.VFO[trx.GetVFOIndex()] + bfo + rit_val;
     } else if (SSBDetectorFreq_USB != 0) {
       vfo = trx.state.VFO[trx.GetVFOIndex()] + rit_val;
-      if (trx.state.sideband == LSB) {
+      if (sbm == SBM_LSB) {
         vfo += SSBDetectorFreq_USB;
       } else {
         vfo = abs(SSBDetectorFreq_USB-vfo);
       }
-      bfo = SSBDetectorFreq_USB;
-    } else if (SSBDetectorFreq_LSB != 0) {
+      bfo = SSBDetectorFreq_USB-shift_rx;
+    } else {
       long vfo = trx.state.VFO[trx.GetVFOIndex()] + rit_val;
-      if (trx.state.sideband == USB) {
+      if (sbm == SBM_USB) {
         vfo += SSBDetectorFreq_LSB;
       } else {
         vfo = abs(SSBDetectorFreq_LSB-vfo);
       }
-      bfo = SSBDetectorFreq_LSB;
+      bfo = SSBDetectorFreq_LSB+shift_rx;
     }
     #ifdef MODE_SINGLE_IF
       vfo_set_freq(CLK0_MULT*vfo, CLK1_MULT*bfo, 0);
@@ -277,18 +287,12 @@ void UpdateFreq()
         0
       );
     #endif
-  } else {
-    // no sideband. use LSB freq as filter center freq
-    vfo_set_freq( // гетеродин сверху
-      CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + SSBDetectorFreq_LSB + rit_val),
-      0, 0
-    );
   }
 #endif
 
 #if defined(MODE_DOUBLE_IF_SWAP23) || defined(MODE_DOUBLE_IF)
 
-  uint32_t SSBDetectorFreq_LSB = Modes[trx.state.mode].detector_freq[LSB]+trx.IFreqShift[trx.state.mode][LSB];
+  uint32_t SSBDetectorFreq_LSB = Modes[trx.state.mode].freq[LSB]+trx.IFreqShift[trx.state.mode][LSB];
   int rit_val = (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
   if (Modes[trx.state.mode].allow_sideband) {
     #ifndef IFreqEx
@@ -356,7 +360,7 @@ void UpdateBandCtrl()
       break;
   }
   outBandCtrl.Set(BCPN_CW, trx.state.mode == MODE_CW);
-  outBandCtrl.Set(BCPN_SB, trx.state.sideband);
+  outBandCtrl.Set(BCPN_SB, trx.state.mode == MODE_USB);
   outBandCtrl.Write();
 #endif
 }
@@ -375,9 +379,6 @@ void loop()
   uint8_t cmd;
   static uint8_t delay_cmd = cmdNone;
   static long delay_cmd_tm = 0;
-#ifdef KEYPAD_6
-  static long last_vfosel_tm = 0;
-#endif
   cmd = keypad.Read();
   if (cmd != cmdNone && trx.Tune) {
     trx.Tune = 0;
@@ -405,14 +406,6 @@ void loop()
     } else {
       trx.ExecCommand(cmd);
     }
-#ifdef KEYPAD_12
-  } else {
-    // при однократном нажатии Menu включаем Lock через 1 сек
-    if (last_menu_tm > 0 && millis()-last_menu_tm >= 1000) {
-      trx.ExecCommand(cmdLock);
-      last_menu_tm = 0;
-    }
-#endif    
   }
 #endif    
 
@@ -428,7 +421,7 @@ void loop()
 #endif
 #ifndef KEYPAD_DISABLE
     if (keypad.IsFnPressed()) {
-      delta*=ENCODER_FN_MULT;
+      delta *= ENCODER_FN_MULT;
       keypad.SetKeyPressed();
     }
 #endif    
@@ -441,21 +434,23 @@ void loop()
   UpdateFreq();
 
   static uint8_t last_tune_in = 0;
-  uint8_t new_tune = Modes[trx.state.mode].tx_enabled && inTune.Read();
+  uint8_t new_tune = Modes[trx.state.mode].tx_enable && inTune.Read();
   if (new_tune != last_tune_in && new_tune != trx.Tune)
     trx.Tune = new_tune;
   last_tune_in = new_tune;
-  trx.TX = Modes[trx.state.mode].tx_enabled && (trx.Tune || inTX.Read());
+  trx.TX = Modes[trx.state.mode].tx_enable && (trx.Tune || inTX.Read());
   outQRP.Write(trx.QRP || trx.Tune);
   OutputTone(PIN_OUT_TONE, trx.Tune);
   outTX.Write(trx.TX);
   UpdateBandCtrl();
 
   // read and convert smeter
-  static long smeter_tm = 0;
-  if (millis()-smeter_tm > POLL_SMETER) {
-    int val = inSMeter.Read();
+  static long smeter_tm = 0; 
+  if (trx.TX) {
     trx.SMeter =  0;
+  } else if (millis()-smeter_tm > POLL_SMETER) {
+    int val = inSMeter.Read();
+    
     bool rev_order = SMeterMap[0] > SMeterMap[14];
     for (int8_t i=14; i >= 0; i--) {
       if ((!rev_order && val > SMeterMap[i]) || (rev_order && val < SMeterMap[i])) {

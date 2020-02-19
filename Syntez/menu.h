@@ -111,15 +111,15 @@ void ShowSSBDetFreqMenu()
 {
   char title[13];
   char help[72];
-  char buf[60];
-  char *items[5];
+  char buf[100];
+  char *items[6];
   byte mode=0;
-  int LSB_shift, USB_shift;
+  int shift_lsb, shift_usb, shift_rx, shift_rx_init;
   byte selected=0;
   long encval=0;
   int delta;
   char *pb;
-  uint32_t freq_lsb,freq_usb;
+  uint32_t freq_lsb, freq_usb;
   strcpy_P(title,PSTR("Tune IF freq"));
   strcpy_P(help,PSTR("Up/Dn - move\nAtt/VFO - change\nMenu - exit\nuse encoder for change"));
   disp.clear();
@@ -129,10 +129,10 @@ void ShowSSBDetFreqMenu()
     switch (keypad.Read()) {
       case cmdBandUp:
         if (selected > 0) selected--;
-        else selected=3;
+        else selected=4;
         goto l_redraw;
       case cmdBandDown:
-        if (selected < 3) selected++;
+        if (selected < 4) selected++;
         else selected=0;
         goto l_redraw;
       case cmdVFOSel:
@@ -141,14 +141,18 @@ void ShowSSBDetFreqMenu()
             if (Modes[++mode].name == NULL) mode=0;
             goto l_mode_changed;
           case 1:
-            LSB_shift += 20;
+            shift_lsb += 20;
             break;
           case 2:
-            if (Modes[mode].allow_sideband) USB_shift += 20;
+            shift_usb += 20;
             break;
           case 3:
-            trx.IFreqShift[mode][LSB] = LSB_shift;
-            trx.IFreqShift[mode][USB] = USB_shift;
+            shift_rx += 20;
+            break;
+          case 4:
+            trx.IFreqShift[mode][0] = shift_lsb;
+            trx.IFreqShift[mode][1] = shift_usb;
+            trx.IFreqShift[mode][2] = shift_rx;
             trx.IFreqShiftSave(ee24c32);
             break;
         };
@@ -163,10 +167,13 @@ void ShowSSBDetFreqMenu()
             mode--;
             goto l_mode_changed;
           case 1:
-            LSB_shift -= 20;
+            shift_lsb -= 20;
             break;
           case 2:
-            if (Modes[mode].allow_sideband) USB_shift -= 20;
+            shift_usb -= 20;
+            break;
+          case 3:
+            shift_rx -= 20;
             break;
         };
         goto l_redraw;
@@ -180,21 +187,27 @@ void ShowSSBDetFreqMenu()
     if (delta != 0) {
       switch (selected) {
         case 1:
-          LSB_shift+=delta;
-          goto l_redraw;
+          shift_lsb -= delta;
+          break;
         case 2:
-          USB_shift+=delta;
-          goto l_redraw;
-      }
+          shift_usb -= delta;
+          break;
+        case 3:
+          shift_rx -= delta;
+          break;
+      };
+      goto l_redraw;
     }
 #endif
     continue;
     
     l_mode_changed:
-      LSB_shift=trx.IFreqShift[mode][LSB];
-      USB_shift=trx.IFreqShift[mode][USB];
-      freq_lsb=Modes[mode].detector_freq[LSB];
-      freq_usb=Modes[mode].detector_freq[USB];
+      shift_lsb = trx.IFreqShift[mode][0];
+      shift_usb = trx.IFreqShift[mode][1];
+      shift_rx = trx.IFreqShift[mode][2];
+      freq_lsb = Modes[mode].freq[0];
+      freq_usb = Modes[mode].freq[1];
+      shift_rx_init = Modes[mode].rx_shift;
       
     l_redraw:
       pb=buf;
@@ -205,26 +218,25 @@ void ShowSSBDetFreqMenu()
       *pb++ = 0;
       
       items[1] = pb;
-      pb = cwr_str(pb,"LSB:  ");
-      if (freq_lsb != 0)
-        pb = cwr_long(pb,freq_lsb+LSB_shift);
-      else
-        pb = cwr_str(pb,"         ");
+      pb = cwr_str(pb,"F LSB: ");
+      pb = cwr_long(pb,freq_lsb+shift_lsb);
       *pb++ = 0;
     
       items[2] = pb;
-      pb = cwr_str(pb,"USB:  ");
-      if (freq_usb != 0) 
-        pb = cwr_long(pb,freq_usb+USB_shift);
-      else
-        pb = cwr_str(pb,"         ");
+      pb = cwr_str(pb,"F USB: ");
+      pb = cwr_long(pb,freq_usb+shift_usb);
       *pb++ = 0;
     
       items[3] = pb;
+      pb = cwr_str(pb,"RX Shift:   ");
+      pb = cwr_long(pb,shift_rx_init+shift_rx);
+      *pb++ = 0;
+    
+      items[4] = pb;
       pb = cwr_str(pb,"Save");
       *pb++ = 0;
       
-      items[4] = NULL;
+      items[5] = NULL;
 
       disp.DrawMenu(title,(const char**)items,selected,help,2);
       encval=0;
