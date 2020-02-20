@@ -40,7 +40,7 @@ const uint8_t Tahoma28Bitmaps[] PROGMEM = {
 0x07, 0xF0, 0x00};
 
 const GFXglyph Tahoma28Glyphs[] PROGMEM = {
-{0, 0, 0, 12, 0, 0},  //  
+{0, 0, 0, 8, 0, 0},  //  
 {0, 0, 0, 20, 0, 0},  // !
 {0, 0, 0, 12, 0, 0},  // "
 {0, 0, 0, 12, 0, 0},  // #

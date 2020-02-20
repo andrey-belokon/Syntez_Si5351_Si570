@@ -97,9 +97,10 @@ void Display_ST7735_SPI::reset()
   last_tmtm=0;
 }
 
-void fmt231(char *buf, long v)
+void fmt232(char *buf, long v)
 {
-  buf[8] = 0;
+  buf[9] = 0;
+  buf[8] = '0'+v%10; v/=10;
   buf[7] = '0'+v%10; v/=10;
   buf[6] = '.';
   buf[5] = '0'+v%10; v/=10;
@@ -113,31 +114,37 @@ void fmt231(char *buf, long v)
 
 void drawFreq(int x, int y, long f, color_t c)
 {
-  char bbuf[9];
+  char bbuf[10];
   char* buf=bbuf;
   char *oldbuf=cur_freq_buf;
   int w=0;
-  fmt231(bbuf,f);
+  fmt232(bbuf,f);
+  bbuf[2]=' '; bbuf[6]=0;
   while (*buf && (*buf == *oldbuf)) {
-    if (*buf == '.') w+=11;
+    if (*buf == ' ') w+=8;
     else w+=20;
     oldbuf++;
     buf++;
   }
+  tft.setTextColor(c);
   if (*buf) {
-    tft.setTextColor(c);
     tft.setFont(&Tahoma28);
     tft.fillRect(x+w,y-40,160-w,32,ST7735_BLACK);
     tft.setCursor(x+w,y);
     tft.print(buf);
     while ((*oldbuf++=*buf++) != 0);
   }
+  tft.setFont(&Tahoma18);
+  tft.fillRect(x+113,y-40,160-116,25,ST7735_BLACK);
+  tft.setCursor(x+113,y-13);
+  tft.print(bbuf+7);
 }
 
 void drawFreq2(int x, int y, long f2, color_t c)
 {
-  char buf[9];
-  fmt231(buf,f2);
+  char buf[10];
+  fmt232(buf,f2);
+  buf[8]=0;
   tft.fillRect(x,y-29,x+13*6+7*2,29,ST7735_BLACK);
   tft.setTextColor(c);
   tft.setFont(&Tahoma18);
@@ -180,8 +187,8 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   const int SMetr_Y = 22;
   const int SMetr_H = 7;
   int vfo_idx = trx.GetVFOIndex();
-  long f = (trx.state.VFO[vfo_idx]+50) / 100;
-  long f2 = (trx.state.VFO[vfo_idx^1]+50) / 100;
+  long f = (trx.state.VFO[vfo_idx]+5) / 10;
+  long f2 = (trx.state.VFO[vfo_idx^1]+5) / 10;
 
   tft.setTextSize(1);
   
@@ -293,7 +300,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
         v=-v;
       }
       else buf[0]='+'; 
-      cwr_str(cwr_int(buf+1,v),"Hz   ");
+      cwr_str(cwr_int(buf+1,v),"Hz  ");
     }
     tft.setFont(NULL);
     tft.setTextSize(1);
