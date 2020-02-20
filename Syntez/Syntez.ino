@@ -252,8 +252,9 @@ void UpdateFreq()
     long vfo,bfo;
     if (SSBDetectorFreq_LSB != 0 && SSBDetectorFreq_USB != 0) {
       // инверсия боковой - гетеродин сверху
-      bfo = ((sbm == SBM_LSB) ? SSBDetectorFreq_USB-shift_rx : SSBDetectorFreq_LSB+shift_rx);
+      bfo = ((sbm == SBM_LSB) ? SSBDetectorFreq_USB : SSBDetectorFreq_LSB);
       vfo = trx.state.VFO[trx.GetVFOIndex()] + bfo + rit_val;
+      bfo += ((sbm == SBM_LSB) ? -shift_rx : shift_rx);
     } else if (SSBDetectorFreq_USB != 0) {
       vfo = trx.state.VFO[trx.GetVFOIndex()] + rit_val;
       if (sbm == SBM_LSB) {
@@ -292,37 +293,13 @@ void UpdateFreq()
 
 #if defined(MODE_DOUBLE_IF_SWAP23) || defined(MODE_DOUBLE_IF)
 
-  uint32_t SSBDetectorFreq_LSB = Modes[trx.state.mode].freq[LSB]+trx.IFreqShift[trx.state.mode][LSB];
+  struct _Modes *mm = &Modes[trx.state.mode];
+  int *freq_shift = trx.IFreqShift[trx.state.mode];
+  uint32_t SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
   int rit_val = (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
-  if (Modes[trx.state.mode].allow_sideband) {
-    #ifndef IFreqEx
-      uint32_t IFreqEx = (trx.state.sideband == USB ? IFreqEx_LSB : IFreqEx_USB);
-    #endif
-    uint32_t SSBDetectorFreq_USB = Modes[trx.state.mode].detector_freq[USB]+trx.IFreqShift[trx.state.mode][USB];
-    long f1,f2,f3;
-    if (SSBDetectorFreq_LSB != 0 && SSBDetectorFreq_USB != 0) {
-      long IFreq = (trx.state.sideband == USB ? SSBDetectorFreq_USB : SSBDetectorFreq_LSB); 
-      f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val);
-      f2 = CLK1_MULT*(IFreqEx + IFreq);
-      f3 = CLK2_MULT*(IFreq);
-    } else if (SSBDetectorFreq_LSB != 0) {
-      f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val);
-      f2 = CLK1_MULT*(IFreqEx + (trx.state.sideband == LSB ? SSBDetectorFreq_LSB : -(SSBDetectorFreq_LSB)));
-      f3 = CLK2_MULT*(SSBDetectorFreq_LSB);
-    } else if (SSBDetectorFreq_USB != 0) {
-      f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val);
-      f2 = CLK1_MULT*(IFreqEx + (trx.state.sideband == USB ? SSBDetectorFreq_USB : -(SSBDetectorFreq_USB)));
-      f3 = CLK2_MULT*(SSBDetectorFreq_USB);
-    }
-    #if defined(MODE_DOUBLE_IF_SWAP23)
-      vfo_set_freq(f1,
-        trx.TX ? f3 : f2,
-        trx.TX ? f2 : f3
-      );
-    #else
-      vfo_set_freq(f1,f2,f3);
-    #endif
-  } else {
+  int shift_rx = (trx.TX ? 0 : mm->rx_shift+freq_shift[2]);
+  uint8_t sbm = mm->sb_mode;
+  if (sbm == SBM_DSB) {
     // no sideband. use LSB freq as filter center freq
     #ifndef IFreqEx
       uint32_t IFreqEx = (IFreqEx_LSB+IFreqEx_USB) >> 1;
@@ -332,6 +309,34 @@ void UpdateFreq()
       CLK1_MULT*(IFreqEx + SSBDetectorFreq_LSB),
       0
     );
+  } else {
+    #ifndef IFreqEx
+      uint32_t IFreqEx = (sbm == SBM_USB ? IFreqEx_LSB : IFreqEx_USB);
+    #endif
+    uint32_t SSBDetectorFreq_USB = mm->freq[1]+freq_shift[1];
+    long f1,f2,f3;
+    if (SSBDetectorFreq_LSB != 0 && SSBDetectorFreq_USB != 0) {
+      long IFreq = (sbm == SBM_USB ? SSBDetectorFreq_USB : SSBDetectorFreq_LSB); 
+      f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val);
+      f2 = CLK1_MULT*(IFreqEx + IFreq);
+      f3 = CLK2_MULT*(IFreq + ((sbm == SBM_USB ? -shift_rx : shift_rx)));
+    } else if (SSBDetectorFreq_LSB != 0) {
+      f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val);
+      f2 = CLK1_MULT*(IFreqEx + (sbm == SBM_LSB ? SSBDetectorFreq_LSB : -(SSBDetectorFreq_LSB)));
+      f3 = CLK2_MULT*(SSBDetectorFreq_LSB + shift_rx);
+    } else if (SSBDetectorFreq_USB != 0) {
+      f1 = CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val);
+      f2 = CLK1_MULT*(IFreqEx + (sbm == SBM_USB ? SSBDetectorFreq_USB : -(SSBDetectorFreq_USB)));
+      f3 = CLK2_MULT*(SSBDetectorFreq_USB - shift_rx);
+    }
+    #if defined(MODE_DOUBLE_IF_SWAP23)
+      vfo_set_freq(f1,
+        trx.TX ? f3 : f2,
+        trx.TX ? f2 : f3
+      );
+    #else
+      vfo_set_freq(f1,f2,f3);
+    #endif
   }
 
 #endif

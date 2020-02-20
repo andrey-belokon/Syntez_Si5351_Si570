@@ -122,7 +122,6 @@ void ShowSSBDetFreqMenu()
   uint32_t freq_lsb, freq_usb;
   strcpy_P(title,PSTR("Tune IF freq"));
   strcpy_P(help,PSTR("Up/Dn - move\nAtt/VFO - change\nMenu - exit\nuse encoder for change"));
-  disp.clear();
   goto l_mode_changed;
 
   while (1) {
@@ -187,13 +186,13 @@ void ShowSSBDetFreqMenu()
     if (delta != 0) {
       switch (selected) {
         case 1:
-          shift_lsb -= delta;
+          shift_lsb += delta;
           break;
         case 2:
-          shift_usb -= delta;
+          shift_usb += delta;
           break;
         case 3:
-          shift_rx -= delta;
+          shift_rx += delta;
           break;
       };
       goto l_redraw;
@@ -202,6 +201,7 @@ void ShowSSBDetFreqMenu()
     continue;
     
     l_mode_changed:
+      disp.clear();
       shift_lsb = trx.IFreqShift[mode][0];
       shift_usb = trx.IFreqShift[mode][1];
       shift_rx = trx.IFreqShift[mode][2];
@@ -228,7 +228,7 @@ void ShowSSBDetFreqMenu()
       *pb++ = 0;
     
       items[3] = pb;
-      pb = cwr_str(pb,"RX Shift:   ");
+      pb = cwr_str(pb,"RX Shift: ");
       pb = cwr_long(pb,shift_rx_init+shift_rx);
       *pb++ = 0;
     
