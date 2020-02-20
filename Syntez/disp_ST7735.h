@@ -338,6 +338,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     if (millis()/1000 & 1) *pb++=':';
     else *pb++=' ';
     pb=cwr_hex2(pb,d.min);
+    *pb++=' ';
     //sprintf(buf,"%x.%02x.20",d.day,d.month);
     pb=cwr_hex2sp(pb,d.day);
     *pb++='/';
