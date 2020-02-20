@@ -51,8 +51,7 @@ PDQ_ST7735 tft;
 
 long cur_freq=0;
 long cur_freq2=0;
-char cur_freq_buf[9];
-int cur_vfo_idx=-1;
+char cur_freq_buf[8];
 byte cur_sideband=0xff;
 byte cur_split=0xff;
 byte cur_lock=0xff;
@@ -82,7 +81,6 @@ void Display_ST7735_SPI::reset()
   cur_freq=0;
   cur_freq2=0;
   cur_freq_buf[0]=0;
-  cur_vfo_idx=-1;
   cur_sideband=0xff;
   cur_split=0xff;
   cur_lock=0xff;
@@ -233,26 +231,14 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     }
   }
  
-  if (cur_vfo_idx != vfo_idx) {
-    cur_freq=0;
-    cur_freq2=0;
-    cur_freq_buf[0]=0;
-    cur_vfo_idx=vfo_idx;
-    tft.fillRect(0,FREQ_Y+38,160,FREQ_H,ST7735_BLACK);
-    if (cur_rit) {
-      tft.fillRect(0,(cur_vfo_idx ? FREQ_Y+91 : FREQ_Y+56),65,7,ST7735_BLACK);
-      cur_ritval=0xffff;
-    }
-  }
- 
   if (f != cur_freq) {
     cur_freq=f;
-    drawFreq(18,FREQ_Y+(vfo_idx?106:78),f,ST7735_YELLOW);
+    drawFreq(18,FREQ_Y+78,f,ST7735_YELLOW);
   }
  
   if (f2 != cur_freq2) {
     cur_freq2=f2;
-    drawFreq2(65,FREQ_Y+(vfo_idx?68:103),f2,ST7735_CYAN);
+    drawFreq2(65,FREQ_Y+103,f2,ST7735_CYAN);
   }
 
   if (trx.state.AttPre != cur_attpre) {
@@ -278,19 +264,15 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     cur_rit=trx.RIT;
     drawBtn3020(65,BTN_Y,"RIT",cur_rit);
     if (cur_rit) {
-      //drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLUE,ST7735_WHITE);
       cur_ritval=0xffff;
     } else {
-      //drawBtn(65,BTN_Y,30,20,"RIT",ST7735_BLACK,ST7735_DARKGRAY);
-      tft.fillRect(0,(cur_vfo_idx ? FREQ_Y+56 : FREQ_Y+91),65,7,ST7735_BLACK);
+      tft.fillRect(0,FREQ_Y+91,65,7,ST7735_BLACK);
     }
   }
   
   if (cur_rit && trx.RIT_Value != cur_ritval) {
-    int y,v=trx.RIT_Value;
+    int v=trx.RIT_Value;
     char buf[14];
-    if (cur_vfo_idx == 0) y=FREQ_Y+91;
-    else y=FREQ_Y+56;
     cur_ritval=trx.RIT_Value;
     if (v == 0) {
       cwr_str(buf,"0    ");
@@ -305,7 +287,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
     tft.setFont(NULL);
     tft.setTextSize(1);
     tft.setTextColor(ST7735_BLUE,ST7735_BLACK);
-    tft.setCursor(10,y);
+    tft.setCursor(10,FREQ_Y+91);
     tft.print(buf);
     tft.setTextSize(1);
   }
@@ -318,7 +300,6 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   if (trx.Lock != cur_lock) {
     cur_lock=trx.Lock;
     drawBtn3020(130,BTN_Y,"LCK",cur_lock);
-    //drawBtn(130,BTN_Y,30,20,"LCK",(cur_lock?ST7735_RED:ST7735_BLACK),(cur_lock?ST7735_YELLOW:ST7735_DARKGRAY));
   }
 
   if (trx.TX != cur_tx) {
