@@ -49,6 +49,9 @@ enum {
 #endif
 
 #ifdef VFO_SI5351_2
+  #ifdef PIN_IN_RIT
+    #error KEYPAD_7 cant be used with two SI5351
+  #endif
   #define PIN_SELECT_SI5351   A7
 #endif
 

@@ -8,11 +8,11 @@ class Display_ILI9341_SPI: public TRXDisplay {
   private:
     uint8_t tx;
   public:
-	  void setup();
+    void setup();
     void reset();
-	  void Draw(TRX& trx);
-	  void clear();
-	  void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize);
+    void Draw(TRX& trx);
+    void clear();
+    void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize);
 };
 
 #ifdef RTC_ENABLE
@@ -46,18 +46,16 @@ PDQ_ILI9341 tft;
 long cur_freq=0;
 long cur_freq2=0;
 int cur_vfo_idx=-1;
-byte cur_sideband=0xff;
+byte cur_mode=0xff;
 byte cur_split=0xff;
 byte cur_lock=0xff;
 byte cur_rit=0xff;
 byte cur_tx=0xff;
 byte cur_qrp=0xff;
 byte cur_attpre=0xFF;
-int cur_band=-1;
 byte init_smetr=0;
 byte cur_sm[15];
 int cur_ritval=0xffff;
-byte cur_cw=0xff;
 long last_tmtm=0;
 
 void Display_ILI9341_SPI::setup() 
@@ -76,18 +74,16 @@ void Display_ILI9341_SPI::reset()
   cur_freq=0;
   cur_freq2=0;
   cur_vfo_idx=-1;
-  cur_sideband=0xff;
+  cur_mode=0xff;
   cur_split=0xff;
   cur_lock=0xff;
   cur_rit=0xff;
   cur_tx=0xff;
   cur_qrp=0xff;
   cur_attpre=0xFF;
-  cur_band=-1;
   init_smetr=0;
   for (uint8_t i=0; i < 15; i++) cur_sm[i]=0;
   cur_ritval=0xffff;
-  cur_cw=0xff;
   last_tmtm=0;
 }
 
@@ -251,11 +247,10 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
   if (cur_vfo_idx != vfo_idx) {
     cur_freq=0;
     cur_freq2=0;
-//    cur_freq_buf[0]=0;
     cur_vfo_idx=vfo_idx;
     tft.fillRect(20,FREQ_Y,300,FREQ_H,ILI9341_BLACK);
     if (cur_rit) {
-      tft.fillRect(10,(cur_vfo_idx ? FREQ_Y+82 : FREQ_Y+4),90,16,ILI9341_BLACK);
+      tft.fillRect(10,FREQ_Y+(cur_vfo_idx?82:4),90,16,ILI9341_BLACK);
       cur_ritval=0xffff;
     }
   }
@@ -269,11 +264,8 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
   }
 
   if (f2 != cur_freq2) {
-    if (vfo_idx == 0)
-      drawFreq2(200,FREQ_Y+82,f2,ILI9341_CYAN);
-    else
-      drawFreq2(200,FREQ_Y+4,f2,ILI9341_CYAN);
     cur_freq2=f2;
+    drawFreq2(200,FREQ_Y+(vfo_idx?4:82),f2,ILI9341_CYAN);
   }
 
   if (trx.state.AttPre != cur_attpre) {
@@ -303,7 +295,7 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
       cur_ritval=0xffff;
     } else {
       drawBtn(169,BTN_Y,66,36,"RIT",ILI9341_BLACK,ILI9341_DARKGRAY);
-      tft.fillRect(10,(cur_vfo_idx ? FREQ_Y+4 : FREQ_Y+82),90,16,ILI9341_BLACK);
+      tft.fillRect(10,FREQ_Y+(cur_vfo_idx?4:82),90,16,ILI9341_BLACK);
     }
   }
   
@@ -345,8 +337,8 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
     else
       tft.setTextColor(ILI9341_BLACK);
     tft.setFont(&Tahoma18);
-    tft.setCursor(140,33);
-    tft.print("#");
+    tft.setCursor(120,33);
+    tft.print("LCK");
   }
 
   if (trx.TX != cur_tx) {
@@ -356,37 +348,10 @@ void Display_ILI9341_SPI::Draw(TRX& trx) {
       drawBtn(0,0,40,36,"RX",ILI9341_BLACK,ILI9341_GREEN);
   }
 
-  uint8_t sb = trx.state.sideband;
-  if (trx.BandIndex >= 0 && Bands[trx.BandIndex].sideband != trx.state.sideband) sb |= 0x80;
-  if (sb != cur_sideband) {
-    char *sb_txt = (trx.state.sideband == LSB ? "LSB" : "USB");
-    cur_sideband=sb;
-    if (sb & 0x80)
-      drawBtn(160,0,50,36,sb_txt,ILI9341_RED,ILI9341_YELLOW);
-    else
-      drawBtn(160,0,50,36,sb_txt,ILI9341_BLACK,ILI9341_BLUE);
-  }
-
- if (trx.BandIndex != cur_band) {
-    if ((cur_band=trx.BandIndex) >= 0) {
-      int mc = Bands[trx.BandIndex].mc;
-      char buf[4];
-      buf[3] = 0;
-      buf[2] = '0'+mc%10; mc/=10;
-      buf[1] = '0'+mc%10; mc/=10;
-      if (mc > 0) buf[0] = '0'+mc;
-      else buf[0] = '!';
-      drawBtn(40,0,56,36,buf,ILI9341_BLACK,ILI9341_BLUE);
-    } else
-      drawBtn(40,0,56,36,"",ILI9341_BLACK,ILI9341_BLUE);
-  }
-
-  uint8_t cw=trx.inCW();
-  if (cw != cur_cw) {
-    if (cur_cw=cw)
-      drawBtn(90,0,50,36,"CW",ILI9341_BLACK,ILI9341_DARKYELLOW);
-    else
-      drawBtn(90,0,50,36,"",ILI9341_BLACK,ILI9341_DARKYELLOW);
+  uint8_t mode = trx.state.mode;
+  if (mode != cur_mode) {
+    cur_mode = mode;
+    drawBtn(50,0,50,36,Modes[mode].name,ILI9341_BLACK,ILI9341_BLUE);
   }
 
 #ifdef RTC_ENABLE
