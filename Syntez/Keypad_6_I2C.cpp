@@ -2,6 +2,14 @@
 #include "i2c.h"
 #include "config.h"
 
+const uint8_t KeyMap[] = {
+  cmdNone,
+//*  вариант когда RIT вынесен на отдельную кнопку
+  cmdBandDown,  cmdBandUp,  cmdAttPre,  cmdVFOSel,  cmdRIT,   // одиночное нажатие
+  cmdHam,       cmdNone,    cmdQRP,     cmdSplit,   cmdZero,  // with Fn pressed
+  cmdLock,      cmdMode,    cmdTune,    cmdVFOEQ,   cmdNone   // длинные нажатия
+};
+
 uint8_t i2c_addr;
 uint8_t Keypad_6_I2C::last_code = -1;
 uint8_t last_scan = 0;
@@ -36,19 +44,6 @@ void Keypad_6_I2C::setup() {
   else
     i2c_addr=0;
 }
-
-const uint8_t KeyMap[] = {
-  cmdNone,
-//*  вариант когда RIT вынесен на отдельную кнопку
-  cmdBandDown,  cmdBandUp,  cmdAttPre,  cmdVFOSel,  cmdRIT,
-  cmdHam,       cmdNone,    cmdQRP,     cmdSplit,   cmdZero,  // with Fn pressed
-  cmdLock,      cmdMode,    cmdTune,    cmdVFOEQ,   cmdNone   // длинные нажатия
-/*  вариант когда переключение моды вынесено на отдельную кнопку
-  cmdBandDown,  cmdBandUp,  cmdAttPre,  cmdVFOSel,  cmdMode,
-  cmdHam,       cmdZero,    cmdQRP,     cmdSplit,   cmdNone,  // with Fn pressed
-  cmdLock,      cmdRIT,     cmdTune,    cmdVFOEQ,   cmdUSBLSB   // длинные нажатия
-*/
-};
 
 uint8_t Keypad_6_I2C::Read() 
 {

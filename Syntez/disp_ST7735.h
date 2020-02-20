@@ -60,6 +60,7 @@ byte cur_tx=0xff;
 byte cur_qrp=0xff;
 byte cur_attpre=0xFF;
 byte init_smetr=0;
+byte cur_gc=0xFF;
 byte cur_sm[15];
 int cur_ritval=0xffff;
 byte cur_mode=0xff;
@@ -87,6 +88,7 @@ void Display_ST7735_SPI::reset()
   cur_rit=0xff;
   cur_tx=0xff;
   cur_qrp=0xff;
+  cur_gc=0xFF;
   cur_attpre=0xFF;
   init_smetr=0;
   for (uint8_t i=0; i < 15; i++) cur_sm[i]=0;
@@ -313,6 +315,12 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
   if (mode != cur_mode) {
     cur_mode = mode;
     drawBtn(30,0,30,16,Modes[mode].name,ST7735_BLACK,ST7735_DARKYELLOW);
+  }
+
+  uint8_t new_gc = trx.BandIndex < 0;
+  if (new_gc != cur_gc) {
+    drawBtn(60,0,30,16,"GC",ST7735_BLACK,(new_gc?ST7735_DARKYELLOW:ST7735_BLACK));
+    cur_gc = new_gc;
   }
   
 #ifdef RTC_ENABLE
