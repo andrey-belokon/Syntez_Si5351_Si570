@@ -42,7 +42,7 @@ enum {
 // раскоментировать установленные чипы
 #define VFO_SI5351
 #define VFO_SI5351_2
-#define VFO_SI570
+//#define VFO_SI570
 
 #if defined(VFO_SI5351_2) && !defined(VFO_SI5351)
   #error Invalid combination of used SI5351
@@ -52,7 +52,7 @@ enum {
   #ifdef PIN_IN_RIT
     #error KEYPAD_7 cant be used with two SI5351
   #endif
-  #define PIN_SELECT_SI5351   A7
+  #define PIN_SELECT_SI5351   A3
 #endif
 
 // выбрать в меню калибровку и прописать измеренные частоты на выходах синтезаторов
