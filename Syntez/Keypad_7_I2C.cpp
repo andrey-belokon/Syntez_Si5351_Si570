@@ -1,5 +1,5 @@
 #include "Keypad_7_I2C.h"
-#include "i2c.h"
+#include <i2c.h>
 #include "config.h"
 
 void Keypad_7_I2C::setup() {

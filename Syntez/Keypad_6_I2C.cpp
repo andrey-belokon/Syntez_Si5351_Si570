@@ -1,5 +1,5 @@
 #include "Keypad_6_I2C.h"
-#include "i2c.h"
+#include <i2c.h>
 #include "config.h"
 
 const uint8_t KeyMap[] = {

@@ -1,7 +1,7 @@
 // Based on the work by DFRobot
 
 #include "LCD1602_I2C.h"
-#include "i2c.h"
+#include <i2c.h>
 #include <inttypes.h>
 
 #if defined(ARDUINO) && ARDUINO >= 100

@@ -1,6 +1,6 @@
 //
 // UR5FFR Si570/Si5351 VFO
-// v3.0 from 24.12.2019
+// v3.0 from 23.02.2020
 // Copyright (c) Andrey Belokon, 2016-2020 Odessa 
 // https://github.com/andrey-belokon/
 // GNU GPL license
@@ -14,7 +14,7 @@
 
 #include <avr/eeprom.h> 
 #include "utils.h"
-#include "i2c.h"
+#include <i2c.h>
 #include "pins.h"
 
 #ifdef ENCODER_ENABLE
@@ -49,10 +49,10 @@
 #endif
 
 #if defined(VFO_SI5351) || defined(VFO_SI5351_2)
-  #include "si5351a.h"
+  #include <si5351a.h>
 #endif
 #ifdef VFO_SI570  
-  #include "Si570.h"
+  #include <Si570.h>
 #endif
 
 #define KEYPAD_DISABLE
@@ -185,13 +185,22 @@ void setup()
 
 void vfo_set_freq(long f1, long f2, long f3)
 {
+  static long last_f1=0, last_f2=0, last_f3=0;
+  //Serial.print(f1); Serial.print("   ");
+  //Serial.print(f2); Serial.println();
 #ifdef VFO_SI570  
   vfo570.set_freq(f1);
   #ifdef VFO_SI5351_2
-    SELECT_SI5351(0);
-    vfo5351.set_freq(f2,0,0);
-    SELECT_SI5351(1);
-    vfo5351_2.set_freq(f3,0,0);
+    if (last_f2 != f2) {
+      SELECT_SI5351(0);
+      vfo5351.set_freq(f2,0,0);
+      last_f2 = f2;
+    }
+    if (last_f3 != f3) {
+      SELECT_SI5351(1);
+      vfo5351_2.set_freq(f3,0,0);
+      last_f3 = f3;
+    }
   #else
     #ifdef VFO_SI5351
       vfo5351.set_freq(f2,f3,0);
@@ -199,10 +208,17 @@ void vfo_set_freq(long f1, long f2, long f3)
   #endif
 #else
   #ifdef VFO_SI5351_2
-    SELECT_SI5351(0);
-    vfo5351.set_freq(f1,0,0);
-    SELECT_SI5351(1);
-    vfo5351_2.set_freq(f2,f3,0);
+    if (last_f1 != f1) {
+      SELECT_SI5351(0);
+      vfo5351.set_freq(f1,0,0);
+      last_f1 = f1;
+    }
+    if (last_f2 != f2 || last_f3 != f3) {
+      SELECT_SI5351(1);
+      vfo5351_2.set_freq(f2,f3,0);
+      last_f2 = f2;
+      last_f3 = f3;
+    }
   #else
     #ifdef VFO_SI5351
       vfo5351.set_freq(f1,f2,f3);

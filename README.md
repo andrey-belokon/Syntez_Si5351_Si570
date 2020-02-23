@@ -31,7 +31,7 @@ Required libraries:<br>
 <img src="doc\ST7735_570_5351_two_plate\img\synt_1.8_4.jpg"></img>
 <img src="doc\ST7735_570_5351_two_plate\img\synt_1.8_7.jpg"></img>
 
-<img src="doc\ST7735_570_5351_two_plate\Schematic Digital VFO 1.8 main board 1.2.png"></img>
+<img src="doc\ST7735_570_5351_two_plate\Schematic Digital VFO 1.8 main board 1.3.png"></img>
 <img src="doc\ST7735_570_5351_two_plate\Schematic Digital VFO 1.8 display board 1.0.png"></img>
 
 Copyright (c) 2016-2020, Andrii Bilokon, UR5FFR

@@ -1,7 +1,7 @@
 // 24C32 and fast i2c (c) Andrii Bilokon 
 
 #include "Eeprom24C32.h"
-#include "i2c.h"
+#include <i2c.h>
 
 #define EEPROM__PAGE_SIZE         32
 

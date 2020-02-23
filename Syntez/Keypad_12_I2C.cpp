@@ -1,5 +1,5 @@
 #include "Keypad_12_I2C.h"
-#include "i2c.h"
+#include <i2c.h>
 #include "config.h"
 
 // мапинг сканкодов на команды для клавиатуры 3x4

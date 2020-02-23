@@ -1,6 +1,6 @@
 #include "config_hw.h"
 #include "RTC.h"
-#include "i2c.h"
+#include <i2c.h>
 
 #ifdef RTC_ENABLE
 

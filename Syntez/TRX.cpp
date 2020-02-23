@@ -58,7 +58,7 @@ uint16_t TRX::StateHash() {
   return hval;
 }
 
-#define CRC_SIGN          0x56AE
+#define CRC_SIGN          0x569E
 #define IFreqShift_ADDR   0
 #define STATE_ADDR        (sizeof(IFreqShift)+2)
 

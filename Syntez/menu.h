@@ -134,6 +134,19 @@ void ShowSSBDetFreqMenu()
         if (selected < 4) selected++;
         else selected=0;
         goto l_redraw;
+      case cmdRIT:
+        switch (selected) {
+          case 1:
+            shift_lsb = 0;
+            break;
+          case 2:
+            shift_usb = 0;
+            break;
+          case 3:
+            shift_rx = 0;
+            break;
+        };
+        goto l_redraw;
       case cmdVFOSel:
         switch (selected) {
           case 0:

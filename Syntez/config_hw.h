@@ -62,11 +62,11 @@ enum {
 
 // уровень сигнала на выходе Si5351. 0=2mA, 1=4mA, 2=6mA, 3=8mA
 #define SI5351_CLK0_DRIVE   3
-#define SI5351_CLK1_DRIVE   0
-#define SI5351_CLK2_DRIVE   0
+#define SI5351_CLK1_DRIVE   3
+#define SI5351_CLK2_DRIVE   3
 #define SI5351_2_CLK0_DRIVE   3
-#define SI5351_2_CLK1_DRIVE   0
-#define SI5351_2_CLK2_DRIVE   0
+#define SI5351_2_CLK1_DRIVE   3
+#define SI5351_2_CLK2_DRIVE   3
 
 // раскоментировать используемый модуль часов Real Time CLock (RTC)
 //#define RTC_DS1307
