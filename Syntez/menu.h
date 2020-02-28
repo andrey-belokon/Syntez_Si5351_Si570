@@ -31,12 +31,14 @@ void ShowClockMenu()
   byte selected=0;
   long encval=0;
   char *pb;
+  uint8_t keycode;
+  int delta;
   RTC_Read(&dt);
   dt.sec=0;
   disp.clear();
   goto l_print;
   while (1) {
-    uint8_t keycode=keypad.Read();
+    keycode=keypad.Read();
     switch (keycode) {
       case cmdBandUp:
         if (selected > 0) selected--;
@@ -60,7 +62,7 @@ void ShowClockMenu()
     }
 #ifdef ENCODER_ENABLE
     encval += Encoder::GetDelta();
-    int delta = encval / (ENCODER_FREQ_LO_STEP/6);
+    delta = encval / (ENCODER_FREQ_LO_STEP/6);
     if (delta != 0) {
       switch (selected) {
         case 0:

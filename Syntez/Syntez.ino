@@ -251,7 +251,7 @@ void UpdateFreq()
 #endif
 
 #if defined(MODE_SINGLE_IF) || defined(MODE_SINGLE_IF_RXTX) || defined(MODE_SINGLE_IF_SWAP)
-  struct _Modes *mm = &Modes[trx.state.mode];
+  const struct _Modes *mm = &Modes[trx.state.mode];
   int *freq_shift = trx.IFreqShift[trx.state.mode];
   uint32_t SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
   int rit_val = (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
@@ -280,7 +280,7 @@ void UpdateFreq()
       }
       bfo = SSBDetectorFreq_USB-shift_rx;
     } else {
-      long vfo = trx.state.VFO[trx.GetVFOIndex()] + rit_val;
+      vfo = trx.state.VFO[trx.GetVFOIndex()] + rit_val;
       if (sbm == SBM_USB) {
         vfo += SSBDetectorFreq_LSB;
       } else {
@@ -309,7 +309,7 @@ void UpdateFreq()
 
 #if defined(MODE_DOUBLE_IF_SWAP23) || defined(MODE_DOUBLE_IF)
 
-  struct _Modes *mm = &Modes[trx.state.mode];
+  const struct _Modes *mm = &Modes[trx.state.mode];
   int *freq_shift = trx.IFreqShift[trx.state.mode];
   uint32_t SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
   int rit_val = (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
@@ -398,7 +398,6 @@ void loop()
 {
 #ifndef KEYPAD_DISABLE
   uint8_t cmd;
-  static uint8_t delay_cmd = cmdNone;
   static long delay_cmd_tm = 0;
   cmd = keypad.Read();
   if (cmd != cmdNone && trx.Tune) {

@@ -182,7 +182,6 @@ void drawBtn3020(int x, int y,  const char *title, uint8_t pressed)
 
 void Display_ST7735_SPI::Draw(TRX& trx) {
   const int FREQ_Y = 0;
-  const int FREQ_H = 65; 
   const int BTN_Y = 107;
   const int SMetr_Y = 22;
   const int SMetr_H = 7;
@@ -319,7 +318,7 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
 
   uint8_t new_gc = trx.BandIndex < 0;
   if (new_gc != cur_gc) {
-    drawBtn(60,0,30,16,"GC",ST7735_BLACK,(new_gc?ST7735_DARKYELLOW:ST7735_BLACK));
+    drawBtn(60,0,30,16,"GC",ST7735_BLACK,(new_gc?(color_t)ST7735_DARKYELLOW:(color_t)ST7735_BLACK));
     cur_gc = new_gc;
   }
   

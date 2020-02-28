@@ -9,8 +9,8 @@ const struct _Modes Modes[] = {
   { NULL, 0, 0, 0, 0, {0, 0} }
 };
 
-#define BAND_COUNT  (sizeof(Bands)/sizeof(struct _Bands))
-#define MODE_COUNT  (sizeof(Modes)/sizeof(struct _Modes)-1)
+#define BAND_COUNT  ((int)(sizeof(Bands)/sizeof(struct _Bands)))
+#define MODE_COUNT  ((int)(sizeof(Modes)/sizeof(struct _Modes)-1))
 
 int TRX::IFreqShift[MODE_COUNT][3];
 TVFOState TRX::BandData[BAND_COUNT+1];

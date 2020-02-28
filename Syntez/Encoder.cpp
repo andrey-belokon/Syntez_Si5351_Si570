@@ -17,14 +17,14 @@ volatile long enc_last_tm = 0;
 volatile long enc_sum = 0;
 volatile uint8_t hi_mode = 0;
 
-static void Encoder::SetValue(long Value) 
+void Encoder::SetValue(long Value) 
 {
   cli();
   Encoder_Value = Value;
   sei();
 }
 
-static long Encoder::GetDelta() 
+long Encoder::GetDelta() 
 {
   long val;
   cli();
@@ -61,7 +61,7 @@ void EncoderHandler()
   sei(); //restart interrupts
 }
 
-static void Encoder::Setup() {
+void Encoder::Setup() {
   cli(); 
   pinMode(2, INPUT_PULLUP); // set pinA as an input, pulled HIGH to the logic voltage (5V or 3.3V for most cases)
   pinMode(3, INPUT_PULLUP); // set pinB as an input, pulled HIGH to the logic voltage (5V or 3.3V for most cases)
@@ -81,12 +81,12 @@ long enc_last_tm = 0;
 long enc_sum = 0;
 uint8_t hi_mode = 0;
 
-static void Encoder::SetValue(long Value) 
+void Encoder::SetValue(long Value) 
 {
   Encoder_Value = Value;
 }
 
-static long Encoder::GetDelta() 
+long Encoder::GetDelta() 
 {
   // обрабатываем все возможные состояния для увеличения кол-ва импульсов на оборот до 4х
   byte state = (PIND & 0xC) | enc_last;
@@ -120,7 +120,7 @@ static long Encoder::GetDelta()
   return val;
 }
 
-static void Encoder::Setup() {
+void Encoder::Setup() {
   pinMode(2, INPUT_PULLUP);
   pinMode(3, INPUT_PULLUP);
 }
