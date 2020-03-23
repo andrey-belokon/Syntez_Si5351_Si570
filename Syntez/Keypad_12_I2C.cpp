@@ -5,7 +5,7 @@
 // мапинг сканкодов на команды для клавиатуры 3x4
 const uint8_t KeyMap[4][4] = {
   cmdBandUp, cmdBandDown, cmdAttPre, cmdVFOSel,
-  cmdVFOEQ,  cmdNone,     cmdMenu,   cmdSplit,
+  cmdVFOEQ,  cmdMode,     cmdMenu,   cmdSplit,
   cmdRIT,    cmdHam,      cmdZero,   cmdQRP,
   cmdNone,   cmdNone,     cmdNone,   cmdNone
 };
