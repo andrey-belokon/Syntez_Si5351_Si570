@@ -342,6 +342,7 @@ void ShowSiCalibrationMenu()
 #ifdef VFO_SI570
   vfo570.out_calibrate_freq();
 #endif
+  while (keypad.Read() != cmdNone) ;
   while (keypad.Read() == cmdNone) ;
 }
 
