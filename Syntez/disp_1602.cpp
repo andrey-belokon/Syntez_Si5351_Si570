@@ -7,58 +7,43 @@
 byte chInverseT[8] = { 0b11111, 0b11111, 0b11111, 0b10001, 0b11011, 0b11011, 0b11111, 0b11111};
 byte chInverseX[8] = { 0b11111, 0b11111, 0b11111, 0b10101, 0b11011, 0b10101, 0b11111, 0b11111};
 byte chLock[8] = { 0b00000, 0b01110, 0b10001, 0b11111, 0b10101, 0b10001, 0b11111, 0b00000};
-byte chCW[8] = { 0b01100, 0b10000, 0b10000, 0b01100, 0b00000, 0b10001, 0b10101, 0b01010};
 
-byte SMetr11[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b11000,0b11000};
-byte SMetr12[8] = {0b00000,0b00000,0b00000,0b00000,0b00011,0b00011,0b11011,0b11011};
-byte SMetr21[8] = {0b00000,0b00000,0b00000,0b11000,0b11000,0b11000,0b11000,0b11000};
-byte SMetr22[8] = {0b00000,0b00000,0b00011,0b11011,0b11011,0b11011,0b11011,0b11011};
-byte SMetr31[8] = {0b11000,0b11000,0b11000,0b11000,0b11000,0b11000,0b11000,0b11000};
+byte SMetr10[8] = {0b11000,0b11000,0b11000,0b11000,0b11000,0b11000,0b11000,0b11000};
+byte SMetr11[8] = {0b11011,0b11011,0b11011,0b11011,0b11011,0b11011,0b11011,0b11011};
 
 void Display_1602_I2C::setup() {
   lcd.init();
   lcd.backlight();// Включаем подсветку дисплея
-  lcd.createChar(1, SMetr11);
-  lcd.createChar(2, SMetr12);
-  lcd.createChar(3, SMetr21);
-  lcd.createChar(4, SMetr22);
-  lcd.createChar(5, SMetr31); 
-  lcd.createChar(6, chCW);
-  lcd.createChar(7, chLock);
+  lcd.createChar(1, SMetr10);
+  lcd.createChar(2, SMetr11);
+  lcd.createChar(3, chInverseT);
+  lcd.createChar(4, chInverseX);
+  lcd.createChar(5, chLock);
 }
 
 void Display_1602_I2C::Draw(TRX& trx) {
   char buf[2][17];
   int vfo_idx = trx.GetVFOIndex();
-  long f = (trx.state.VFO[vfo_idx]+50) / 100;
+  long f = (trx.state.VFO[vfo_idx]+5) / 10;
 
   memset(buf,' ',34);
 
   if (tx != trx.TX) {
     tx = trx.TX;
-    // динамически переопределяем коды т.к. их всего 8 user defined
-    if (tx) {
-      lcd.createChar(6, chInverseT);
-      lcd.createChar(7, chInverseX);
-    } else {
-      lcd.createChar(6, chCW);
-      lcd.createChar(7, chLock);
-    }
   }
 
   if (trx.TX) {
-    buf[0][0] = (char)6;
-    buf[0][1] = (char)7;
+    buf[0][0] = (char)3;
+    buf[0][1] = (char)4;
   } else {
-    if (trx.state.mode == MODE_CW)
-      buf[0][0] = (char)6;
     if (trx.Lock)
-      buf[0][1] = (char)7;
+      buf[0][1] = (char)5;
   }
 
   if (trx.QRP)
     buf[0][2] = (char)0b01011100;
 
+  buf[0][14] = '0'+f%10; f/=10;
   buf[0][13] = '0'+f%10; f/=10;
   buf[0][12] = '.';
   buf[0][11] = '0'+f%10; f/=10;
@@ -73,21 +58,24 @@ void Display_1602_I2C::Draw(TRX& trx) {
 
   switch (trx.state.AttPre) {
     case 1:
-      buf[1][3] = 'A';
-	    buf[1][4] = 'T';
-      buf[1][5] = 'T';
+      buf[0][3] = 'A';
+	    buf[0][4] = 'T';
+      //buf[0][5] = 'T';
       break;
     case 2:
-      buf[1][3] = 'P';
-      buf[1][4] = 'R';
-      buf[1][5] = 'E';
+      buf[0][3] = 'P';
+      buf[0][4] = 'R';
+      //buf[0][5] = 'E';
       break;
   }
 
-  if (((millis() / 700) & 1)) {
-    buf[1][8] = 'S';
-    buf[1][9] = 'B';
-    buf[1][7]  = 'S';
+  const char *p = Modes[trx.state.mode].name;
+  buf[1][7] = *p++;
+  if (*p) {
+    buf[1][8] = *p++;  
+    if (*p) {
+      buf[1][9] = *p++;  
+    }
   }
 
   if (trx.state.Split && trx.RIT) {
@@ -111,43 +99,73 @@ void Display_1602_I2C::Draw(TRX& trx) {
   } else {
 #ifdef RTC_ENABLE
     static long last_tmtm=0;
+    static RTCData d;
     if (millis()-last_tmtm > 200) {
-      RTCData d;
-      char *pb;
-      last_tmtm=millis();
       RTC_Read(&d);
-      //sprintf(buf,"%2x:%02x",d.hour,d.min);
-      pb=cwr_hex2sp(buf[1]+11,d.hour);
-      if (millis()/1000 & 1) *pb++=':';
-      else *pb++=' ';
-      pb=cwr_hex2(pb,d.min);
+      last_tmtm=millis();
     }
+    char *pb;
+    //sprintf(buf,"%2x:%02x",d.hour,d.min);
+    pb=cwr_hex2sp(buf[1]+11,d.hour);
+    if (millis()/1000 & 1) *pb++=':';
+    else *pb++=' ';
+    pb=cwr_hex2(pb,d.min);
 #endif
   }
 
   // S-meter
-  if (trx.SMeter >= 9) {
-    buf[0][3] = (char)2;
-    buf[0][4] = (char)4;
-    buf[0][5] = (char)5;
-  } else if (trx.SMeter > 3) {
-    switch (trx.SMeter) {
-    	case 6:
-    	  buf[0][3] = (char)2;
-    	  break;
-    	case 7:
-    	  buf[0][3] = (char)2;
-    	  buf[0][4] = (char)3;
-    	  break;
-    	case 8:
-    	  buf[0][3] = (char)2;
-    	  buf[0][4] = (char)4;
-    	  break;
-    	case 4:
-    	case 5:
-        buf[0][3] = (char)1;
-        break;
-    }
+//  switch (millis()/200 & 0xF) { // debug
+  switch (trx.SMeter) {
+    case 14:
+    case 15:
+      buf[1][6] = (char)1;
+    case 12:
+    case 13:
+      buf[1][5] = (char)2;
+      buf[1][4] = (char)2;
+      buf[1][3] = (char)2;
+      buf[1][2] = (char)2;
+      buf[1][1] = (char)2;
+      buf[1][0] = (char)2;
+      break;
+    case 11:
+      buf[1][5] = (char)1;
+    case 10:
+      buf[1][4] = (char)2;
+      buf[1][3] = (char)2;
+      buf[1][2] = (char)2;
+      buf[1][1] = (char)2;
+      buf[1][0] = (char)2;
+      break;
+    case 9:
+      buf[1][4] = (char)1;
+    case 8:
+      buf[1][3] = (char)2;
+      buf[1][2] = (char)2;
+      buf[1][1] = (char)2;
+      buf[1][0] = (char)2;
+      break;
+    case 7:
+      buf[1][3] = (char)1;
+    case 6:
+      buf[1][2] = (char)2;
+      buf[1][1] = (char)2;
+      buf[1][0] = (char)2;
+      break;
+    case 5:
+      buf[1][2] = (char)1;
+    case 4:
+      buf[1][1] = (char)2;
+      buf[1][0] = (char)2;
+      break;
+    case 3:
+      buf[1][1] = (char)1;
+    case 2:
+      buf[1][0] = (char)2;
+      break;
+    case 1:
+      buf[1][0] = (char)1;
+      break;
   }
 
   buf[0][16] = 0; // stop for .print
