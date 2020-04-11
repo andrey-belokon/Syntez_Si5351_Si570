@@ -46,7 +46,10 @@ uint8_t TRX::GetVFOIndex() {
     
 uint16_t hash_data(uint16_t hval, uint8_t* data, int sz)
 {
-  while (sz--) hval ^= *data++;
+  while (sz--) {
+    hval ^= *data++;
+    hval = (hval << 11) | (hval >> 5);
+  }
   return hval;
 }  
 

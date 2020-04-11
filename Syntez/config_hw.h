@@ -139,7 +139,7 @@ enum {
 #define ENCODER_FN_MULT           10
 // порог переключения в ускоренный режим. если частота изменится более
 // чем на ENCODER_FREQ_HI_LO_TRASH Гц за секунду то переходим в ускоренный режим
-#define ENCODER_FREQ_HI_LO_TRASH  4000
+#define ENCODER_FREQ_HI_LO_TRASH  2000
 
 #ifdef ENCODER_OPTICAL
 #define ENCODER_ENABLE

@@ -104,8 +104,6 @@ long Encoder::GetDelta()
     case 0b0001:
       Encoder_Value += (hi_mode ? ENC_HI_STEP : ENC_LO_STEP);
       break;
-    default:
-      return 0;
   }
   long val;
   val = Encoder_Value;
