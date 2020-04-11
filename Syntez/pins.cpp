@@ -17,6 +17,32 @@ void InputPullUpPin::setup() {
     pinMode(pin, INPUT_PULLUP); 
 }
 
+void InputAnalogKeypad::setup()
+{
+  if (pin != PIN_NC) 
+    pinMode(pin, INPUT); 
+}
+
+uint8_t InputAnalogKeypad::Read()
+{
+  if (pin == PIN_NC) return 0;
+  if ((millis()-last_tm) < 50) return last;
+  uint16_t val = analogRead(pin);
+  val = 1 + (val + (vstep >> 1)) / vstep;
+  if (val > btn_cnt) val = 0;
+  if (val != last) {
+    last = val;
+    last_tm = millis();
+  }
+  return val;
+}
+
+void InputAnalogKeypad::waitUnpress()
+{
+  while (Read() != 0) delay(1);
+  delay(50);
+}
+
 void InputAnalogPin::setup() {
   if (pin != PIN_NC) 
     pinMode(pin, INPUT); 
@@ -123,19 +149,29 @@ void OutputTone(uint8_t pin, uint8_t value)
 { 
   if (value) {
     if (!OutputTone_state) {
+      int prescalers[] = {1, 8, 64, 256, 1024};
+      uint8_t ipresc=5,mreg;
+      for (uint8_t i=0; i <= 4; i++) {
+        long t=F_CPU/(prescalers[i]*value*2)-1;
+        if (t <= 0xFF) {
+          ipresc=i;
+          mreg=t;
+          break;
+        }
+      }
+      if (ipresc > 4) return;
+      ipresc++;
       OutputTone_pin = pin;
-      pinMode(pin, OUTPUT);
       // init timer2 2kHz interrup
       cli();
       TCCR2A = 0;// set entire TCCR2A register to 0
       TCCR2B = 0;// same for TCCR2B
       TCNT2  = 0;//initialize counter value to 0
       // set compare match register for 2khz increments
-      OCR2A = 124;// = (16*10^6) / (2000*64) - 1 (must be <256)
+      OCR2A = mreg;
       // turn on CTC mode
       TCCR2A |= (1 << WGM21);
-      // Set CS21 and CS20 bits for 64 prescaler
-      TCCR2B |= (1 << CS21) | (1 << CS20);   
+      TCCR2B |= ipresc;
       // enable timer compare interrupt
       TIMSK2 |= (1 << OCIE2A);
       sei();
@@ -148,7 +184,6 @@ void OutputTone(uint8_t pin, uint8_t value)
       TIMSK2 = 0;
       sei();
       // set pin to zero
-      digitalWrite(pin,0);
       OutputTone_state = 0;
     }
   }

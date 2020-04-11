@@ -33,6 +33,20 @@ class InputAnalogPin {
     int ReadRaw();
 };
 
+class InputAnalogKeypad {
+  private:
+    uint8_t pin;
+    uint8_t btn_cnt;
+    uint16_t vstep;
+    uint8_t last;
+    long last_tm;
+  public:
+    InputAnalogKeypad(uint8_t _pin, uint8_t _btn_cnt): pin(_pin), btn_cnt(_btn_cnt), vstep(1024/_btn_cnt), last_tm(-1000) {}
+    void setup();
+    uint8_t Read();
+    void waitUnpress();
+};
+
 class OutputBinPin {
   private:
 	  uint8_t pin,active_level,def_value,state;
