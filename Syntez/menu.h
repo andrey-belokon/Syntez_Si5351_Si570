@@ -389,7 +389,6 @@ void ShowMenu()
         break;
       case cmdMenu:
       case cmdLock:
-        disp.clear();
         return;
     }
   }

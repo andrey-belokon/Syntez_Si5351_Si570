@@ -6,6 +6,7 @@ Display:<br>
   2.8" SPI TFT ILI9341<br>
   1.8" SPI TFT ST7735<br>
   LCD 1602<br>
+  OLED 0.91" 128x32, OLED 0.96" 128x64, OLED 1.3" 128/132x64<br>
 Realtime clock - DS3231(preffered) or DS1307(TinyRTC) or PCF8563<br>
 Keyboard, BPF & other - PCF8574<br>
 Rotary encoder - optical 360-400 pulse/turn or mechanical 20 pulse/turn
@@ -25,6 +26,7 @@ Project homepage http://dspview.com/viewtopic.php?t=174
 Required libraries:<br>
  1. PDQ GFX with packed font support https://github.com/andrey-belokon/PDQ_GFX_Libs. You need install PDQ_GFX, PDQ_ILI9341 and PDQ_ST7735<br>
  2. UR5FFR_Si5351 https://github.com/andrey-belokon/UR5FFR_Si5351
+ 3. SSD1306Ascii - install from Arduino IDE
 
 <img src="doc\ST7735_570_5351_two_plate\img\synt_1.8_11.jpg"></img>
 <img src="doc\ST7735_570_5351_two_plate\img\synt_1.8_9.jpg"></img>

@@ -50,6 +50,7 @@ class TRXDisplay {
 	  virtual void Draw(TRX& trx) = 0;
     virtual void clear() = 0;
     virtual void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize) = 0;
+    virtual void setBright(uint8_t brightness) {}
 };
 
 #endif

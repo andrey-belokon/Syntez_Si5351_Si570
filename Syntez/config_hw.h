@@ -5,6 +5,9 @@
 #define DISPLAY_ST7735
 //#define DISPLAY_ILI9341
 //#define DISPLAY_1602
+//#define DISPLAY_OLED128x32     // OLED 0.91" 128x32
+//#define DISPLAY_OLED128x64     // OLED 0.96" 128x64
+//#define DISPLAY_OLED_SH1106_128x64     // OLED 1.3" 128x64 (132x64)
 
 // ST7735 has several variations, set your version based on this list (using the color of the "tab" on the screen cover).
 // NOTE: The tab colors refer to Adafruit versions, other suppliers may vary (you may have to experiment to find the right one).
@@ -27,6 +30,9 @@ enum {
 
 // I2C адрес 1602 LCD
 #define I2C_ADR_DISPLAY_1602  0x27
+
+// I2C адрес для OLED
+#define I2C_ADD_DISPLAY_OLED  0x3C
 
 // раскоментировать используемую клавиатуру (только одну!). закоментировать все если нет клавиатуры
 #define KEYPAD_6          0x3E

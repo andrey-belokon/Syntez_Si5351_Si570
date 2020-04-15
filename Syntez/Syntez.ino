@@ -1,6 +1,6 @@
 //
 // UR5FFR Si570/Si5351 VFO
-// v3.0 from 23.02.2020
+// v3.1 from 15.04.2020
 // Copyright (c) Andrey Belokon, 2016-2020 Odessa 
 // https://github.com/andrey-belokon/
 // GNU GPL license
@@ -38,14 +38,23 @@
 #include "Eeprom24C32.h"
 #include "TRX.h"
 
-#ifdef DISPLAY_1602
-  #include "disp_1602.h"
-#endif
 #ifdef DISPLAY_ILI9341
   #include "disp_ILI9341.h"
 #endif
 #ifdef DISPLAY_ST7735
   #include "disp_ST7735.h"
+#endif
+#ifdef DISPLAY_1602
+  #include "disp_1602.h"
+#endif
+#ifdef DISPLAY_OLED128x32
+  #include "disp_OLED128x32.h"
+#endif
+#ifdef DISPLAY_OLED128x64
+  #include "disp_OLED128x64.h"
+#endif
+#ifdef DISPLAY_OLED_SH1106_128x64
+  #include "disp_OLED128x64.h"
 #endif
 
 #if defined(VFO_SI5351) || defined(VFO_SI5351_2)
@@ -80,6 +89,18 @@
 #endif
 #ifdef DISPLAY_ST7735
   Display_ST7735_SPI disp;
+  #undef DISPLAY_DISABLE
+#endif
+#ifdef DISPLAY_OLED128x32
+  Display_OLED128x32 disp;
+  #undef DISPLAY_DISABLE
+#endif
+#ifdef DISPLAY_OLED128x64
+  Display_OLED128x64 disp;
+  #undef DISPLAY_DISABLE
+#endif
+#ifdef DISPLAY_OLED_SH1106_128x64
+  Display_OLED128x64 disp;
   #undef DISPLAY_DISABLE
 #endif
 
@@ -474,7 +495,7 @@ void loop()
     bool rev_order = SMeterMap[0] > SMeterMap[14];
     for (int8_t i=14; i >= 0; i--) {
       if ((!rev_order && val > SMeterMap[i]) || (rev_order && val < SMeterMap[i])) {
-        trx.SMeter =  i+1;
+        trx.SMeter = i+1;
         break;
       }
     }

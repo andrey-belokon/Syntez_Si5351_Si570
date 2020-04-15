@@ -1,12 +1,7 @@
 #ifndef DISP_1602_H
 #define DISP_1602_H
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
-
 #include "TRX.h"
 #include "LCD1602_I2C.h"
 
