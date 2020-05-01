@@ -207,8 +207,11 @@ void setup()
 void vfo_set_freq(long f1, long f2, long f3)
 {
   static long last_f1=0, last_f2=0, last_f3=0;
-  //Serial.print(f1); Serial.print("   ");
-  //Serial.print(f2); Serial.println();
+/*  if (f1 != last_f1 || f2 != last_f2 || f3 != last_f3) {
+    // debug
+    Serial.print(f1); Serial.print("   ");
+    Serial.print(f2); Serial.println();
+  } */
 #ifdef VFO_SI570  
   vfo570.set_freq(f1);
   #ifdef VFO_SI5351_2
@@ -274,7 +277,7 @@ void UpdateFreq()
 #if defined(MODE_SINGLE_IF) || defined(MODE_SINGLE_IF_RXTX) || defined(MODE_SINGLE_IF_SWAP)
   const struct _Modes *mm = &Modes[trx.state.mode];
   int *freq_shift = trx.IFreqShift[trx.state.mode];
-  uint32_t SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
+  long SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
   int rit_val = (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
   int shift_rx = (trx.TX ? 0 : mm->rx_shift+freq_shift[2]);
   uint8_t sbm = mm->sb_mode;
@@ -285,7 +288,7 @@ void UpdateFreq()
       0, 0
     );
   } else {
-    uint32_t SSBDetectorFreq_USB = mm->freq[1]+freq_shift[1];
+    long SSBDetectorFreq_USB = mm->freq[1]+freq_shift[1];
     long vfo,bfo;
     if (SSBDetectorFreq_LSB != 0 && SSBDetectorFreq_USB != 0) {
       // инверсия боковой - гетеродин сверху
@@ -297,7 +300,8 @@ void UpdateFreq()
       if (sbm == SBM_LSB) {
         vfo += SSBDetectorFreq_USB;
       } else {
-        vfo = abs(SSBDetectorFreq_USB-vfo);
+        vfo = SSBDetectorFreq_USB-vfo;
+        if (vfo < 0) vfo = -vfo;
       }
       bfo = SSBDetectorFreq_USB-shift_rx;
     } else {
@@ -305,7 +309,8 @@ void UpdateFreq()
       if (sbm == SBM_USB) {
         vfo += SSBDetectorFreq_LSB;
       } else {
-        vfo = abs(SSBDetectorFreq_LSB-vfo);
+        vfo = SSBDetectorFreq_LSB-vfo;
+        if (vfo < 0) vfo = -vfo;
       }
       bfo = SSBDetectorFreq_LSB+shift_rx;
     }
@@ -332,14 +337,14 @@ void UpdateFreq()
 
   const struct _Modes *mm = &Modes[trx.state.mode];
   int *freq_shift = trx.IFreqShift[trx.state.mode];
-  uint32_t SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
+  long SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
   int rit_val = (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
   int shift_rx = (trx.TX ? 0 : mm->rx_shift+freq_shift[2]);
   uint8_t sbm = mm->sb_mode;
   if (sbm == SBM_DSB) {
     // no sideband. use LSB freq as filter center freq
     #ifndef IFreqEx
-      uint32_t IFreqEx = (IFreqEx_LSB+IFreqEx_USB) >> 1;
+      long IFreqEx = (IFreqEx_LSB+IFreqEx_USB) >> 1;
     #endif
     vfo_set_freq( // гетеродин сверху
       CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val),
@@ -348,9 +353,9 @@ void UpdateFreq()
     );
   } else {
     #ifndef IFreqEx
-      uint32_t IFreqEx = (sbm == SBM_USB ? IFreqEx_LSB : IFreqEx_USB);
+      long IFreqEx = (sbm == SBM_USB ? IFreqEx_LSB : IFreqEx_USB);
     #endif
-    uint32_t SSBDetectorFreq_USB = mm->freq[1]+freq_shift[1];
+    long SSBDetectorFreq_USB = mm->freq[1]+freq_shift[1];
     long f1,f2,f3;
     if (SSBDetectorFreq_LSB != 0 && SSBDetectorFreq_USB != 0) {
       long IFreq = (sbm == SBM_USB ? SSBDetectorFreq_USB : SSBDetectorFreq_LSB); 
