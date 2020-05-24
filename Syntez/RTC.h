@@ -8,10 +8,12 @@ typedef struct {
   uint8_t sec;     // 0-59
   uint8_t min;     // 0-59
   uint8_t hour;    // 1-23
-#ifdef RTC_DS1307
+#if defined(RTC_DS1307) || defined(RTC_DS3231)
+  // DS1307, DS3231
   uint8_t dow;     // day of week 1-7
   uint8_t day;     // 1-28/29/30/31
 #else
+  // PCF8563
   uint8_t day;     // 1-28/29/30/31
   uint8_t dow;     // day of week 1-7
 #endif
