@@ -436,6 +436,7 @@ void loop()
   }
   if (cmd != cmdNone) {
     if (cmd == cmdMenu) {
+#ifndef DISPLAY_DISABLE
       // double press at 1sec
       if (millis()-delay_cmd_tm <= 1000) {
         // call to menu
@@ -449,6 +450,7 @@ void loop()
       } else {
         delay_cmd_tm = millis();
       }
+#endif  
     } else {
       trx.ExecCommand(cmd);
     }

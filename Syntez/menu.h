@@ -1,5 +1,7 @@
 ///////////////////////////// menu functions ////////////////////////
 
+#ifndef DISPLAY_DISABLE
+
 #ifdef RTC_ENABLE
 
 char *fmt_hex_val(char *buf, const char *title, uint8_t val)
@@ -393,3 +395,5 @@ void ShowMenu()
     }
   }
 }
+
+#endif
