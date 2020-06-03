@@ -204,42 +204,47 @@ void setup()
   }
 }
 
+#define FQGRAN    10
+long last_f1=0, last_f2=0, last_f3=0;
+
 void vfo_set_freq(long f1, long f2, long f3)
 {
-  static long last_f1=0, last_f2=0, last_f3=0;
 /*  if (f1 != last_f1 || f2 != last_f2 || f3 != last_f3) {
     // debug
     Serial.print(f1); Serial.print("   ");
     Serial.print(f2); Serial.println();
   } */
+  f1 = ((f1+FQGRAN/2)/FQGRAN)*FQGRAN;
+  f2 = ((f2+FQGRAN/2)/FQGRAN)*FQGRAN;
+  f3 = ((f3+FQGRAN/2)/FQGRAN)*FQGRAN; 
 #ifdef VFO_SI570  
   vfo570.set_freq(f1);
   #ifdef VFO_SI5351_2
     if (last_f2 != f2) {
       SELECT_SI5351(0);
-      vfo5351.set_freq(f2,0,0);
+      vfo5351.set_freq(f2);
       last_f2 = f2;
     }
     if (last_f3 != f3) {
       SELECT_SI5351(1);
-      vfo5351_2.set_freq(f3,0,0);
+      vfo5351_2.set_freq(f3);
       last_f3 = f3;
     }
   #else
     #ifdef VFO_SI5351
-      vfo5351.set_freq(f2,f3,0);
+      vfo5351.set_freq(f2,f3);
     #endif
   #endif
 #else
   #ifdef VFO_SI5351_2
     if (last_f1 != f1) {
       SELECT_SI5351(0);
-      vfo5351.set_freq(f1,0,0);
+      vfo5351.set_freq(f1);
       last_f1 = f1;
     }
     if (last_f2 != f2 || last_f3 != f3) {
       SELECT_SI5351(1);
-      vfo5351_2.set_freq(f2,f3,0);
+      vfo5351_2.set_freq(f2,f3);
       last_f2 = f2;
       last_f3 = f3;
     }
@@ -251,13 +256,49 @@ void vfo_set_freq(long f1, long f2, long f3)
 #endif
 }
 
+void vfo_set_freq(long f1, long f2)
+{
+  f1 = (f1/FQGRAN)*FQGRAN;
+  f2 = (f2/FQGRAN)*FQGRAN;
+#ifdef VFO_SI570  
+  vfo570.set_freq(f1);
+  #ifdef VFO_SI5351_2
+    if (last_f2 != f2) {
+      SELECT_SI5351(0);
+      vfo5351.set_freq(f2);
+      last_f2 = f2;
+    }
+  #else
+    #ifdef VFO_SI5351
+      vfo5351.set_freq(f2);
+    #endif
+  #endif
+#else
+  #ifdef VFO_SI5351_2
+    if (last_f1 != f1) {
+      SELECT_SI5351(0);
+      vfo5351.set_freq(f1);
+      last_f1 = f1;
+    }
+    if (last_f2 != f2) {
+      SELECT_SI5351(1);
+      vfo5351_2.set_freq(f2);
+      last_f2 = f2;
+    }
+  #else
+    #ifdef VFO_SI5351
+      vfo5351.set_freq(f1,f2);
+    #endif
+  #endif
+#endif
+}
+
 void UpdateFreq() 
 {
 
 #ifdef MODE_DC
   vfo_set_freq(
     CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + (trx.RIT && !trx.TX ? trx.RIT_Value : 0)),
-    0,
     0
   );
 #endif
@@ -285,7 +326,7 @@ void UpdateFreq()
     // no sideband. use freq as filter center freq
     vfo_set_freq( // гетеродин сверху
       CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + SSBDetectorFreq_LSB + rit_val),
-      0, 0
+      0
     );
   } else {
     long SSBDetectorFreq_USB = mm->freq[1]+freq_shift[1];
@@ -315,7 +356,7 @@ void UpdateFreq()
       bfo = SSBDetectorFreq_LSB+shift_rx;
     }
     #ifdef MODE_SINGLE_IF
-      vfo_set_freq(CLK0_MULT*vfo, CLK1_MULT*bfo, 0);
+      vfo_set_freq(CLK0_MULT*vfo, CLK1_MULT*bfo);
     #endif
     #ifdef MODE_SINGLE_IF_RXTX
       vfo_set_freq(CLK0_MULT*vfo, 
@@ -326,8 +367,7 @@ void UpdateFreq()
     #ifdef MODE_SINGLE_IF_SWAP
       vfo_set_freq(
         trx.TX ? CLK1_MULT*bfo : CLK0_MULT*vfo,
-        trx.TX ? CLK0_MULT*vfo : CLK1_MULT*bfo,
-        0
+        trx.TX ? CLK0_MULT*vfo : CLK1_MULT*bfo
       );
     #endif
   }
@@ -348,8 +388,7 @@ void UpdateFreq()
     #endif
     vfo_set_freq( // гетеродин сверху
       CLK0_MULT*(trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val),
-      CLK1_MULT*(IFreqEx + SSBDetectorFreq_LSB),
-      0
+      CLK1_MULT*(IFreqEx + SSBDetectorFreq_LSB)
     );
   } else {
     #ifndef IFreqEx
