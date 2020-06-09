@@ -1,6 +1,6 @@
 //
 // UR5FFR Si570/Si5351 VFO
-// v3.2 from 4.06.2020
+// v3.2.1 from 9.06.2020
 // Copyright (c) Andrey Belokon, 2016-2020 Odessa 
 // https://github.com/andrey-belokon/
 // GNU GPL license
@@ -199,8 +199,8 @@ void setup()
 #endif
   if (ee24c32.found()) {
     ee24c32.setup();
-    trx.IFreqShiftLoad(ee24c32);
     trx.StateLoad(ee24c32);
+    trx.IFreqShiftLoad(ee24c32);
   }
 }
 

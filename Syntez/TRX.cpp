@@ -61,14 +61,14 @@ uint16_t TRX::StateHash() {
   return hval;
 }
 
-#define CRC_SIGN          0x569E
-#define IFreqShift_ADDR   0
-#define STATE_ADDR        (sizeof(IFreqShift)+2)
+#define CRC_SIGN          0x579E
+#define STATE_ADDR        0
+#define IFreqShift_ADDR   (sizeof(sign)+sizeof(BandData)+sizeof(SaveBandIndex)+sizeof(BandIndex)+sizeof(state))
 
 void TRX::StateLoad(Eeprom24C32 &eep) {
   uint16_t sign=0,addr=STATE_ADDR;
   eep.readBytes(addr,sizeof(sign),(byte*)&sign);
-  if (sign == CRC_SIGN) {
+  if (sign == (CRC_SIGN^IFreqShift_ADDR)) { // sign xor size
     addr += sizeof(sign);
     eep.readBytes(addr,sizeof(BandData),(byte*)BandData);
     addr += sizeof(BandData);   
@@ -81,7 +81,7 @@ void TRX::StateLoad(Eeprom24C32 &eep) {
 }
 
 void TRX::StateSave(Eeprom24C32 &eep) {
-  uint16_t sign=CRC_SIGN,addr=STATE_ADDR;
+  uint16_t sign=CRC_SIGN^IFreqShift_ADDR, addr=STATE_ADDR;
   eep.writeBytes(addr,sizeof(sign),(byte*)&sign);
   addr += sizeof(sign);
   eep.writeBytes(addr,sizeof(BandData),(byte*)BandData);
@@ -97,7 +97,7 @@ void TRX::IFreqShiftLoad(Eeprom24C32 &eep)
 {
   uint16_t sign=0,addr=IFreqShift_ADDR;
   eep.readBytes(addr,sizeof(sign),(byte*)&sign);
-  if (sign == CRC_SIGN) {
+  if (sign == (CRC_SIGN^sizeof(IFreqShift))) {
     addr += sizeof(sign);
     eep.readBytes(addr,sizeof(IFreqShift),(byte*)IFreqShift);
   }
@@ -105,7 +105,7 @@ void TRX::IFreqShiftLoad(Eeprom24C32 &eep)
 
 void TRX::IFreqShiftSave(Eeprom24C32 &eep)
 {
-  uint16_t sign=CRC_SIGN,addr=IFreqShift_ADDR;
+  uint16_t sign=CRC_SIGN^sizeof(IFreqShift), addr=IFreqShift_ADDR;
   eep.writeBytes(addr,sizeof(sign),(byte*)&sign);
   addr += sizeof(sign);
   eep.writeBytes(addr,sizeof(IFreqShift),(byte*)IFreqShift);
