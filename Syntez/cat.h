@@ -6,6 +6,7 @@ void ExecCAT()
 {
   int b;
   while ((b = Serial.read()) >= 0) {
+  	if (b <= ' ') continue;
     if (CAT_buf_idx >= CAT_BUF_SIZE) CAT_buf_idx = 0;
     CAT_buf[CAT_buf_idx++] = (uint8_t)b;
     if (b == ';') {
@@ -30,10 +31,12 @@ void ExecCAT()
         CAT_buf[37] = ';';
         CAT_buf[38] = 0;
         Serial.write(CAT_buf);
-      } if (CAT_buf[0] == 'I' && CAT_buf[1] == 'D') {
+      } else if (CAT_buf[0] == 'I' && CAT_buf[1] == 'D') {
        CAT_buf[2] = '0';
        CAT_buf[3] = '2';
        CAT_buf[4] = '0';
+       CAT_buf[5] = ';';
+       CAT_buf[6] = 0;
        Serial.write(CAT_buf);
       } else if (CAT_buf[0] == 'F' && (CAT_buf[1] == 'A' || CAT_buf[1] == 'B')) {
         uint8_t i = CAT_buf[1] - 'A';
