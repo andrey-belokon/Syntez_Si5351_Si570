@@ -139,6 +139,21 @@ void TRX::ChangeFreq(long freq_delta) {
   }
 }
 
+void TRX::SetFreq(long freq, byte idx)
+{
+  if (freq >= Bands[BandIndex].start && freq <= Bands[BandIndex].end) {
+    state.VFO[idx] = freq;
+  } else {
+    for (byte i=0; i < BAND_COUNT; i++) {  
+      if (freq >= Bands[i].start && freq <= Bands[i].end) {
+        SwitchToBand(i);
+        state.VFO[idx] = freq;
+        break;
+      }
+    }
+  }
+}
+
 void TRX::ExecCommand(uint8_t cmd) {
   if (TX && (cmd != cmdQRP) && (cmd != cmdTune)) return; // блокируем при передаче
   switch (cmd) {

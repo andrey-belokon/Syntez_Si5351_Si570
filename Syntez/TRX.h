@@ -33,6 +33,7 @@ class TRX {
     static void ExecCommand(uint8_t cmd);
     static uint8_t GetVFOIndex();
     static void ChangeFreq(long freq_delta);
+    static void SetFreq(long freq, byte idx);
 
     static uint16_t StateHash();
     static void StateLoad(Eeprom24C32 &eep);

@@ -47,13 +47,8 @@ void ExecCAT()
           Serial.write(CAT_buf);
         } else {
           long freq = atoln(CAT_buf + 2, 11);
-          if (trx.BandIndex < 0) {
-            trx.state.VFO[i] = freq;
-          } else {
-            trx.ExecCommand(cmdHam);
-            trx.state.VFO[i] = freq;
-            trx.ExecCommand(cmdHam);
-          }
+          if (trx.BandIndex < 0) trx.state.VFO[i] = freq;
+          else trx.SetFreq(freq,i);
         }
       } else if (CAT_buf[0] == 'M' && CAT_buf[1] == 'D') {
         if (CAT_buf[2] == ';') {
