@@ -1,4 +1,7 @@
 #include "disp_oled128x32.h"
+
+#ifdef DISPLAY_OLED128x32
+
 // SSD1306Ascii library https://github.com/greiman/SSD1306Ascii
 #include "SSD1306AsciiAvrI2c.h"
 #include "fonts\lcdnums12x16mod.h"
@@ -253,3 +256,5 @@ void Display_OLED128x32::clear()
 {
   oled32.clear();
 }
+
+#endif

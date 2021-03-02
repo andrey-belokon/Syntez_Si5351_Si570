@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include "TRX.h"
 
+#if defined(DISPLAY_OLED128x64) || defined(DISPLAY_OLED_SH1106_128x64)
+
 class Display_OLED128x64 {
   public:
 	  void setup();
@@ -14,5 +16,7 @@ class Display_OLED128x64 {
     void reset();
     void DrawMenu(const char* title, const char** items, uint8_t selected, const char* help, uint8_t fontsize);
 };
+
+#endif
 
 #endif

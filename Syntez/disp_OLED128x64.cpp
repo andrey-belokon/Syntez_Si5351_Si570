@@ -1,4 +1,7 @@
 #include "disp_oled128x64.h"
+
+#if defined(DISPLAY_OLED128x64) || defined(DISPLAY_OLED_SH1106_128x64)
+
 // SSD1306Ascii library https://github.com/greiman/SSD1306Ascii
 #include <SSD1306AsciiAvrI2c.h>
 #include "fonts\lcdnums14x24mod.h"
@@ -277,3 +280,5 @@ void Display_OLED128x64::clear()
 {
   oled64.clear();
 }
+
+#endif
