@@ -132,10 +132,7 @@ enum {
 // раскоментировать ТОЛЬКО ОДИН требуемый тип энкодера. закоментировать все если нет
 #define ENCODER_OPTICAL
 //#define ENCODER_MECHANIC
-
-#if defined(ENCODER_OPTICAL) && defined(ENCODER_MECHANIC)
-  #error You need select single encoder
-#endif
+//#define ENCODER_AS5600
 
 // изменение частоты в Гц на один оборот в обычном режиме
 #define ENCODER_FREQ_LO_STEP      3000
@@ -147,13 +144,23 @@ enum {
 // чем на ENCODER_FREQ_HI_LO_TRASH Гц за секунду то переходим в ускоренный режим
 #define ENCODER_FREQ_HI_LO_TRASH  2000
 
+#ifdef ENCODER_AS5600
+#define ENCODER_ENABLE
+#endif
+
 #ifdef ENCODER_OPTICAL
+#ifdef ENCODER_ENABLE
+  #error You need select single encoder
+#endif
 #define ENCODER_ENABLE
 // количество импульсов на оборот примененного оптического энкодера
 #define ENCODER_PULSE_PER_TURN    360
 #endif
 
 #ifdef ENCODER_MECHANIC
+#ifdef ENCODER_ENABLE
+  #error You need select single encoder
+#endif
 #define ENCODER_ENABLE
 // количество импульсов на оборот примененного механического энкодера
 #define ENCODER_PULSE_PER_TURN    20
