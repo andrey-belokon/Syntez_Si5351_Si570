@@ -430,20 +430,25 @@ void UpdateBandCtrl()
   outBandCtrl.Set(BCPN_BAND_1, trx.BandIndex & 0x2);
   outBandCtrl.Set(BCPN_BAND_2, trx.BandIndex & 0x4);
   outBandCtrl.Set(BCPN_BAND_3, trx.BandIndex & 0x8);
-  // 0-nothing; 1-ATT; 2-Preamp
-  switch (trx.state.AttPre) {
-    case 0:
-      outBandCtrl.Set(BCPN_ATT,false);
-      outBandCtrl.Set(BCPN_PRE,false);
-      break;
-    case 1:
-      outBandCtrl.Set(BCPN_ATT,true);
-      outBandCtrl.Set(BCPN_PRE,false);
-      break;
-    case 2:
-      outBandCtrl.Set(BCPN_ATT,false);
-      outBandCtrl.Set(BCPN_PRE,true);
-      break;
+  if (trx.TX) {
+    outBandCtrl.Set(BCPN_ATT,false);
+    outBandCtrl.Set(BCPN_PRE,false);
+  } else {
+    // 0-nothing; 1-ATT; 2-Preamp
+    switch (trx.state.AttPre) {
+      case 0:
+        outBandCtrl.Set(BCPN_ATT,false);
+        outBandCtrl.Set(BCPN_PRE,false);
+        break;
+      case 1:
+        outBandCtrl.Set(BCPN_ATT,true);
+        outBandCtrl.Set(BCPN_PRE,false);
+        break;
+      case 2:
+        outBandCtrl.Set(BCPN_ATT,false);
+        outBandCtrl.Set(BCPN_PRE,true);
+        break;
+    }
   }
   outBandCtrl.Set(BCPN_CW, trx.state.mode == MODE_CW);
   outBandCtrl.Set(BCPN_SB, trx.state.mode == MODE_USB);
