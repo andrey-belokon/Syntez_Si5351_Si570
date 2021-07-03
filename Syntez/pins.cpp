@@ -143,23 +143,23 @@ void OutputPCF8574::pcf8574_write(uint8_t data)
 
 uint8_t OutputTone_state=0;
 uint8_t OutputTone_pin=0;
-uint8_t OutputTone_toggle=0;
+volatile uint8_t OutputTone_toggle=0;
 
-void OutputTone(uint8_t pin, uint8_t value) 
+void OutputTone(uint8_t pin, int value) 
 { 
   if (value) {
     if (!OutputTone_state) {
-      int prescalers[] = {1, 8, 64, 256, 1024};
+      int prescalers[] = {1, 8, 32, 64, 128, 256, 1024}; // timer2
       uint8_t ipresc=5,mreg;
-      for (uint8_t i=0; i <= 4; i++) {
-        long t=F_CPU/(prescalers[i]*value*2)-1;
+      for (uint8_t i=0; i <= 6; i++) {
+        long t=F_CPU/((long)prescalers[i]*value*2)-1;
         if (t <= 0xFF) {
           ipresc=i;
           mreg=t;
           break;
         }
       }
-      if (ipresc > 4) return;
+      if (ipresc > 6) return;
       ipresc++;
       OutputTone_pin = pin;
       // init timer2 2kHz interrup
@@ -167,7 +167,6 @@ void OutputTone(uint8_t pin, uint8_t value)
       TCCR2A = 0;// set entire TCCR2A register to 0
       TCCR2B = 0;// same for TCCR2B
       TCNT2  = 0;//initialize counter value to 0
-      // set compare match register for 2khz increments
       OCR2A = mreg;
       // turn on CTC mode
       TCCR2A |= (1 << WGM21);
