@@ -532,7 +532,7 @@ void loop()
   last_tune_in = new_tune;
   trx.TX = Modes[trx.state.mode].tx_enable && (trx.Tune || inTX.Read());
   outQRP.Write(trx.QRP || trx.Tune);
-  OutputTone(PIN_OUT_TONE, trx.Tune);
+  OutputTone(PIN_OUT_TONE, (trx.Tune ? OUT_TONE_FREQ : 0));
   outTX.Write(trx.TX);
   UpdateBandCtrl();
 

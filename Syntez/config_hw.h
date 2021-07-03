@@ -113,6 +113,8 @@ enum {
 #define PIN_OUT_TONE    8
 #define PIN_IN_SMETER   A6
 
+#define OUT_TONE_FREQ   1000
+
 #define BANDCTRL_ENABLE
 // распиновка I2C расширителя band control
 // двоичный дешифратор диапазона - пины 0-3
