@@ -158,7 +158,11 @@ void TRX::ExecCommand(uint8_t cmd) {
   if (TX && (cmd != cmdQRP) && (cmd != cmdTune)) return; // блокируем при передаче
   switch (cmd) {
     case cmdAttPre: // переключает по кругу аттенюатор/увч
-      if (++state.AttPre > 2) state.AttPre = 0;
+      #ifdef MODE_SUPER21
+        if (++state.AttPre > 3) state.AttPre = 0;
+      #else
+        if (++state.AttPre > 2) state.AttPre = 0;
+      #endif
       break;
     case cmdVFOSel: // VFO A/B
       state.VFO_Index ^= 1;

@@ -57,12 +57,26 @@ void Display_1602_I2C::Draw(TRX& trx) {
   else buf[0][15] = 'B';
 
   switch (trx.state.AttPre) {
+#ifdef MODE_SUPER21
+    case 1:
+      buf[0][3] = 'A';
+	    buf[0][4] = '1';
+      //buf[0][5] = 'T';
+      break;
+    case 2:
+      buf[0][3] = 'A';
+	    buf[0][4] = '2';
+      //buf[0][5] = 'T';
+      break;
+    case 3:
+#else
     case 1:
       buf[0][3] = 'A';
 	    buf[0][4] = 'T';
       //buf[0][5] = 'T';
       break;
     case 2:
+#endif
       buf[0][3] = 'P';
       buf[0][4] = 'R';
       //buf[0][5] = 'E';

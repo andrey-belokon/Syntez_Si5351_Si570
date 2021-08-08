@@ -247,12 +247,27 @@ void Display_ST7735_SPI::Draw(TRX& trx) {
       case 0:
         drawBtn(0,BTN_Y,30,20,"ATT",ST7735_BLACK,ST7735_DARKGRAY);
         break;
-      case 1:
-        drawBtn(0,BTN_Y,30,20,"ATT",ST7735_BLUE,ST7735_WHITE);
-        break;
-      case 2:
-        drawBtn(0,BTN_Y,30,20,"PRE",ST7735_GREEN,ST7735_GRAY);
-        break;
+      #ifdef MODE_SUPER21
+        case 1:
+        case 2:
+          char buf[4];
+          buf[0]='A';
+          buf[1]='T';
+          buf[2]='0'+cur_attpre;
+          buf[3]=0;
+          drawBtn(0,BTN_Y,30,20,buf,ST7735_BLUE,ST7735_WHITE);
+          break;
+        case 3:
+          drawBtn(0,BTN_Y,30,20,"PRE",ST7735_GREEN,ST7735_GRAY);
+          break;
+      #else
+        case 1:
+          drawBtn(0,BTN_Y,30,20,"ATT",ST7735_BLUE,ST7735_WHITE);
+          break;
+        case 2:
+          drawBtn(0,BTN_Y,30,20,"PRE",ST7735_GREEN,ST7735_GRAY);
+          break;
+      #endif
     }  
   }
 

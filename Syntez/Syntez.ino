@@ -209,10 +209,11 @@ long last_f1=0, last_f2=0, last_f3=0;
 
 void vfo_set_freq(long f1, long f2, long f3)
 {
-/*  if (f1 != last_f1 || f2 != last_f2 || f3 != last_f3) {
+  /*if (f1 != last_f1 || f2 != last_f2 || f3 != last_f3) {
     // debug
     Serial.print(f1); Serial.print("   ");
-    Serial.print(f2); Serial.println();
+    Serial.print(f2); Serial.print("   ");
+    Serial.print(f3); Serial.println();
   } */
   f1 = ((f1+FQGRAN/2)/FQGRAN)*FQGRAN;
   f2 = ((f2+FQGRAN/2)/FQGRAN)*FQGRAN;
@@ -421,6 +422,78 @@ void UpdateFreq()
   }
 
 #endif
+
+#ifdef MODE_SUPER21
+
+  const struct _Modes *mm = &Modes[trx.state.mode];
+  int *freq_shift = trx.IFreqShift[trx.state.mode];
+  long SSBDetectorFreq_LSB = mm->freq[0]+freq_shift[0];
+  int rit_val = (trx.RIT && !trx.TX ? trx.RIT_Value : 0);
+  int shift_rx = (trx.TX ? 0 : mm->rx_shift+freq_shift[2]);
+  uint8_t sbm = mm->sb_mode;
+  bool upcvt = (trx.TX || trx.state.VFO[trx.GetVFOIndex()] >= SUPER21_SPLIT_FREQ);
+  if (sbm == SBM_DSB) {
+    // no sideband. use LSB freq as filter center freq
+    #ifndef IFreqEx
+      long IFreqEx = (IFreqEx_LSB+IFreqEx_USB) >> 1;
+    #endif
+    vfo_set_freq( // гетеродин сверху
+      trx.state.VFO[trx.GetVFOIndex()] + (upcvt ? IFreqEx : SSBDetectorFreq_LSB) + rit_val,
+      (upcvt ? IFreqEx + SSBDetectorFreq_LSB : 0)
+    );
+  } else {
+    long SSBDetectorFreq_USB = mm->freq[1]+freq_shift[1];
+    if (upcvt) {
+      #ifndef IFreqEx
+        long IFreqEx = (sbm == SBM_USB ? IFreqEx_LSB : IFreqEx_USB);
+      #endif
+      long f1,f2,f3;
+      if (SSBDetectorFreq_LSB != 0 && SSBDetectorFreq_USB != 0) {
+        long IFreq = (sbm == SBM_USB ? SSBDetectorFreq_USB : SSBDetectorFreq_LSB); 
+        f1 = trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val;
+        f2 = IFreqEx + IFreq;
+        f3 = CLK2_MULT*(IFreq + ((sbm == SBM_USB ? -shift_rx : shift_rx)));
+      } else if (SSBDetectorFreq_LSB != 0) {
+        f1 = trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val;
+        f2 = IFreqEx + (sbm == SBM_LSB ? SSBDetectorFreq_LSB : -(SSBDetectorFreq_LSB));
+        f3 = CLK2_MULT*(SSBDetectorFreq_LSB + shift_rx);
+      } else if (SSBDetectorFreq_USB != 0) {
+        f1 = trx.state.VFO[trx.GetVFOIndex()] + IFreqEx + rit_val;
+        f2 = IFreqEx + (sbm == SBM_USB ? SSBDetectorFreq_USB : -(SSBDetectorFreq_USB));
+        f3 = CLK2_MULT*(SSBDetectorFreq_USB - shift_rx);
+      }
+      vfo_set_freq(f1,f2,f3);
+    } else {
+      long vfo, bfo;
+      if (SSBDetectorFreq_LSB != 0 && SSBDetectorFreq_USB != 0) {
+        // инверсия боковой - гетеродин сверху
+        bfo = ((sbm == SBM_LSB) ? SSBDetectorFreq_USB : SSBDetectorFreq_LSB);
+        vfo = trx.state.VFO[trx.GetVFOIndex()] + bfo + rit_val;
+        bfo += ((sbm == SBM_LSB) ? -shift_rx : shift_rx);
+      } else if (SSBDetectorFreq_USB != 0) {
+        vfo = trx.state.VFO[trx.GetVFOIndex()] + rit_val;
+        if (sbm == SBM_LSB) {
+          vfo += SSBDetectorFreq_USB;
+        } else {
+          vfo = SSBDetectorFreq_USB-vfo;
+          if (vfo < 0) vfo = -vfo;
+        }
+        bfo = SSBDetectorFreq_USB-shift_rx;
+      } else {
+        vfo = trx.state.VFO[trx.GetVFOIndex()] + rit_val;
+        if (sbm == SBM_USB) {
+          vfo += SSBDetectorFreq_LSB;
+        } else {
+          vfo = SSBDetectorFreq_LSB-vfo;
+          if (vfo < 0) vfo = -vfo;
+        }
+        bfo = SSBDetectorFreq_LSB+shift_rx;
+      }
+      vfo_set_freq(vfo,0,bfo);
+    }
+  }
+
+#endif
 }
 
 void UpdateBandCtrl() 
@@ -430,23 +503,50 @@ void UpdateBandCtrl()
   outBandCtrl.Set(BCPN_BAND_1, trx.BandIndex & 0x2);
   outBandCtrl.Set(BCPN_BAND_2, trx.BandIndex & 0x4);
   outBandCtrl.Set(BCPN_BAND_3, trx.BandIndex & 0x8);
-  // 0-nothing; 1-ATT; 2-Preamp
-  switch (trx.TX ? 0 : trx.state.AttPre) {
-    case 0:
-      outBandCtrl.Set(BCPN_ATT,false);
-      outBandCtrl.Set(BCPN_PRE,false);
-      break;
-    case 1:
-      outBandCtrl.Set(BCPN_ATT,true);
-      outBandCtrl.Set(BCPN_PRE,false);
-      break;
-    case 2:
-      outBandCtrl.Set(BCPN_ATT,false);
-      outBandCtrl.Set(BCPN_PRE,true);
-      break;
-  }
-  outBandCtrl.Set(BCPN_CW, trx.state.mode == MODE_CW);
-  outBandCtrl.Set(BCPN_SB, trx.state.mode == MODE_USB);
+  #ifdef MODE_SUPER21
+    // 0-nothing; 1-ATT; 2-Preamp
+    switch (trx.TX ? 0 : trx.state.AttPre) {
+      case 0:
+        outBandCtrl.Set(BCPN_ATT1,false);
+        outBandCtrl.Set(BCPN_ATT2,false);
+        outBandCtrl.Set(BCPN_PRE,false);
+        break;
+      case 1:
+        outBandCtrl.Set(BCPN_ATT1,true);
+        outBandCtrl.Set(BCPN_ATT2,false);
+        outBandCtrl.Set(BCPN_PRE,false);
+        break;
+      case 2:
+        outBandCtrl.Set(BCPN_ATT1,true);
+        outBandCtrl.Set(BCPN_ATT2,true);
+        outBandCtrl.Set(BCPN_PRE,false);
+        break;
+      case 3:
+        outBandCtrl.Set(BCPN_ATT1,false);
+        outBandCtrl.Set(BCPN_ATT2,false);
+        outBandCtrl.Set(BCPN_PRE,true);
+        break;
+    }
+    outBandCtrl.Set(BCPN_IFSEL, (trx.state.VFO[trx.GetVFOIndex()] >= SUPER21_SPLIT_FREQ));
+  #else
+    // 0-nothing; 1-ATT; 2-Preamp
+    switch (trx.TX ? 0 : trx.state.AttPre) {
+      case 0:
+        outBandCtrl.Set(BCPN_ATT,false);
+        outBandCtrl.Set(BCPN_PRE,false);
+        break;
+      case 1:
+        outBandCtrl.Set(BCPN_ATT,true);
+        outBandCtrl.Set(BCPN_PRE,false);
+        break;
+      case 2:
+        outBandCtrl.Set(BCPN_ATT,false);
+        outBandCtrl.Set(BCPN_PRE,true);
+        break;
+    }
+    outBandCtrl.Set(BCPN_CW, trx.state.mode == MODE_CW);
+    outBandCtrl.Set(BCPN_SB, trx.state.mode == MODE_USB);
+  #endif
   outBandCtrl.Write();
 #endif
 }

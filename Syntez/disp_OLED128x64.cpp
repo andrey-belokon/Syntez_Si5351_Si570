@@ -210,12 +210,23 @@ void Display_OLED128x64::Draw(TRX& trx)
       case 0:
         oled64.print("   ");
         break;
-      case 1:
-        oled64.print("ATT");
-        break;
-      case 2:
-        oled64.print("PRE");
-        break;
+      #ifdef MODE_SUPER21
+        case 1:
+        case 2:
+          oled64.print("AT");
+          oled64.print(char('0'+cur64_attpre));
+          break;
+        case 3:
+          oled64.print("PRE");
+          break;
+      #else
+        case 1:
+          oled64.print("ATT");
+          break;
+        case 2:
+          oled64.print("PRE");
+          break;
+      #endif
     }  
   }
 

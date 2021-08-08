@@ -125,11 +125,14 @@ enum {
 // 4й - SSB/CW (можно использовать для переключения фильтров/режимов)
 // пин отустствует (не разведен) на I2C-LCD адаптерах
 #define BCPN_CW         4
+#define BCPN_ATT1       4
 // 5й пин - ATT, 6й пин - Preamp
 #define BCPN_ATT        5
+#define BCPN_ATT2       5
 #define BCPN_PRE        6
 // 7й - LSB - 0, USB - 1 (можно использовать для переключения фильтров/режимов)
 #define BCPN_SB         7
+#define BCPN_IFSEL      7
 
 // раскоментировать ТОЛЬКО ОДИН требуемый тип энкодера. закоментировать все если нет
 #define ENCODER_OPTICAL
