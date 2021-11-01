@@ -66,15 +66,15 @@ int ReadV11Ref()
     uint8_t high = ADCH; // unlocks both
     acc += (high<<8) | low;
   }
-  return acc/3;
+  analogReference(DEFAULT);
   delay(1);
+  return acc/3;
 }
 
 int InputAnalogPin::Read() 
 {
   int vref = ReadV11Ref(); 
   int new_value = 0;
-  analogReference(DEFAULT);
   new_value += analogRead(pin);
   new_value += analogRead(pin);
   new_value += analogRead(pin);
