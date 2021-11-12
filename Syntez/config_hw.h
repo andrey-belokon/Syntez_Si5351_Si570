@@ -26,6 +26,7 @@ enum {
 #define ST7735_CHIPSET ST7735_INITR_BLACKTAB // <= Set ST7735 LCD chipset/variation here
 
 // значения 0/1 определяют ориентацию вывода на TFT
+// для двухплатной версии установить в 0 при 10ти пиновом модуле ST7735, и в 1 при 8ми пиновом
 #define TFT_ORIENTATION   1
 
 // I2C адрес 1602 LCD
@@ -89,6 +90,7 @@ enum {
   0x26  ! PCF8574/LCD board (3x4 keypad KEYPAD_12)
   0x27  ! LCD 1602 (DISPLAY_1602)
   0x3B  ! PCF8574 (band control I2C_ADR_BAND_CTRL)
+  0x3В  ! PCF8574 (ext control I2C_ADR_EXT_CTRL)
   0x3E  ! PCF8574 (7 btn keypad KEYPAD_7)
   0x50  ! AT24C32 at TinyRTC board or single IC [optional]
   0x55  ! Si570 [optional]
@@ -104,6 +106,7 @@ enum {
   #define I2C_ADR_EE24C32       0x50
 #endif
 #define I2C_ADR_BAND_CTRL     0x3B
+//#define I2C_ADR_EXT_CTRL      0x3D
 
 // Pin mapping
 #define PIN_IN_TX       4

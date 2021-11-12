@@ -21,20 +21,21 @@ Support different TRX architecture:<br>
  3. Direct conversion with 2x or 4x output.
  4. Direct conversion with quadrature output.
 
-Project homepage http://dspview.com/viewtopic.php?t=174
+Project homepage http://www.ur5ffr.com/viewtopic.php?t=174
 
 Required libraries:<br>
  1. PDQ GFX with packed font support https://github.com/andrey-belokon/PDQ_GFX_Libs. You need install PDQ_GFX, PDQ_ILI9341 and PDQ_ST7735<br>
  2. UR5FFR_Si5351 https://github.com/andrey-belokon/UR5FFR_Si5351
  3. SSD1306Ascii - install from Arduino IDE
 
-<img src="doc\ST7735_570_5351_two_plate\img\synt_1.8_11.jpg"></img>
+<img src="doc\ST7735_570_5351_two_plate\img\synt_v2_tft-10pin.jpg"></img>
+<img src="doc\ST7735_570_5351_two_plate\img\synt_v2_tft-8pin.jpg"></img>
 <img src="doc\ST7735_570_5351_two_plate\img\synt_1.8_9.jpg"></img>
 <img src="doc\ST7735_570_5351_two_plate\img\synt_1.8_4.jpg"></img>
 <img src="doc\ST7735_570_5351_two_plate\img\synt_1.8_7.jpg"></img>
 
-<img src="doc\ST7735_570_5351_two_plate\Schematic Digital VFO 1.8 main board 1.3.png"></img>
-<img src="doc\ST7735_570_5351_two_plate\Schematic Digital VFO 1.8 display board 1.0.png"></img>
+<img src="doc\ST7735_570_5351_two_plate\Schematic_Digital VFO 1.8 main board 2.0.png"></img>
+<img src="doc\ST7735_570_5351_two_plate\Schematic_Digital VFO 1.8 display board 2.0.png"></img>
 
 Copyright (c) 2016-2020, Andrii Bilokon, UR5FFR
 License GNU GPL, see license.txt for more information

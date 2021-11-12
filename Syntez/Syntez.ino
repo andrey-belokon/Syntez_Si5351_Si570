@@ -1,6 +1,6 @@
 //
 // UR5FFR Si570/Si5351 VFO
-// v3.2.1 from 9.06.2020
+// v3.3 from 12.11.2021
 // Copyright (c) Andrey Belokon, 2016-2020 Odessa 
 // https://github.com/andrey-belokon/
 // GNU GPL license
@@ -139,6 +139,11 @@ InputAnalogPin inSMeter(PIN_IN_SMETER);
 #ifdef BANDCTRL_ENABLE
   OutputPCF8574 outBandCtrl(I2C_ADR_BAND_CTRL,0);
 #endif
+
+#ifdef I2C_ADR_EXT_CTRL
+  OutputPCF8574 outExtCtrl(I2C_ADR_EXT_CTRL,0);
+#endif
+
 
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
@@ -551,6 +556,22 @@ void UpdateBandCtrl()
 #endif
 }
 
+#ifdef I2C_ADR_EXT_CTRL
+void UpdateExtCtrl() 
+{
+  // пример кода выводящего номер диапазона на расширенный порт
+  outExtCtrl.Set(0, trx.BandIndex == 0);
+  outExtCtrl.Set(1, trx.BandIndex == 1);
+  outExtCtrl.Set(2, trx.BandIndex == 2);
+  outExtCtrl.Set(3, trx.BandIndex == 3);
+  outExtCtrl.Set(4, trx.BandIndex == 4);
+  outExtCtrl.Set(5, trx.BandIndex == 5);
+  outExtCtrl.Set(6, trx.BandIndex == 6);
+  outExtCtrl.Set(7, trx.BandIndex == 7);
+  outExtCtrl.Write();
+}
+#endif
+
 #ifdef CAT_ENABLE
   #include "CAT.h"
 #endif    
@@ -630,6 +651,9 @@ void loop()
   OutputTone(PIN_OUT_TONE, (trx.Tune ? OUT_TONE_FREQ : 0));
   outTX.Write(trx.TX);
   UpdateBandCtrl();
+#ifdef I2C_ADR_EXT_CTRL
+  UpdateExtCtrl();
+#endif
 
   // read and convert smeter
   static long smeter_tm = 0; 
