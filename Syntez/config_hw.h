@@ -177,6 +177,10 @@ enum {
 #define CAT_ENABLE
 #define COM_BAUND_RATE  9600      // скорость обмена COM-порта
 
+// выбрать тип CAT протокола (только один!)
+#define CAT_PROTOCOL_KENWOOD_TS480
+//#define CAT_PROTOCOL_YAESU_FT817
+
 // интервал опроса S-метра, msec
 #define POLL_SMETER     50
 // интервал проверки и сохранения текущего состояния синтезатора в EEPROM

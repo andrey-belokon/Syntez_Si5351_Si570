@@ -21,6 +21,7 @@ class TRX {
     static int BandIndex;  // -1 в режиме General coverage
     static TVFOState state;
     static uint8_t TX;
+    static uint8_t CATTX;
     static uint8_t Lock;
     static uint8_t RIT;
     static int RIT_Value;

@@ -18,6 +18,7 @@ int TRX::SaveBandIndex;
 int TRX::BandIndex;  // -1 в режиме General coverage
 TVFOState TRX::state;
 uint8_t TRX::TX;
+uint8_t TRX::CATTX;
 uint8_t TRX::Lock;
 uint8_t TRX::RIT;
 int TRX::RIT_Value;
@@ -34,7 +35,7 @@ TRX::TRX() {
 	  BandData[i].AttPre = 0;
 	  BandData[i].Split = false;
   }
-  Lock = RIT = TX = QRP = false;
+  Lock = RIT = TX = CATTX = QRP = false;
   RIT_Value = 0;
   BandData[BAND_COUNT].VFO[0] = 0;
   SwitchToBand(BAND_COUNT == 1 ? 0 : 1);

@@ -641,16 +641,28 @@ void loop()
 #endif    
   UpdateFreq();
 
+  // pool PTT
   static uint8_t last_tune_in = 0;
   uint8_t new_tune = Modes[trx.state.mode].tx_enable && inTune.Read();
   if (new_tune != last_tune_in && new_tune != trx.Tune)
     trx.Tune = new_tune;
   last_tune_in = new_tune;
-  trx.TX = Modes[trx.state.mode].tx_enable && (trx.Tune || inTX.Read());
+
+  static byte last_ptt = 0;
+  byte ptt = inTX.Read();
+  if (ptt != last_ptt) {
+    trx.CATTX = 0;
+    last_ptt = ptt;
+  }
+
+  trx.TX = Modes[trx.state.mode].tx_enable && (trx.Tune || trx.CATTX || ptt);
+
   outQRP.Write(trx.QRP || trx.Tune);
   OutputTone(PIN_OUT_TONE, (trx.Tune ? OUT_TONE_FREQ : 0));
   outTX.Write(trx.TX);
+
   UpdateBandCtrl();
+  
 #ifdef I2C_ADR_EXT_CTRL
   UpdateExtCtrl();
 #endif
