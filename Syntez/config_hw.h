@@ -90,7 +90,7 @@ enum {
   0x26  ! PCF8574/LCD board (3x4 keypad KEYPAD_12)
   0x27  ! LCD 1602 (DISPLAY_1602)
   0x3B  ! PCF8574 (band control I2C_ADR_BAND_CTRL)
-  0x3В  ! PCF8574 (ext control I2C_ADR_EXT_CTRL)
+  0x3D  ! PCF8574 (ext control I2C_ADR_EXT_CTRL)
   0x3E  ! PCF8574 (7 btn keypad KEYPAD_7)
   0x50  ! AT24C32 at TinyRTC board or single IC [optional]
   0x55  ! Si570 [optional]
@@ -100,11 +100,13 @@ enum {
 */
 
 // I2C адреса устройств
-#ifdef RTC_DS3231
-  #define I2C_ADR_EE24C32       0x57
-#else
-  #define I2C_ADR_EE24C32       0x50
-#endif
+
+// в случае применения модуля DS3132 с 24C32 она имеет адрес 0x57
+// если 24C32 устанавливается на плату синтезатора то ее адрес 0x50
+// раскоментарить необходимый адрес
+//#define I2C_ADR_EE24C32       0x57
+#define I2C_ADR_EE24C32       0x50
+
 #define I2C_ADR_BAND_CTRL     0x3B
 //#define I2C_ADR_EXT_CTRL      0x3D
 
