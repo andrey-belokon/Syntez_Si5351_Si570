@@ -192,6 +192,12 @@ void setup()
 #ifndef KEYPAD_DISABLE
   keypad.setup();
 #endif
+#ifdef BANDCTRL_ENABLE
+  outBandCtrl.setup();
+#endif
+#ifdef I2C_ADR_EXT_CTRL
+  outExtCtrl.setup();
+#endif
   inTX.setup();
   inTune.setup();
 #ifdef PIN_IN_RIT
